@@ -48,6 +48,7 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                                 alert("タップされました！");
                                 const latLng = ev.detail?.latLng || ev.latLng;
                                 const domEvent = ev.detail?.domEvent || ev.domEvent;
+                                alert("座標: " + JSON.stringify(latLng));
                                 onMarkerClick(item, latLng, domEvent)
                             }}
                         >
