@@ -19,8 +19,7 @@ export async function GET() {
     })
       .from(visitedLocations)
       .leftJoin(visitedPlaces, eq(visitedLocations.id, visitedPlaces.location_id))
-      .orderBy(desc(visitedLocations.updated_at));
-    console.log("results", results);
+      console.log("results", results);
     return NextResponse.json(results);
   } catch (e) { return NextResponse.json({ error: "取得失敗" }, { status: 500 }); }
 }
@@ -42,6 +41,8 @@ export async function POST(request: Request) {
             comment,
             created_at: new Date() // 仕様：情報を更新した日時
           })
+          .where(eq(visitedLocations.id, id)); // 💡 ここ！特定の ID 
+
         if (!googleData && locId) {
           // 1. 直近の訪問履歴（visited_logs）をサブクエリ的にフェッチ
           const lastLog = await tx.select()
