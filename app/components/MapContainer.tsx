@@ -39,6 +39,7 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                     return (
                         <AdvancedMarker
                             key={item.id}
+                            clickable={true}
                             position={{
                                 lat: Number(item.latitude),
                                 lng: Number(item.longitude)
