@@ -47,17 +47,31 @@ export default function WanderingLog() {
 
     const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
         // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
-        //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
-        //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
+        //let x = domEventent ? domEventent.clientX : window.innerWidth / 2;
+        //let y = domEventent ? domEventent.clientY : window.innerHeight / 2;
 
-   let x = domEvent?.clientX || domEvent?.detail?.domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
-   let y = domEvent?.clientY || domEvent?.detail?.domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
+     // 1. 緯度経度の取得（これはライブラリが優秀なので共通でOK）
+    //const latLng = ev.detail?.latLng || ev.latLng;
 
-    // 💡 2. もし上記を全部試しても「空」だった時だけ、最終手段として中央にする
-    const finalX = (x !== undefined && x !== null) ? x : (window.innerWidth / 2 - 130);
-    const finalY = (y !== undefined && y !== null) ? y : (window.innerHeight / 2);
+    // 2. 画面上の座標 (x, y) を救出する
+    //const domEvent = ev.detail?.domEventent || ev.domEventent;
+    
+    let x, y;
 
-    const pos = { x: finalX, y: finalY };
+    // 💡 命令：今動いているのはスマホかパソコンか？
+    if (domEvent?.touches && domEvent.touches.length > 0) {
+        // --- スマホの場合 ---
+        x = domEvent.touches[0].clientX;
+        y = domEvent.touches[0].clientY;
+    } else if (domEvent?.clientX !== undefined) {
+        // --- パソコンの場合 ---
+        x = domEvent.clientX;
+        y = domEvent.clientY;
+    } else {
+        // --- どちらも失敗した時の保険（画面中央） ---
+        x = window.innerWidth / 2;
+        y = window.innerHeight / 2;
+    }
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
         const ax = window.innerWidth;
