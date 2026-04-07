@@ -216,13 +216,13 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     console.log("openedModalGoogle:", openedModalGoogle);
     //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
     //console.log("localPos:", localPos);
-
+alert(localPos);
     return (
         <>
             <div
                 style={{
                     width: '15%',
-                    minWidth:'180px',
+                    minWidth: '180px',
                     height: 'auto',
                     //aspectRatio: '1 / 1',
                     //minHeight: '45vh',
