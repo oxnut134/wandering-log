@@ -226,8 +226,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     height: 'auto',
                     aspectRatio: '1 / 1',
                     //minHeight: '45vh',
-                    //position: 'absolute',
-                    position: 'fixed',
+                    position: 'absolute',
+                    //position: 'fixed',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
