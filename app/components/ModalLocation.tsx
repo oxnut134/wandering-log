@@ -217,6 +217,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
     //console.log("localPos:", localPos);
  alert("localPos: " + JSON.stringify(localPos));
+ console.log("localPos: ",localPos);
     return (
         <>
             <div
