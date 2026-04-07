@@ -111,7 +111,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
-        
+        if (e.type === 'touchstart') {
+            if (e.cancelable) e.preventDefault();
+        }
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
         //const startX = e.clientX - localPos.x;
         //const startY = e.clientY - localPos.y;
