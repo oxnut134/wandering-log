@@ -103,28 +103,34 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         });
     };
 
-    // ModalLocation.tsx の handleMouseUp 内
+    // ModalLocation.tsx の handleUp 内
 
     //let gNewX:any,gAx:any,gBx:any;
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
 
-    const handleMouseDown = (e: React.MouseEvent | React.TouchEvent | any) => {
+    const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
+        
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
         //const startX = e.clientX - localPos.x;
         //const startY = e.clientY - localPos.y;
-// 💡 1. 座標の救出（マウスか、1本目の指か）
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        // 💡 1. 座標の救出（マウスか、1本目の指か）
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    const startX = clientX - localPos.x;
-    const startY = clientY - localPos.y;
+        const startX = clientX - localPos.x;
+        const startY = clientY - localPos.y;
 
-        const handleMouseMove = (moveEvent: MouseEvent) => {
+        const handleMove = (moveEvent: any) => {
             // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
-            let newX = moveEvent.clientX - startX;
-            let newY = moveEvent.clientY - startY;
+            //let newX = moveEvent.clientX - startX;
+            //let newY = moveEvent.clientY - startY;
+            const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+            const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+
+            let newX = moveX - startX;
+            let newY = moveY - startY;
 
             xRef.current = newX;
             yRef.current = newY;
@@ -162,11 +168,19 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
         };
 
-        const handleMouseUp = () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
+        const handleUp = () => {
+            //document.removeEventListener('mousemove', handleMove);
+            //document.removeEventListener('mouseup', handleUp);
             //syncMapPositionWithModal();
-            // ModalLocation.tsx の handleMouseUp 内
+            // ModalLocation.tsx の handleUp 内
+            document.removeEventListener('mousemove', handleMove);
+            document.removeEventListener('mouseup', handleUp);
+            document.removeEventListener('touchmove', handleMove);
+            document.removeEventListener('touchend', handleUp);
+
+            if (onPosUpdate && xRef.current !== undefined) {
+                onPosUpdate({ x: xRef.current + 40, y: yRef.current! + 40 });
+            }
 
             const finalPos = { x: xRef.current, y: yRef.current };
 
@@ -181,8 +195,12 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 onPosUpdate({ x: xRef.current + 40, y: yRef.current + 40 });
             }
         };
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleUp);
+        document.addEventListener('touchmove', handleMove, { passive: false }); // 💡 passive: false が重要
+        document.addEventListener('touchend', handleUp);
+        //document.addEventListener('mousemove', handleMove);
+        //document.addEventListener('mouseup', handleUp);
     };
 
     const syncMapPositionWithModal = () => {
@@ -222,8 +240,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     console.log("openedModalGoogle:", openedModalGoogle);
     //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
     //console.log("localPos:", localPos);
- //alert("localPos: " + JSON.stringify(localPos));
- //console.log("localPos: ",localPos);
+    //alert("localPos: " + JSON.stringify(localPos));
+    //console.log("localPos: ",localPos);
     return (
         <>
             <div
@@ -252,8 +270,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 onClick={(e) => e.stopPropagation()}
             >
                 <div
-                    onMouseDown={handleMouseDown}
-                     onTouchStart={handleMouseDown} 
+                    onMouseDown={handleDown}
+                    onTouchStart={handleDown}
                     style={{
                         height: '4vh', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',
                         borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px', borderRadius: '6px',      // 💡 ここから追加：縦横センターにする設定
