@@ -50,16 +50,14 @@ export default function WanderingLog() {
         //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
         //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
 
-        let x = domEvent?.clientX;
-        let y = domEvent?.clientY;
+        let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
+        let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
 
-        // 💡 もし座標が取れなければ（スマホなど）、画面中央の数値を代入
-        if (x === undefined || y === undefined) {
-            x = window.innerWidth / 2 - 130; // 130はモーダル幅の半分
-            y = window.innerHeight / 2 - 160; // 160はモーダル高さの半分
+        // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
+        if (x === undefined || x === null) {
+            x = window.innerWidth / 2 - 130; // モーダル幅260の半分
+            y = window.innerHeight / 2 - 160; // モーダル高さの半分
         }
-
-        console.log()
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
         const ax = window.innerWidth;
