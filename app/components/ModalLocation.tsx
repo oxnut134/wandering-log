@@ -221,7 +221,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         <>
             <div
                 style={{
-                    position: 'absolute',
+                    //position: 'absolute',
+                    position: 'fixed',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     //transform: 'translate(0, -100%)',
