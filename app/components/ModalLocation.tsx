@@ -229,7 +229,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     //top: '50%',          // 💡 変数を使わず「50%」と直接書く
                     //left: '50%',         // 💡 変数を使わず「50%」と直接書く
                     //transform: 'translate(-50%, -50%)', // 💡 真ん中寄せ
-                    zIndex: 9999,
+                    //zIndex: 9999,
                     backgroundColor: 'white',
                     padding: '16px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
