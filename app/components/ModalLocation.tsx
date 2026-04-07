@@ -228,12 +228,12 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     //minHeight: '45vh',
                     //position: 'absolute',
                     position: 'fixed',
-                    //top: `${localPos.y - 15}px`, // 少し余裕を持たせる
-                    //left: `${localPos.x + 15}px`,
-                    //transform: 'translate(0, -100%)',
-                    top: '50%',          // 💡 変数を使わず「50%」と直接書く
-                    left: '50%',         // 💡 変数を使わず「50%」と直接書く
-                    transform: 'translate(-50%, -50%)', // 💡 真ん中寄せ
+                    top: `${localPos.y - 15}px`, // 少し余裕を持たせる
+                    left: `${localPos.x + 15}px`,
+                    transform: 'translate(0, -100%)',
+                    //top: '50%',          // 💡 変数を使わず「50%」と直接書く
+                    //left: '50%',         // 💡 変数を使わず「50%」と直接書く
+                    //transform: 'translate(-50%, -50%)', // 💡 真ん中寄せ
                     zIndex: 9999,
                     backgroundColor: 'white',
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
