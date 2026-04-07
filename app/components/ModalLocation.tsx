@@ -224,7 +224,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     position: 'absolute',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
-                    transform: 'translate(0, -100%)',
+                    //transform: 'translate(0, -100%)',
+                    transform: 'translate(-50%, -50%)',
                     zIndex: 9999,
                     backgroundColor: 'white',
                     padding: '16px', // 12pxから16pxへ。余白に呼吸を持たせる
