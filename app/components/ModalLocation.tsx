@@ -225,6 +225,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
+                    zIndex: 9999,
                     backgroundColor: 'white',
                     padding: '16px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
