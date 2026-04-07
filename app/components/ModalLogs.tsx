@@ -90,7 +90,7 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',
-                        //zIndex: 9999,
+                        zIndex: 9999,
                         backgroundColor: 'white',
                         padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                         borderRadius: '10px',
