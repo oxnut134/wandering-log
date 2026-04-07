@@ -224,7 +224,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     width: '15%',
                     minWidth:'180px',
                     height: 'auto',
-                    aspectRatio: '1 / 1',
+                    //aspectRatio: '1 / 1',
                     //minHeight: '45vh',
                     //position: 'absolute',
                     position: 'fixed',
