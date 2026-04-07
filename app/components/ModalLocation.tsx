@@ -110,11 +110,16 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const yRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: React.MouseEvent | React.TouchEvent | any) => {
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
-        const startX = e.clientX - localPos.x;
-        const startY = e.clientY - localPos.y;
+        //const startX = e.clientX - localPos.x;
+        //const startY = e.clientY - localPos.y;
+// 💡 1. 座標の救出（マウスか、1本目の指か）
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
+    const startX = clientX - localPos.x;
+    const startY = clientY - localPos.y;
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
             // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
@@ -248,6 +253,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             >
                 <div
                     onMouseDown={handleMouseDown}
+                     onTouchStart={handleMouseDown} 
                     style={{
                         height: '4vh', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',
                         borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px', borderRadius: '6px',      // 💡 ここから追加：縦横センターにする設定
