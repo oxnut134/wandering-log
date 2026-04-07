@@ -47,8 +47,19 @@ export default function WanderingLog() {
 
     const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
         // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
-        let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
-        let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
+        //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
+        //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
+
+        let x = domEvent?.clientX;
+        let y = domEvent?.clientY;
+
+        // 💡 もし座標が取れなければ（スマホなど）、画面中央の数値を代入
+        if (x === undefined || y === undefined) {
+            x = window.innerWidth / 2 - 130; // 130はモーダル幅の半分
+            y = window.innerHeight / 2 - 160; // 160はモーダル高さの半分
+        }
+
+        console.log()
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
         const ax = window.innerWidth;
@@ -189,16 +200,16 @@ export default function WanderingLog() {
                             m.id === modal.id ? { ...m, data: newData } : m
                         ));
                     }}
-                    setCurrentMarker = {() => {
+                    setCurrentMarker={() => {
                         console.log("in setCurrentMaker");
-                           setOpenedModalLocations((prev: any[]) => {
+                        setOpenedModalLocations((prev: any[]) => {
                             return prev.map((m: any) =>
                                 m.id === modal.id
                                     ? {
                                         ...m,
                                         data: {
                                             ...m.data,
-                                            isCurrentMarker: m.data.isCurrentMarker ? false : true ,
+                                            isCurrentMarker: m.data.isCurrentMarker ? false : true,
                                         }
                                     }
                                     : m

@@ -47,7 +47,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             }, rankBy: google.maps.places.RankBy.DISTANCE, type: 'establishment'
         },
             (results: any, status: any) => {
-                console.log("onsetting true to IsGoogleView");
+                //console.log("onsetting true to IsGoogleView");
+                //console.log("=====openedModalGoogle:",openedModalGoogle);
                 if (status === "OK" && results) {
                     const p = results[0];
                     setopenedModalGoogle({ ...openedModalGoogle, googleData: { place_id: p.place_id, name: p.name, category: p.types?.join(','), address: p.vicinity } });

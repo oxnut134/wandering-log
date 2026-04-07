@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 
 export default function MapContainer({ openedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick }: any) {
     const map = useMap();
-    //const map = (window as any).google.maps;
     useEffect(() => {
         if (map && currentPosOfCamera && homeTrigger !== 0) {
             map.panTo(currentPosOfCamera);
