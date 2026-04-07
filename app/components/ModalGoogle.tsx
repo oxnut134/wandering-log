@@ -125,15 +125,16 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
                 <>
                     <div
                         style={{
+                            width: '15%',
+                            minWidth: '180px',
                             position: 'absolute',
                             top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
                             zIndex: 9999,
                             backgroundColor: 'white',
-                            padding: '16px', // 12pxから16pxへ。余白に呼吸を持たせる
+                            padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                             borderRadius: '10px',
-                            width: '260px', // 220pxと300pxの中間、260pxが「不沈の正解」
                             boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                             fontSize: '13px' // 小さすぎず読みやすいサイズ
                         }}
@@ -190,7 +191,7 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
                             <button
                                 onClick={onClose}
                                 //onClick={closeGoogleView}
-                                style={{ margin:'10px 0 0px 0',background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
+                                style={{ margin: '10px 0 0px 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
                                 閉じる
                             </button>
                         </div>

@@ -2,10 +2,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
+declare const google: any;
 
 export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setopenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate }: any) {
     const map = useMap();
-
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
@@ -38,7 +38,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
 
     const handleGoogleSearch = () => {
-        if (!map || !window.google) return;
+        if (!map || !(window as any).google) return;
         const service = new google.maps.places.PlacesService(map as any);
         service.nearbySearch({
             location: {
@@ -46,7 +46,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 lng: Number(openedModalGoogle.longitude)
             }, rankBy: google.maps.places.RankBy.DISTANCE, type: 'establishment'
         },
-            (results, status) => {
+            (results: any, status: any) => {
                 console.log("onsetting true to IsGoogleView");
                 if (status === "OK" && results) {
                     const p = results[0];
@@ -221,6 +221,11 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         <>
             <div
                 style={{
+                    width: '15%',
+                    minWidth:'180px',
+                    height: 'auto',
+                    aspectRatio: '1 / 1',
+                    //minHeight: '45vh',
                     position: 'absolute',
                     //position: 'fixed',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
@@ -231,9 +236,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     //transform: 'translate(-50%, -50%)', // 💡 真ん中寄せ
                     //zIndex: 9999,
                     backgroundColor: 'white',
-                    padding: '16px', // 12pxから16pxへ。余白に呼吸を持たせる
+                    padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
-                    width: '260px', // 220pxと300pxの中間、260pxが「不沈の正解」
+                    //width: '260px', // 220pxと300pxの中間、260pxが「不沈の正解」
                     boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                     fontSize: '13px' // 小さすぎず読みやすいサイズ
                 }}
@@ -242,7 +247,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 <div
                     onMouseDown={handleMouseDown}
                     style={{
-                        height: '40px', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',
+                        height: '4vh', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',
                         borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px', borderRadius: '6px',      // 💡 ここから追加：縦横センターにする設定
                         display: 'flex',
                         alignItems: 'center',
@@ -286,10 +291,10 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 <input
                     style={{
                         width: '100%',
-                        marginBottom: '8px',
+                        marginBottom: '2%',
                         border: '1px solid #bbb', // 少し視認性を上げる
                         borderRadius: '6px',
-                        padding: '4px', // 指でタップしやすい高さ
+                        padding: '1px', // 指でタップしやすい高さ
                         fontSize: '12px',
                         outline: 'none'
                     }}
@@ -301,8 +306,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 <textarea
                     style={{
                         width: '100%',
-                        height: '70px', // 入力しやすさを確保
-                        marginBottom: '6px',
+                        height: '10vh', // 入力しやすさを確保
+                        marginBottom: '1%',
                         border: '1px solid #bbb',
                         borderRadius: '6px',
                         padding: '4px',
@@ -318,6 +323,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     onClick={handleSave}
                     style={{
                         width: '100%',
+                        height: '4vh',
                         background: '#2563eb',
                         color: 'white',
                         marginBottom: '6px',
@@ -326,7 +332,11 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         fontSize: '14px',
                         fontWeight: 'bold',
                         border: 'none',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',    // 💡 中身を真ん中に
+                        alignItems: 'center',
+                        justifyContent: 'center',
+
                     }}
                 >
                     {onSaving ? (
@@ -346,12 +356,17 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         onClick={handleGoogleSearch}
                         style={{
                             flex: 1, // 均等に横幅を分ける
+                            height: '4vh',
                             background: '#ffffff',
                             color: '#2563eb',
                             borderRadius: '6px',
                             padding: '8px',
-                            fontSize: '11px',
-                            border: '1px solid #2563eb'
+                            fontSize: '8px',
+                            border: '1px solid #2563eb',
+                            display: 'flex',    // 💡 中身を真ん中に
+                            alignItems: 'center',
+                            justifyContent: 'center',
+
                         }}
                     >
                         Google情報
@@ -367,18 +382,23 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
                         style={{
                             flex: 1,
+                            height: '4vh',
                             background: '#f3f4f6',
                             color: '#374151',
                             borderRadius: '6px',
                             padding: '8px',
-                            fontSize: '11px',
-                            border: '1px solid #d1d5db'
+                            fontSize: '8px',
+                            border: '1px solid #d1d5db',
+                            display: 'flex',    // 💡 中身を真ん中に
+                            alignItems: 'center',
+                            justifyContent: 'center',
+
                         }}
                     >
                         訪問記録
                     </button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '12px' }}>
                     <button
                         onClick={onCloseModalLocation}
                         style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
