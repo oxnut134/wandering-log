@@ -168,6 +168,10 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
             setLocalPos({ x: newX, y: newY });
 
+            if (moveEvent.touches) {
+                if (moveEvent.cancelable) moveEvent.preventDefault();
+            }
+
         };
 
         const handleUp = () => {
