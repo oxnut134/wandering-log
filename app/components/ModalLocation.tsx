@@ -152,15 +152,15 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
             // 💡 4. あなたの定義した境界線ガード・ロジック (Mmyu < Bmyu => Mbyu = 0)
             if (newX < 0) {
-                newX = 0; // 左端固定
+                newX = -10; // 左端固定
             } else if (newX + bx > ax) {
-                newX = ax - bx - 30; // 右端固定
+                newX = ax - bx + 10 ; // 右端固定
             }
 
             if (newY < by) {
-                newY = by + 60; // 上端固定 (transformの影響を考慮)
+                newY = by -20; // 上端固定 (transformの影響を考慮)
             } else if (newY > ay) {
-                newY = ay; // 下端固定
+                newY = ay + 10; // 下端固定
             }
 
             // 監査ログ（これで数値が出るようになります）
