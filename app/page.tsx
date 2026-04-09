@@ -20,6 +20,8 @@ export default function WanderingLog() {
     const [isGoogleView, setIsGoogleView] = useState(false);
     const [currentMarker, setCurrentMarker] = useState(false);
     const [isModalLogsView, setIsModalLogsView] = useState(false);
+    const [currentZoom, setCurrentZoom] = useState(15);
+
 
     const refreshHistory = useCallback(async () => {
         const res = await fetch("/api/wandering_where");//default:GET
@@ -100,6 +102,24 @@ export default function WanderingLog() {
             m.id === id ? { ...m, currentPos: newPos } : m // 👈 スプレッド構文で currentPos だけ上書き
         ));
     };
+    const handleCurrentLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const nowPos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    // 地図のカメラだけを今の場所に移動させる
+                    setCurrentPosOfCamera(nowPos);
+                    setHomeTrigger(prev => prev + 1); // カメラ移動を発火
+                    console.log("📍 ナウの場所へ移動:", nowPos);
+                },
+                () => { console.log("位置情報の取得に失敗しました"); },
+                { enableHighAccuracy: true }
+            );
+        }
+    };
 
     const handleHome = () => {
         if (currentPosOfMe) {
@@ -151,7 +171,20 @@ export default function WanderingLog() {
                 onMarkerClick={handleMarkerClick}
                 homeTrigger={homeTrigger}
                 openedModalLocations={openedModalLocations}
+                currentZoom={currentZoom}
+                setCurrentZoom={setCurrentZoom}
             />
+            <button
+                onClick={handleCurrentLocation}
+                style={{
+                    position: 'fixed', bottom: '210px', right: '7px', // 🏠より少し上に配置
+                    width: '45px', height: '45px', borderRadius: '50%',
+                    backgroundColor: 'white', border: 'none', fontSize: '24px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 1000
+                }}
+            >
+                📍  {/* または🎯 や 🧭 */}
+            </button>
             {/* Homeボタン */}
             <button
                 onClick={handleHome}
@@ -164,6 +197,9 @@ export default function WanderingLog() {
             >
                 🏠
             </button>
+            <button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
+            <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>
+
             {openedModalLocations.map((modal) => (
                 <ModalLocation
                     key={modal.id}
@@ -233,12 +269,6 @@ export default function WanderingLog() {
 
                     // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
                     onFetchLogs={() => fetchLogsForModal(modal.id)}
-                    // 💡 保存が完了した時も、単に閉じる時も、この関数を呼ぶだけで「自分」が消える
-                    /*onClose={() => {
-                      console.log("On closing");
-                      setIsGoogleView(false);
-                      setOpenedModalLocations(prev => prev.filter(m => m.id !== modal.id));
-                    }}*/
                     onClose={() => {
                         console.log("On closing");
                         // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
