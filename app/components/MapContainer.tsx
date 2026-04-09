@@ -66,6 +66,8 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 gestureHandling={'greedy'}
                 disableDefaultUI={false}
                 zoomControl={true}
+                zoomControlOptions={{ position: ControlPosition.LEFT_CENTER }}
+                streetViewControlOptions={{ position: ControlPosition.LEFT_TOP }}
             >
 
                 <AdvancedMarker
@@ -76,7 +78,7 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 </AdvancedMarker>
                 <AdvancedMarker
                     zIndex={1000}
-                    collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY" 
+                    collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
                     position={currentPosOfCamera}
                     // 💡 あえて中身（children）を書かないことで、Google標準の赤ピンを召喚
                     onClick={(ev: any) => {
