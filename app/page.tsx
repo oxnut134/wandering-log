@@ -177,7 +177,6 @@ export default function WanderingLog() {
             <button
                 onClick={handleCurrentLocation}
                 style={{
-                    zIndex: 1000,
                     position: 'fixed', bottom: '210px', right: '7px', // 🏠より少し上に配置
                     width: '45px', height: '45px', borderRadius: '50%',
                     backgroundColor: 'white', border: 'none', fontSize: '24px',
