@@ -10,6 +10,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const rightEdgePadding = isMobile ? 40 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
 
     const handleSave = async () => {
         setOnSaving(true)
@@ -114,17 +115,17 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const startX = clientX - localPos.x;
         const startY = clientY - localPos.y;
 
         const handleMove = (moveEvent: any) => {
-             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+            const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
             const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
-//let newX:any;
-//let newY:any;
+            //let newX:any;
+            //let newY:any;
             let newX = moveX - startX;
             let newY = moveY - startY;
             xRef.current = newX;
@@ -138,13 +139,19 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             const bx = 260; // モーダル幅
             const by = 320; // モーダル高
 
-if (isMobile) {
-    // スマホ用のゆるいガード設定
-     newX = Math.max(-20, Math.min(newX, ax - bx + 20));
-} else {
-    // PC用のきっちりしたガード設定
-     newX = Math.max(0, Math.min(newX, ax - bx));
-}
+            if (isMobile) {
+                // スマホ用のゆるいガード設定
+                //newX = Math.max(-20, Math.min(newX, ax - bx + 20));
+                if (newX < -10) {
+                    newX = -10;
+                } else if (newX + bx > ax + rightEdgePadding) {
+                    // ax + rightEdgePadding とすることで、ボタンの「左端」という制限を突き抜けます
+                    newX = ax - bx + rightEdgePadding;
+                }
+            } else {
+                // PC用のきっちりしたガード設定
+                newX = Math.max(0, Math.min(newX, ax - bx));
+            }
 
 
             //gNewX=newX;
