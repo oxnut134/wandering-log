@@ -9,7 +9,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
-
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     const handleSave = async () => {
         setOnSaving(true)
@@ -114,26 +114,19 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
-        // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
-        //const startX = e.clientX - localPos.x;
-        //const startY = e.clientY - localPos.y;
-        // 💡 1. 座標の救出（マウスか、1本目の指か）
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const startX = clientX - localPos.x;
         const startY = clientY - localPos.y;
 
         const handleMove = (moveEvent: any) => {
-            // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
-            //let newX = moveEvent.clientX - startX;
-            //let newY = moveEvent.clientY - startY;
-            const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
             const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
-
+//let newX:any;
+//let newY:any;
             let newX = moveX - startX;
             let newY = moveY - startY;
-
             xRef.current = newX;
             yRef.current = newY;
             console.log("✈️ 代入成功 (Ref):", xRef.current);
@@ -145,6 +138,15 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             const bx = 260; // モーダル幅
             const by = 320; // モーダル高
 
+if (isMobile) {
+    // スマホ用のゆるいガード設定
+     newX = Math.max(-20, Math.min(newX, ax - bx + 20));
+} else {
+    // PC用のきっちりしたガード設定
+     newX = Math.max(0, Math.min(newX, ax - bx));
+}
+
+
             //gNewX=newX;
             setGNewX(newX);
             gAx = ax;
@@ -154,11 +156,11 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             if (newX < 0) {
                 newX = -10; // 左端固定
             } else if (newX + bx > ax) {
-                newX = ax - bx + 10 ; // 右端固定
+                newX = ax - bx + 10; // 右端固定
             }
 
             if (newY < by) {
-                newY = by -20; // 上端固定 (transformの影響を考慮)
+                newY = by - 20; // 上端固定 (transformの影響を考慮)
             } else if (newY > ay) {
                 newY = ay + 10; // 下端固定
             }
