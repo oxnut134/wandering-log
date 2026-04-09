@@ -197,8 +197,8 @@ export default function WanderingLog() {
             >
                 🏠
             </button>
-            <button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
-            <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>
+            {/*<button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
+            <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>*/}
 
             {openedModalLocations.map((modal) => (
                 <ModalLocation
