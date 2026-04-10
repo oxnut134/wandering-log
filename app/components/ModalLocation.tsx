@@ -135,10 +135,10 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
-            const bx = 250; // モーダル幅
+            const bx = isMobile ? 200 : 250;// モーダル幅
             //const bx = 260; // モーダル幅
             const by = 320; // モーダル高
-            const rightEdgePadding = isMobile ? 60 : 10; 
+            const rightEdgePadding = isMobile ? 40 : 10; 
 
             if (isMobile) {
                 // スマホ用のゆるいガード設定
