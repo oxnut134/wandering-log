@@ -11,7 +11,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const rightEdgePadding = isMobile ? 80 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
-console.log("isMobile:",isMobile);
+
     const handleSave = async () => {
         setOnSaving(true)
         const res = await fetch("/api/wandering_where", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(openedModalGoogle) });
@@ -437,6 +437,9 @@ console.log("isMobile:",isMobile);
 
                         }}
                     >
+                        DEBUG: {isMobile ? "📱MOBILE" : "💻PC"} /
+                        W:{window.innerWidth} /
+                        Pad:{rightEdgePadding}
                         訪問記録
                     </button>
                 </div>
