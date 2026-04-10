@@ -10,7 +10,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const rightEdgePadding = isMobile ? 40 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
+    const rightEdgePadding = isMobile ? 80 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
 
     const handleSave = async () => {
         setOnSaving(true)
@@ -136,8 +136,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
-            //const bx = 260; // モーダル幅
-            const bx = 300; // モーダル幅
+            const bx = 260; // モーダル幅
+            //const bx = 300; // モーダル幅
             const by = 320; // モーダル高
 
             if (isMobile) {
