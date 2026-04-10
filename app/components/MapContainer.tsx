@@ -77,6 +77,11 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 streetViewControlOptions={{
                     position: ControlPosition.LEFT_TOP // 💡 ペグマンを左上に
                 }}
+                cameraControl={true}
+                cameraControlOptions={{
+                    // 💡 ズームボタン等と同じ「左中央」へ移動
+                    position: ControlPosition.LEFT_CENTER
+                }}
             >
 
                 <AdvancedMarker
