@@ -70,6 +70,7 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 //streetViewControlOptions={{ position: ControlPosition.LEFT_TOP }}
                 disableDefaultUI={false} // 💡 一旦すべて消す
                 zoomControl={true}
+                cameraControl={false}
                 /*zoomControlOptions={{
                     position: ControlPosition.LEFT_CENTER // 💡 改めて左中央を指定
                 }}
