@@ -177,7 +177,7 @@ export default function WanderingLog() {
             <button
                 onClick={handleCurrentLocation}
                 style={{
-                    position: 'fixed', bottom: '210px', left: '7px', // 🏠より少し上に配置
+                    position: 'fixed', bottom: '260px', right: '7px', // 🏠より少し上に配置
                     width: '45px', height: '45px', borderRadius: '50%',
                     backgroundColor: 'white', border: 'none', fontSize: '24px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 1000
@@ -189,7 +189,7 @@ export default function WanderingLog() {
             <button
                 onClick={handleHome}
                 style={{
-                    position: 'fixed', bottom: '150px', left: '7px',
+                    position: 'fixed', bottom: '200px', right: '7px',
                     width: '45px', height: '45px', borderRadius: '50%',
                     backgroundColor: 'white', border: 'none', fontSize: '24px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 1000
