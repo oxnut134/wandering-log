@@ -10,7 +10,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const rightEdgePadding = isMobile ? 70 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
+    const rightEdgePadding = isMobile ? 150 : 10; // スマホならボタンの裏まで潜り込むために数値を調整
 
     const handleSave = async () => {
         setOnSaving(true)
