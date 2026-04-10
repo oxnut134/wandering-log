@@ -64,10 +64,19 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 // pinchControl={false} 
 
                 gestureHandling={'greedy'}
-                disableDefaultUI={false}
+                //disableDefaultUI={false}
+                //zoomControl={true}
+                //zoomControlOptions={{ position: ControlPosition.LEFT_CENTER }}
+                //streetViewControlOptions={{ position: ControlPosition.LEFT_TOP }}
+                disableDefaultUI={true} // 💡 一旦すべて消す
                 zoomControl={true}
-                zoomControlOptions={{ position: ControlPosition.LEFT_CENTER }}
-                streetViewControlOptions={{ position: ControlPosition.LEFT_TOP }}
+                zoomControlOptions={{
+                    position: ControlPosition.LEFT_CENTER // 💡 改めて左中央を指定
+                }}
+                streetViewControl={true}
+                streetViewControlOptions={{
+                    position: ControlPosition.LEFT_TOP // 💡 ペグマンを左上に
+                }}
             >
 
                 <AdvancedMarker
