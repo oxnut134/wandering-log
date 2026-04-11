@@ -39,7 +39,8 @@ export default function WanderingLog() {
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
-            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
+            const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
             console.log("coords:", coords);
             setCurrentPosOfCamera(coords);
             setCurrentPosOfMe(coords);
@@ -107,8 +108,10 @@ export default function WanderingLog() {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const nowPos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
+                         lat: position.coords.latitude,
+                         lng: position.coords.longitude,
+                        //lat: 35.67133,
+                        //lng: 139.76534,
                     };
                     // 地図のカメラだけを今の場所に移動させる
                     setCurrentPosOfCamera(nowPos);
@@ -163,7 +166,12 @@ export default function WanderingLog() {
     };
     console.log("openedModalLocations:::", openedModalLocations)
     return (
-        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string} libraries={['places']}>
+        <APIProvider
+            apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
+            libraries={['places']}
+            language={'en'}
+            region={'jp'}
+        >
             <MapContainer
                 currentPosOfCamera={currentPosOfCamera}
                 setCurrentPosOfCamera={setCurrentPosOfCamera}

@@ -19,34 +19,6 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
     }, [initialModalPosGoogle]); // 👈 親の currentPos が変わるたびに実行される
 
 
-    /*const handleSave = async () => {
-        const res = await fetch("/api/wandering_where", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(openedModalGoogle) });
-        if (res.ok) { onSave(); onClose(); }
-    };*/
-
-    /*const handleDelete = async () => {
-        if (!confirm("削除しますか？")) return;
-        const res = await fetch("/api/wandering_where", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
-        if (res.ok) { onSave(); onClose(); }
-    };*/
-
-    /*const handleGoogleSearch = () => {
-        if (!map || !window.google) return;
-        const service = new google.maps.places.PlacesService(map as any);
-        service.nearbySearch({
-            location: {
-                lat: Number(openedModalGoogle.latitude),
-                lng: Number(openedModalGoogle.longitude)
-            }, rankBy: google.maps.places.RankBy.DISTANCE, type: 'establishment'
-        },
-            (results, status) => {
-                if (status === "OK" && results) {
-                    const p = results[0];
-                    setopenedModalGoogle({ ...openedModalGoogle, googleData: { place_id: p.place_id, name: p.name, category: p.types?.join(','), address: p.vicinity } });
-                    setIsGoogleView(true);
-                }
-            });
-    };*/
 
     const xRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
@@ -116,11 +88,6 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
     //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
     return (
         <>
-            {/*<p style={{ fontSize: '11px', color: '#777', marginBottom: '10px' }}>
-                    緯度:{openedModalGoogle.latitude?.toFixed(5)} / 経度:{openedModalGoogle.longitude?.toFixed(5)}
-                </p>*/}
-
-
             {modal.data.isShowingGoogle ? (
                 <>
                     <div
@@ -131,7 +98,7 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
                             top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
-                            zIndex: 9999,
+                            zIndex: 100000,
                             backgroundColor: 'white',
                             padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                             borderRadius: '10px',
@@ -161,10 +128,6 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
                         }}>
                             {isExisting ? "③ 既存訪問先" : "② 初めての訪問先"}
                         </h4>
-                        {/*<p style={{ fontSize: '11px', color: '#777', marginBottom: '10px' }}>
-                            緯度: {Number(openedModalGoogle.latitude || 0).toFixed(5)} /
-                            経度: {Number(openedModalGoogle.longitude || 0).toFixed(5)}
-                        </p>*/}
                         <div style={{ textAlign: 'center' }}>
                             <div style={{
                                 fontSize: '10px',
@@ -190,7 +153,6 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
                         <div>
                             <button
                                 onClick={onClose}
-                                //onClick={closeGoogleView}
                                 style={{ margin: '10px 0 0px 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
                                 閉じる
                             </button>
@@ -200,13 +162,6 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
             ) : (
                 null
             )}
-            {/*</>
-                )}
-                <div style={{ marginTop: '10px' }}>
-                    {isHistoryModalOpen && (
-                        <VisitedLogList logs={logs} />
-                    )}
-                </div>*/}
 
         </>
     );

@@ -34,21 +34,6 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
 
     return (
         <div style={{ height: "100vh", width: "100%" }}>
-            {/*<Map
-                mapId="DEMO_MAP_ID"
-                center={currentPosOfCamera}
-                defaultZoom={15}
-                gestureHandling={'greedy'}
-                onCameraChanged={(ev) => setCurrentPosOfCamera(ev.detail.center)}
-
-                //disableDefaultUI={true}
-                disableDefaultUI={false}
-                zoomControl={true}
-                streetViewControl={true}       // 💡 これで黄色い人形（ペグマン）が表示されます
-                streetViewControlOptions={{
-                    position: ControlPosition.RIGHT_TOP // 💡 場所を「右上」などに指定可能
-                }}
-            >*/}
             <Map
                 mapId="DEMO_MAP_ID"
                 center={currentPosOfCamera}
@@ -61,28 +46,11 @@ export default function MapContainer({ openedModalLocations, currentPosOfCamera,
                 onCameraChanged={(ev) => setCurrentPosOfCamera(ev.detail.center)}
 
                 // 💡 指でのズームを「禁止」したいなら、ここを false にします
-                // pinchControl={false} 
 
                 gestureHandling={'greedy'}
-                //disableDefaultUI={false}
-                //zoomControl={true}
-                //zoomControlOptions={{ position: ControlPosition.LEFT_CENTER }}
-                //streetViewControlOptions={{ position: ControlPosition.LEFT_TOP }}
                 disableDefaultUI={false} // 💡 一旦すべて消す
                 zoomControl={true}
                 cameraControl={false}
-                /*zoomControlOptions={{
-                    position: ControlPosition.LEFT_CENTER // 💡 改めて左中央を指定
-                }}
-                streetViewControl={true}
-                streetViewControlOptions={{
-                    position: ControlPosition.LEFT_TOP // 💡 ペグマンを左上に
-                }}
-                cameraControl={true}
-                cameraControlOptions={{
-                    // 💡 ズームボタン等と同じ「左中央」へ移動
-                    position: ControlPosition.LEFT_CENTER
-                }}*/
             >
 
                 <AdvancedMarker

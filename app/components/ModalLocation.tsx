@@ -185,10 +185,6 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         };
 
         const handleUp = () => {
-            //document.removeEventListener('mousemove', handleMove);
-            //document.removeEventListener('mouseup', handleUp);
-            //syncMapPositionWithModal();
-            // ModalLocation.tsx の handleUp 内
             document.removeEventListener('mousemove', handleMove);
             document.removeEventListener('mouseup', handleUp);
             document.removeEventListener('touchmove', handleMove);
@@ -215,8 +211,6 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         document.addEventListener('mouseup', handleUp);
         document.addEventListener('touchmove', handleMove, { passive: false }); // 💡 passive: false が重要
         document.addEventListener('touchend', handleUp);
-        //document.addEventListener('mousemove', handleMove);
-        //document.addEventListener('mouseup', handleUp);
     };
 
     const syncMapPositionWithModal = () => {
@@ -226,7 +220,6 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         if (!projection) return;
 
         // 1. 現在のモーダルの表示位置 (localPos)
-        // transform: translate(0, -100%) なので、実質の「指している点」は localPos そのもの
         const point = new google.maps.Point(localPos.x, localPos.y);
 
         // 2. 【核心】ピクセル座標を緯度経度 (LatLng) に変換
@@ -254,10 +247,6 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         setIsGoogleView(false); // 💡 ただのフラグオフ
     };
     console.log("openedModalGoogle:", openedModalGoogle);
-    //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
-    //console.log("localPos:", localPos);
-    //alert("localPos: " + JSON.stringify(localPos));
-    //console.log("localPos: ",localPos);
     return (
         <>
             <div
@@ -265,21 +254,14 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     width: '15%',
                     minWidth: '180px',
                     height: 'auto',
-                    //aspectRatio: '1 / 1',
-                    //minHeight: '45vh',
                     position: 'absolute',
-                    //position: 'fixed',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    //top: '50%',          // 💡 変数を使わず「50%」と直接書く
-                    //left: '50%',         // 💡 変数を使わず「50%」と直接書く
-                    //transform: 'translate(-50%, -50%)', // 💡 真ん中寄せ
                     zIndex: 99999,
                     backgroundColor: 'white',
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
-                    //width: '260px', // 220pxと300pxの中間、260pxが「不沈の正解」
                     boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                     fontSize: '13px' // 小さすぎず読みやすいサイズ
                 }}
@@ -413,12 +395,6 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     >
                         Google情報
                     </button>
-                    {/*onClick={() => {
-                            setIsModalLogsView(true)
-                            if (onFetchLogs) {
-                                onFetchLogs();
-                            }
-                        }}// 💡 履歴を開く*/}
                     <button
                         onClick={handleShowLogs}
 

@@ -1,5 +1,4 @@
 
-// app/components/VisitedLogList.tsx
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
@@ -90,7 +89,7 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',
-                        zIndex: 9999,
+                        zIndex: 100000,
                         backgroundColor: 'white',
                         padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                         borderRadius: '10px',
@@ -141,7 +140,6 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
                     <div>
                         <button
                             onClick={onClose}
-                            //onClick={closeGoogleView}
                             style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
                             閉じる
                         </button>

@@ -1,3 +1,6 @@
+//***** 2026.4.10時点で使用していない。*******
+//   後日機能拡張する場合に備えて残す。
+
 "use client";
 import { useMap } from "@vis.gl/react-google-maps";
 
