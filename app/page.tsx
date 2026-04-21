@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
@@ -21,7 +21,15 @@ export default function WanderingLog() {
     const [currentMarker, setCurrentMarker] = useState(false);
     const [isModalLogsView, setIsModalLogsView] = useState(false);
     const [currentZoom, setCurrentZoom] = useState(15);
+    const [moveDist, setMoveDist] = useState({ x: 0, y: 0 });
+    //const isDraggingRef = useRef(false);
 
+    const [dummy, setDummy] = useState(false);
+
+    // 💡 呼び出すたびに true ⇄ false が入れ替わるので、確実に再描画が走ります
+    const renderMe = () => {
+        setDummy(prev => !prev);
+    };
 
     const refreshHistory = useCallback(async () => {
         const res = await fetch("/api/wandering_where");//default:GET
@@ -108,8 +116,8 @@ export default function WanderingLog() {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const nowPos = {
-                         lat: position.coords.latitude,
-                         lng: position.coords.longitude,
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
                         //lat: 35.67133,
                         //lng: 139.76534,
                     };
@@ -164,7 +172,17 @@ export default function WanderingLog() {
             console.error("❌ 履歴取得失敗:", error);
         }
     };
-    console.log("openedModalLocations:::", openedModalLocations)
+
+    const resetMoveFlag = (id: string) => {
+        setOpenedModalLocations(prev => prev.map(m =>
+            m.id === id ? { ...m, hasMovedEnough: false } : m
+        ));
+    };
+
+
+    //console.log("openedModalLocations:::", openedModalLocations)
+    console.log("📍📍moveDist:", moveDist);
+
     return (
         <APIProvider
             apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
@@ -226,6 +244,8 @@ export default function WanderingLog() {
                     isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
                     // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
                     onFetchLogs={() => fetchLogsForModal(modal.id)}
+                    moveDist={moveDist}
+                    setMoveDist={setMoveDist}
 
                     onCloseModalLocation={() => {
                         setOpenedModalLocations(prev =>
@@ -265,7 +285,19 @@ export default function WanderingLog() {
                 <ModalGoogle
                     key={modal.id}
                     modal={modal}
-                    initialModalPosGoogle={modal.currentPos}
+                    //setOpenedModalLocations={setOpenedModalLocations}
+                    setOpenedModalLocations={setOpenedModalLocations}
+                    //initialModalPosGoogle={modal.currentPos}
+                    initialModalPosGoogle={
+                        modal.data.hasMovedEnough ?
+                            {
+                                x: modal.currentPos.x,
+                                y: modal.currentPos.y,
+                            }
+                            : null
+                        //: {x:0,y:0}
+                    }
+
                     openedModalGoogle={modal.data}
                     //isGoogleView={isGoogleView}
                     isGoogleView={modal.data.isShowingGoogle}
@@ -304,48 +336,66 @@ export default function WanderingLog() {
                     }}
                 />
             ))}
-            {openedModalLocations.map((modal) => (
-                <ModalLogs
-                    key={modal.id}
-                    modal={modal}
-                    openedModalLocations={openedModalLocations}
-                    initialModalPosGoogle={modal.currentPos}
-                    openedModalGoogle={modal.data}
-                    //isGoogleView={isGoogleView}
-                    isGoogleView={modal.data.isShowingGoogle}
+            {openedModalLocations.map((modal) => {
+                //const hasMovedEnough = moveDist.x > 100 || moveDist.y > 100;
+                console.log("***modal.hasMovedEnough:", modal.hasMovedEnough)
+                return (
+                    <ModalLogs
+                        key={modal.id}
+                        modal={modal}
+                        renderMe={renderMe}
+                        openedModalLocations={openedModalLocations}
+                        setOpenedModalLocations={setOpenedModalLocations}
+                        //isDraggingRef={isDraggingRef}
+                        initialModalPosLogs={
+                            modal.data.hasMovedEnough ?
+                                {
+                                    x: modal.currentPos.x + 40,
+                                    y: modal.currentPos.y + 40
+                                }
+                                : null
+                            //: null
+                            //: {x:0,y:0}
+                        }
+                        resetMoveFlag={() => resetMoveFlag(modal.id)}
+                        openedModalGoogle={modal.data} moda
+                        //isGoogleView={isGoogleView}
+                        isGoogleView={modal.data.isShowingGoogle}
 
-                    setIsGoogleView={setIsGoogleView}
+                        setIsGoogleView={setIsGoogleView}
 
-                    // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
-                    logs={modal.logs || []}
+                        // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
+                        logs={modal.logs || []}
 
-                    // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
-                    onFetchLogs={() => fetchLogsForModal(modal.id)}
-                    onClose={() => {
-                        console.log("On closing");
-                        // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
-                        setOpenedModalLocations((prev: any[]) => {
-                            return prev.map((m: any) =>
-                                m.id === modal.id
-                                    ? {
-                                        ...m,
-                                        data: {
-                                            ...m.data,
-                                            isShowingLogs: false
+                        // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
+                        onFetchLogs={() => fetchLogsForModal(modal.id)}
+
+                        onClose={() => {
+                            console.log("On closing");
+                            // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
+                            setOpenedModalLocations((prev: any[]) => {
+                                return prev.map((m: any) =>
+                                    m.id === modal.id
+                                        ? {
+                                            ...m,
+                                            data: {
+                                                ...m.data,
+                                                isShowingLogs: false
+                                            }
                                         }
-                                    }
-                                    : m
-                            );
-                        });
+                                        : m
+                                );
+                            });
 
-                    }}
-                    setopenedModalGoogle={(newData: any) => {
-                        setOpenedModalLocations(prev => prev.map(m =>
-                            m.id === modal.id ? { ...m, data: newData } : m
-                        ));
-                    }}
-                />
-            ))}
+                        }}
+                        setopenedModalGoogle={(newData: any) => {
+                            setOpenedModalLocations(prev => prev.map(m =>
+                                m.id === modal.id ? { ...m, data: newData } : m
+                            ));
+                        }}
+                    />
+                )
+            })}
         </APIProvider>
     );
 }

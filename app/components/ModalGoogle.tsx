@@ -3,27 +3,38 @@ import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 
-export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs }: any) {
+export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs }: any) {
     const map = useMap();
 
-    const [localPos, setLocalPos] = useState(initialModalPosGoogle);
+    //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
-
-    console.log("on ModalGoogle");
-
-    // 💡 親（ModalLocationの移動結果）から降りてくる最新座標を監視して、自分を同期させる
+    const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     useEffect(() => {
         if (initialModalPosGoogle) {
+            // 💡 親から「ずらした位置」が届いていればそれを使う
             setLocalPos(initialModalPosGoogle);
+            setOpenedModalLocations((prev: any[]) =>
+                prev.map((m: any) =>
+                    m.id === modal.id
+                        ? { ...m, data: { ...m.data, hasMovedEnough: false } }
+                        : m
+                )
+            );
+
+        } else {
+            // 💡 そうでなければ、modal自身の現在の位置を使う
+            setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
         }
-    }, [initialModalPosGoogle]); // 👈 親の currentPos が変わるたびに実行される
+    }, [initialModalPosGoogle]); // 👈 空の配列にすることで「最初の1回だけ」実行される
 
 
 
     const xRef = useRef<number | undefined>(undefined);
+    const yRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        if (!localPos) return;
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
         const startX = e.clientX - localPos.x;
         const startY = e.clientY - localPos.y;
@@ -34,12 +45,14 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
             let newY = moveEvent.clientY - startY;
 
             xRef.current = newX;
-            console.log("✈️ 代入成功 (Ref):", xRef.current);
+            yRef.current = newX;
+            //console.log("✈️ 代入成功 (Ref):", xRef.current);
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
             const bx = 260; // モーダル幅
-            const by = 320; // モーダル高
+            //const by = 320; // モーダル高
+            const by = 215; // モーダル高
 
             //gNewX=newX;
             setGNewX(newX);
@@ -50,24 +63,26 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
             if (newX < 0) {
                 newX = -10; // 左端固定
             } else if (newX + bx > ax) {
-                newX = ax - bx +10; // 右端固定
+                newX = ax - bx + 10; // 右端固定
             }
 
             if (newY < by) {
-                newY = by -115; // 上端固定 (transformの影響を考慮)
+                //newY = by -115; // 上端固定 (transformの影響を考慮)
+                newY = by - 10; // 上端固定 (transformの影響を考慮)
             } else if (newY > ay) {
-                newY = ay+10//下端固定
+                newY = ay + 10//下端固定
             }
 
             // 監査ログ（これで数値が出るようになります）
-            console.log("✈️ 移動中監査:", { newX, newY });
+            //console.log("✈️ 移動中監査:", { newX, newY });
 
             setLocalPos({ x: newX, y: newY });
         };
 
-        const handleMouseUp = () => {
+        const handleMouseUp = (upE: any) => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
+
         };
 
         document.addEventListener('mousemove', handleMouseMove);
@@ -84,8 +99,9 @@ export default function ModalGoogle({ modal, isGoogleView, setIsGoogleView, open
         setIsGoogleView(false); // 💡 ただのフラグオフ
     };
     //console.log("isGoogleView*", isGoogleView);
-    console.log("openedModalGoogle::", openedModalGoogle);
+    //console.log("openedModalGoogle::", openedModalGoogle);
     //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
+    if (!localPos) return;
     return (
         <>
             {modal.data.isShowingGoogle ? (

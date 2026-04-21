@@ -3,27 +3,94 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs }: any) {
+export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
     const map = useMap();
 
-    const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
+    const [isDragging, setIsDragging] = useState(false);
+    const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
+    console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
+    /* if ( initialModalPosLogs) {
+         modal.data.localPosLogs = initialModalPosLogs;
+    //     renderMe(); // 先ほど作った強制再描画関数
+     }*/
+    /*useEffect(() => {
+        if (isDragging) {
+            // 💡 ここは確実に isDragging が true になった後に実行される
+            console.log("親の配列でもドラッグ中になりました");
+            renderMe();
+        }
+    }, [isDragging]);*/
+    /*useEffect(() => {
+        if (initialModalPosLogs) {
+            // 💡 親から「ずらした位置」が届いていればそれを使う
+            setLocalPos(initialModalPosLogs);
+
+        } else {
+            // 💡 そうでなければ、modal自身の現在の位置を使う
+            setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
+        }
+    }, []); // 👈 空の配列にすることで「最初の1回だけ」実行される
+    //console.log("on ModalGoogle");
+
+    // 💡 親（ModalLocationの移動結果）から降りてくる最新座標を監視して、自分を同期させる
+    useEffect(() => {
+        if (initialModalPosLogs) {
+            setLocalPos(initialModalPosLogs);
+        }
+    }, [initialModalPosLogs]); // 👈 親の currentPos が変わるたびに実行される
+*/
+// 💡 2つの useEffect をこれ1つにまとめます
+useEffect(() => {
+    if (initialModalPosLogs) {
+        // ① 親のドラッグに追従して位置を更新
+        setLocalPos(initialModalPosLogs);
+
+        // ② 【重要】追従が完了したので、親のフラグを即座にリセット
+        // これをしないと、次に足跡をクリックした時にまた initialModalPosLogs が届いてしまいます
+        setOpenedModalLocations((prev: any[]) =>
+            prev.map((m: any) =>
+                m.id === modal.id 
+                    ? { ...m, data: { ...m.data, hasMovedEnough: false } } 
+                    : m
+            )
+        );
+    } else if (!localPos) {
+        // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
+        setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
+    }
+}, [initialModalPosLogs]); // 💡 initialModalPosLogs の変化（親の大きな移動）を監視
 
     useEffect(() => {
         onFetchLogs();
     }, []);
 
-    // 💡 親（ModalLocationの移動結果）から降りてくる最新座標を監視して、自分を同期させる
-    useEffect(() => {
-        if (initialModalPosGoogle) {
-            setLocalPos(initialModalPosGoogle);
-        }
-    }, [initialModalPosGoogle]); // 👈 親の currentPos が変わるたびに実行される
-
     const xRef = useRef<number | undefined>(undefined);
+    const yRef = useRef<number | undefined>(undefined);
+
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        //setIsDragging(true);
+        if (!localPos) return;
+        console.log("🖱️ 子の handleDown が呼ばれた！");
+        e.stopPropagation();
+        //isDraggingRef.current = true;
+        /*setOpenedModalLocations((prev: any[]) => {
+            return prev.map((m: any) =>
+                m.id === modal.id  // 👈 modalId（または id）で自分を探す
+                    ? {
+                        ...m,
+                        data: {
+                            ...m.data,
+                            //hasMovedEnough: currentDiffX > 50 || currentDiffY > 50,
+                            isDragging: true,
+                        }
+                    }
+                    : m
+            );
+        });*/
+        //if (!localPos) return;
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
         const startX = e.clientX - localPos.x;
         const startY = e.clientY - localPos.y;
@@ -34,12 +101,13 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
             let newY = moveEvent.clientY - startY;
 
             xRef.current = newX;
+            yRef.current = newY;
             console.log("✈️ 代入成功 (Ref):", xRef.current);
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
             const bx = 260; // モーダル幅
-            const by = 320; // モーダル高
+            const by = 170;// モーダル高
 
             //gNewX=newX;
             setGNewX(newX);
@@ -50,34 +118,40 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
             if (newX < 0) {
                 newX = -10; // 左端固定
             } else if (newX + bx > ax) {
-                newX = ax - bx +10; // 右端固定
+                newX = ax - bx + 10; // 右端固定
             }
 
             if (newY < by) {
-                newY = by -170; // 上端固定 (transformの影響を考慮)
+                newY = by - 10; // 上端固定 (transformの影響を考慮)
             } else if (newY > ay) {
-                newY = ay+10; // 下端固定
+                newY = ay + 10; // 下端固定
             }
 
             // 監査ログ（これで数値が出るようになります）
             console.log("✈️ 移動中監査:", { newX, newY });
+            //modal.data.localPosLogs = { x: newX, y: newY };
 
             setLocalPos({ x: newX, y: newY });
         };
 
         const handleMouseUp = () => {
+            //modal.data.hasMovedEnough=false;//<<=====追従後の子モーダルを開放
+            //setIsDragging(false);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
+
     };
 
     /*if (!logs || logs.length === 0) {
         return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;
     }*/
     console.log("isShowingLogs:", modal.data.isShowingLogs)
+    //if (!localPos) return null;
+    if (!localPos) return;
     return (
         <>
             {modal.data.isShowingLogs ? (
@@ -86,6 +160,8 @@ export default function ModalLogs({ modal, isGoogleView, setIsGoogleView, opened
                         width: '15%',
                         minWidth: '180px',
                         position: 'absolute',
+                        //top: `${localPos.y - 15}px`, // 少し余裕を持たせる
+                        //left: `${localPos.x + 15}px`,
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',

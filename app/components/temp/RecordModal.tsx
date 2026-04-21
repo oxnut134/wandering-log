@@ -2,6 +2,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from '../VisitedLogList';
+declare global {
+  interface Window { google: any; }
+}
+declare const google: any;
 
 export default function RecordModal({ tempOpenedModal, setTempOpenedModal, onClose, onSave, isExisting, initialModalPos, onFetchLogs, logs }: any) {
     const map = useMap();
@@ -39,7 +43,7 @@ export default function RecordModal({ tempOpenedModal, setTempOpenedModal, onClo
                 lng: Number(tempOpenedModal.longitude)
             }, rankBy: google.maps.places.RankBy.DISTANCE, type: 'establishment'
         },
-            (results, status) => {
+            (results:any, status:any) => {
                 if (status === "OK" && results) {
                     const p = results[0];
                     setTempOpenedModal({ ...tempOpenedModal, googleData: { place_id: p.place_id, name: p.name, category: p.types?.join(','), address: p.vicinity } });

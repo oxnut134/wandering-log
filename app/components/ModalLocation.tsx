@@ -4,13 +4,13 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setopenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate }: any) {
+export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setopenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
     const map = useMap();
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
+    const [deffPos, setDiffpos] = useState({ x: null, y: null });
     const handleSave = async () => {
         setOnSaving(true)
         const res = await fetch("/api/wandering_where", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(openedModalGoogle) });
@@ -87,6 +87,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                 }
             });
     };
+    //****************************************************
     const handleShowLogs = () => {
         setOpenedModalLocations((prev: any[]) => {
             return prev.map((m: any) =>
@@ -95,7 +96,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         ...m,
                         data: {
                             ...m.data,
-                            isShowingLogs: true // 👈 ここでフラグをONにする
+                            isShowingLogs: true, // 👈 ここでフラグをONにする
+                            hasMovedEnough: false,
+                            localPosLogs: { x: localPos.x + 80, y: localPos.y + 80 }
                         }
                     }
                     : m
@@ -111,6 +114,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
+            console.log("🖱️ 親の handleDown が呼ばれた！"); 
+        e.stopPropagation();
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
@@ -119,6 +124,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
         const startX = clientX - localPos.x;
         const startY = clientY - localPos.y;
+
+        console.log("*****clientX,Y:", clientX, clientY, "srartX,Y:", startX, startY, "localPos.x,.y", localPos.x, localPos.y);
 
         const handleMove = (moveEvent: any) => {
             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
@@ -138,7 +145,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             const bx = isMobile ? 210 : 250;// モーダル幅
             //const bx = 260; // モーダル幅
             const by = 320; // モーダル高
-            const rightEdgePadding = isMobile ? 40 : 10; 
+            const rightEdgePadding = isMobile ? 40 : 10;
 
             if (isMobile) {
                 // スマホ用のゆるいガード設定
@@ -184,28 +191,57 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
 
         };
 
-        const handleUp = () => {
+        const handleUp = (upE: any) => {
             document.removeEventListener('mousemove', handleMove);
             document.removeEventListener('mouseup', handleUp);
             document.removeEventListener('touchmove', handleMove);
             document.removeEventListener('touchend', handleUp);
 
+   if ((document as any).releaseCapture) {
+    (document as any).releaseCapture();
+}
             if (onPosUpdate && xRef.current !== undefined) {
                 onPosUpdate({ x: xRef.current + 40, y: yRef.current! + 40 });
             }
 
             const finalPos = { x: xRef.current, y: yRef.current };
 
-            console.log("📍 ドラッグ終了！親へ送る最新座標:", finalPos);
 
-            if (onPosUpdate && finalPos.x !== undefined) {
-                onPosUpdate(finalPos);
-            }
+            //---------------- 子モーダル追従ロジック　------------------------------
+            const upX = upE.changedTouches ? upE.changedTouches[0].clientX : upE.clientX;
+            const upY = upE.changedTouches ? upE.changedTouches[0].clientY : upE.clientY;
+            const currentDiffX = upX - clientX;
+            const currentDiffY = upY - clientY;
+            const dist = Math.sqrt(currentDiffX ** 2 + currentDiffY ** 2)
+            console.log("🔥 setMoveDistの型:", typeof setMoveDist);
+            console.log("📦 setMoveDistの実体:", setMoveDist);
+            setMoveDist({
+                x: Math.abs(upX - clientX),
+                y: Math.abs(upY - clientY)
+            });
+            setOpenedModalLocations((prev: any[]) => {
+                return prev.map((m: any) =>
+                    m.id === modal.id  // 👈 modalId（または id）で自分を探す
+                        ? {
+                            ...m,
+                            data: {
+                                ...m.data,
+                                //hasMovedEnough: currentDiffX > 50 || currentDiffY > 50,
+                                hasMovedEnough: dist > 100,//移動距離>100以上の場合追従
+                            }
+                        }
+                        : m
+                );
+            });
 
-            // 💡 1. 最終位置を親の基本座標（ModalLocation用）に一回だけ報告する
-            if (onPosUpdate && xRef.current !== undefined && yRef.current !== undefined) {
-                onPosUpdate({ x: xRef.current + 40, y: yRef.current + 40 });
-            }
+            // if (onPosUpdate && finalPos.x !== undefined) {
+            //     onPosUpdate(finalPos);
+            // }
+
+            // // 💡 1. 最終位置を親の基本座標（ModalLocation用）に一回だけ報告する
+            // if (onPosUpdate && xRef.current !== undefined && yRef.current !== undefined) {
+            //     onPosUpdate({ x: xRef.current + 40, y: yRef.current + 40 });
+            // }
         };
         document.addEventListener('mousemove', handleMove);
         document.addEventListener('mouseup', handleUp);
