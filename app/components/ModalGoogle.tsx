@@ -9,6 +9,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
+
     useEffect(() => {
         if (initialModalPosGoogle) {
             // 💡 親から「ずらした位置」が届いていればそれを使う
@@ -39,7 +40,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
         const startX = e.clientX - localPos.x;
         const startY = e.clientY - localPos.y;
 
-        const handleMouseMove = (moveEvent: MouseEvent) => {
+        const handleMouseMove = (moveEvent: any) => {
             // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
             let newX = moveEvent.clientX - startX;
             let newY = moveEvent.clientY - startY;
@@ -82,11 +83,16 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
         const handleMouseUp = (upE: any) => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchmove', handleMouseMove);
+            document.removeEventListener('touchend', handleMouseUp);
+
 
         };
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('touchmove', handleMouseMove, { passive: false }); // 💡 passive: false が重要
+        document.addEventListener('touchend', handleMouseUp);
     };
 
 
