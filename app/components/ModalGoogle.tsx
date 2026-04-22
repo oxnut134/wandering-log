@@ -34,16 +34,23 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     const yRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: any) => {
         if (!localPos) return;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
         // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
-        const startX = e.clientX - localPos.x;
-        const startY = e.clientY - localPos.y;
+        const startX = clientX - localPos.x;
+        const startY = clientY - localPos.y;
 
         const handleMouseMove = (moveEvent: any) => {
+            const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+            const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+
             // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
-            let newX = moveEvent.clientX - startX;
-            let newY = moveEvent.clientY - startY;
+            let newX = moveX - startX;
+            let newY = moveY - startY;
 
             xRef.current = newX;
             yRef.current = newX;
@@ -131,7 +138,9 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
                     >
                         <div
                             onMouseDown={handleMouseDown}
+                            onTouchStart={handleMouseDown}
                             style={{
+                                touchAction: 'none',
                                 background: '#f3f4f6', padding: '8px 12px', cursor: 'move',
                                 borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px',
                                 borderRadius: '6px',

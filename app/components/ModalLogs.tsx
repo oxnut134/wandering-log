@@ -10,37 +10,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
     const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
-    /* if ( initialModalPosLogs) {
-         modal.data.localPosLogs = initialModalPosLogs;
-    //     renderMe(); // 先ほど作った強制再描画関数
-     }*/
-    /*useEffect(() => {
-        if (isDragging) {
-            // 💡 ここは確実に isDragging が true になった後に実行される
-            console.log("親の配列でもドラッグ中になりました");
-            renderMe();
-        }
-    }, [isDragging]);*/
-    /*useEffect(() => {
-        if (initialModalPosLogs) {
-            // 💡 親から「ずらした位置」が届いていればそれを使う
-            setLocalPos(initialModalPosLogs);
-
-        } else {
-            // 💡 そうでなければ、modal自身の現在の位置を使う
-            setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
-        }
-    }, []); // 👈 空の配列にすることで「最初の1回だけ」実行される
-    //console.log("on ModalGoogle");
-
-    // 💡 親（ModalLocationの移動結果）から降りてくる最新座標を監視して、自分を同期させる
-    useEffect(() => {
-        if (initialModalPosLogs) {
-            setLocalPos(initialModalPosLogs);
-        }
-    }, [initialModalPosLogs]); // 👈 親の currentPos が変わるたびに実行される
-*/
-    // 💡 2つの useEffect をこれ1つにまとめます
+ 
     useEffect(() => {
         if (initialModalPosLogs) {
             // ① 親のドラッグに追従して位置を更新
