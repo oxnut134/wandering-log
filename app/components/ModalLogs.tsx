@@ -70,30 +70,17 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
     let gAx: any, gBx: any;
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: any) => {
         //setIsDragging(true);
         if (!localPos) return;
         console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
-        //isDraggingRef.current = true;
-        /*setOpenedModalLocations((prev: any[]) => {
-            return prev.map((m: any) =>
-                m.id === modal.id  // 👈 modalId（または id）で自分を探す
-                    ? {
-                        ...m,
-                        data: {
-                            ...m.data,
-                            //hasMovedEnough: currentDiffX > 50 || currentDiffY > 50,
-                            isDragging: true,
-                        }
-                    }
-                    : m
-            );
-        });*/
-        //if (!localPos) return;
-        // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
-        const startX = e.clientX - localPos.x;
-        const startY = e.clientY - localPos.y;
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const startX = clientX - localPos.x;
+        const startY = clientY - localPos.y;
 
         const handleMouseMove = (moveEvent: any) => {
             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
