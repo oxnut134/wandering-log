@@ -131,10 +131,15 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
             //setIsDragging(false);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchmove', handleMouseMove);
+            document.removeEventListener('touchend', handleMouseUp);
+
         };
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('touchmove', handleMouseMove, { passive: false }); // 💡 passive: false が重要
+        document.addEventListener('touchend', handleMouseUp);
 
     };
 
