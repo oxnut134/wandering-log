@@ -40,26 +40,26 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         }
     }, [initialModalPosLogs]); // 👈 親の currentPos が変わるたびに実行される
 */
-// 💡 2つの useEffect をこれ1つにまとめます
-useEffect(() => {
-    if (initialModalPosLogs) {
-        // ① 親のドラッグに追従して位置を更新
-        setLocalPos(initialModalPosLogs);
+    // 💡 2つの useEffect をこれ1つにまとめます
+    useEffect(() => {
+        if (initialModalPosLogs) {
+            // ① 親のドラッグに追従して位置を更新
+            setLocalPos(initialModalPosLogs);
 
-        // ② 【重要】追従が完了したので、親のフラグを即座にリセット
-        // これをしないと、次に足跡をクリックした時にまた initialModalPosLogs が届いてしまいます
-        setOpenedModalLocations((prev: any[]) =>
-            prev.map((m: any) =>
-                m.id === modal.id 
-                    ? { ...m, data: { ...m.data, hasMovedEnough: false } } 
-                    : m
-            )
-        );
-    } else if (!localPos) {
-        // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
-        setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
-    }
-}, [initialModalPosLogs]); // 💡 initialModalPosLogs の変化（親の大きな移動）を監視
+            // ② 【重要】追従が完了したので、親のフラグを即座にリセット
+            // これをしないと、次に足跡をクリックした時にまた initialModalPosLogs が届いてしまいます
+            setOpenedModalLocations((prev: any[]) =>
+                prev.map((m: any) =>
+                    m.id === modal.id
+                        ? { ...m, data: { ...m.data, hasMovedEnough: false } }
+                        : m
+                )
+            );
+        } else if (!localPos) {
+            // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
+            setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
+        }
+    }, [initialModalPosLogs]); // 💡 initialModalPosLogs の変化（親の大きな移動）を監視
 
     useEffect(() => {
         onFetchLogs();
@@ -95,10 +95,15 @@ useEffect(() => {
         const startX = e.clientX - localPos.x;
         const startY = e.clientY - localPos.y;
 
-        const handleMouseMove = (moveEvent: MouseEvent) => {
+        const handleMouseMove = (moveEvent: any) => {
+            const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+            const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+
             // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
-            let newX = moveEvent.clientX - startX;
-            let newY = moveEvent.clientY - startY;
+            //let newX = moveEvent.clientX - startX;
+            //let newY = moveEvent.clientY - startY;
+            let newX = moveX - startX;
+            let newY = moveY - startY;
 
             xRef.current = newX;
             yRef.current = newY;
