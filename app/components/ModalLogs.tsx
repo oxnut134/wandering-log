@@ -75,7 +75,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         if (!localPos) return;
         console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
-        
+
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -168,7 +168,9 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
                 >
                     <div
                         onMouseDown={handleMouseDown}
+                        onTouchStart={handleMouseDown}
                         style={{
+                            touchAction: 'none',
                             background: '#f3f4f6', padding: '8px 12px', cursor: 'move',
                             borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px',
                             borderRadius: '6px',
