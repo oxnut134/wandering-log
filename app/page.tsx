@@ -5,8 +5,10 @@ import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
 import ModalGoogle from "./components/ModalGoogle";
 import ModalLogs from "./components/ModalLogs";
-
+//import { useMap } from "@vis.gl/react-google-maps";
+//declare const google: any;
 export default function WanderingLog() {
+    //const map = useMap();
 
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
     const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
@@ -55,6 +57,81 @@ export default function WanderingLog() {
         });
         refreshHistory();
     }, [refreshHistory]);
+    /*const handleRedMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
+        // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
+        //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
+        //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
+        if (!map || !(window as any).google) return;
+
+        let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
+        let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
+
+        // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
+        if (x === undefined || x === null) {
+            x = window.innerWidth / 2 - 130; // モーダル幅260の半分
+            y = window.innerHeight / 2 - 160; // モーダル高さの半分
+        }
+
+        // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
+        const ax = window.innerWidth;
+        const ay = window.innerHeight;
+        const bx = 260; // モーダルの幅
+        const by = 320; // モーダルの高さ（おおよそ）
+
+        if (x < 0) {
+            x = 0; // 左端固定
+        } else if (x + bx > ax) {
+            x = ax - bx - 30; // 右端固定
+        }
+
+        if (y < by) {
+            y = by + 60; // 上端固定 (transformの影響を考慮)
+        } else if (y > ay) {
+            y = ay; // 下端固定
+        }
+
+        // 💡 4. 安全が確認された座標を State に保存
+        setModalPos({ x, y });
+
+        const newModal = {
+            id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+            pos: { x: x, y: y },
+            currentPos: { x: x + 40, y: y + 40 },
+            data: place || { comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+            //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+        };
+
+        // 💡 すでに同じIDのモーダルが開いていなければ追加
+        setOpenedModalLocations(prev => {
+            if (prev.find(m => m.id === newModal.id)) return prev;
+            return [...prev, newModal];
+        });
+        const service = new google.maps.places.PlacesService(map as any);
+
+        service.nearbySearch({
+            location: {
+                lat: typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat,
+                lng: typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng
+                //lat: Number(latLng.lat), // lat() 関数か数値か確認
+                //lng: Number(latLng.lng)
+            },
+            rankBy: google.maps.places.RankBy.DISTANCE,
+            type: 'establishment'
+        }, (results: any, status: any) => {
+            if (status === "OK" && results && results[0]) {
+                const p = results[0];
+
+                // 💡 ここで「名前を返す」代わりに「Stateに直接書き込む」
+                // これにより、モーダルが自動的に「検索結果の名前」に書き換わります
+                setOpenedModalLocations((prev: any[]) =>
+                    prev.map((m: any) =>
+                        // クリックした場所と一致するモーダルを探して更新
+                        (m.id === place?.id) ? { ...m, googleName: p.name } : m
+                    )
+                );
+            }
+        });
+    };*/
 
     const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
         // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
@@ -95,7 +172,10 @@ export default function WanderingLog() {
             id: place?.id || `new-${Date.now()}`, // 複数識別用のID
             pos: { x: x, y: y },
             currentPos: { x: x + 40, y: y + 40 },
-            data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+            //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+            data: place
+                ? { ...place, isNew: false }
+                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: true },
         };
 
         // 💡 すでに同じIDのモーダルが開いていなければ追加
@@ -186,19 +266,22 @@ export default function WanderingLog() {
     return (
         <APIProvider
             apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
-            libraries={['places']}
-            language={'en'}
+            libraries={['places', 'geometry']}
+            language={'jp'}
             region={'jp'}
         >
             <MapContainer
                 currentPosOfCamera={currentPosOfCamera}
                 setCurrentPosOfCamera={setCurrentPosOfCamera}
                 visitedLocations={visitedLocations}
+                //onRedMarkerClick={handleRedMarkerClick}
                 onMarkerClick={handleMarkerClick}
                 homeTrigger={homeTrigger}
                 openedModalLocations={openedModalLocations}
+                setOpenedModalLocations={setOpenedModalLocations}
                 currentZoom={currentZoom}
                 setCurrentZoom={setCurrentZoom}
+                setModalPos={setModalPos}
             />
             <button
                 onClick={handleCurrentLocation}

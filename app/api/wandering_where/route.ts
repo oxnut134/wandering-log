@@ -33,8 +33,7 @@ export async function POST(request: Request) {
     const result = await db.transaction(async (tx) => {
       let locId = id;
       let pId = null;
-      if (locId) {
-        // ③ 既存の上書き保存
+      if (locId) {              // ③ 既存の上書き保存
         await tx.update(visitedLocations)
           .set({
             name,
@@ -43,7 +42,7 @@ export async function POST(request: Request) {
           })
           .where(eq(visitedLocations.id, id)); // 💡 ここ！特定の ID 
 
-        if (!googleData && locId) {
+        if (!googleData && locId) { 
           // 1. 直近の訪問履歴（visited_logs）をサブクエリ的にフェッチ
           const lastLog = await tx.select()
             .from(visitedLogs)

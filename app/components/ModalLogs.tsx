@@ -10,7 +10,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
     const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
- 
+
     useEffect(() => {
         if (initialModalPosLogs) {
             // ① 親のドラッグに追従して位置を更新
@@ -45,6 +45,14 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         if (!localPos) return;
         console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
+
+        setOpenedModalLocations((prev: any[]) =>
+            prev.map((m: any) =>
+                m.id === modal.id
+                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
+                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
+            )
+        );
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -132,7 +140,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',
-                        zIndex: 100000,
+                        zIndex: modal.zIndex || 100,
                         backgroundColor: 'white',
                         padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                         borderRadius: '10px',
@@ -155,7 +163,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
                         }}
                     >
-                        ::: {isExisting ? "既存訪問先" : "新規訪問先"} (ドラッグ可)
+                        ::: {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ可)
                     </div>
 
                     <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>

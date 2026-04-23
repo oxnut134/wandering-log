@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
+declare const google: any;
 
 export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs }: any) {
     const map = useMap();
@@ -9,6 +10,47 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
+    const service = new google.maps.places.PlacesService(map);
+
+
+    useEffect(() => {
+        service.getDetails({
+            placeId: modal.data.google_place_id,
+            // 💡 取得したいフィールドを正確に指定（不要な項目を削ると節約になります）
+            fields: ['name', 'types', 'formatted_address', 'url', 'website']
+        }, (place: any, status: any) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                console.log("カテゴリー:", place.types);             // Array: ['establishment', 'point_of_interest', ...]
+                console.log("住所:", place.formatted_address);      // String: "日本、〒169-0074 東京都新宿区..."
+                console.log("GoogleマップURL:", place.url);         // String: "https://maps.google.com/..."
+                console.log("公式ウェブサイト:", place.website);   // String: (あれば) "https://example.com"
+                setOpenedModalLocations((prev: any[]) => {
+                    return prev.map((m: any) =>
+                        m.id === modal.id  // 👈 modalId（または id）で自分を探す
+                            ? {
+                                ...m,
+                                data: {
+                                    ...m.data,
+                                    googleDetailData: {
+                                        type: place.types,
+                                        address: place.formatted_address,
+                                        url: place.url,
+                                        website: place.website,
+                                    }, // 検索結果を格納
+                                    //isShowingGoogle: true // 👈 ここでフラグをONにする
+                                }
+                            }
+                            : m
+                    );
+                });
+
+                // 💡 ここでStateを更新してモーダルに表示
+
+            } else {
+                console.error("詳細情報の取得に失敗しました:", status);
+            }
+        });
+    }, [])
 
     useEffect(() => {
         if (initialModalPosGoogle) {
@@ -36,6 +78,14 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
 
     const handleMouseDown = (e: any) => {
         if (!localPos) return;
+
+        setOpenedModalLocations((prev: any[]) =>
+            prev.map((m: any) =>
+                m.id === modal.id
+                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
+                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
+            )
+        );
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -127,7 +177,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
                             top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
-                            zIndex: 100000,
+                            zIndex: modal.zIndex || 100,
                             backgroundColor: 'white',
                             padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                             borderRadius: '10px',
@@ -142,7 +192,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
                             style={{
                                 touchAction: 'none',
                                 background: '#f3f4f6', padding: '8px 12px', cursor: 'move',
-                                borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px',
+                                borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '10px',
                                 borderRadius: '6px',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -150,32 +200,88 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
 
                             }}
                         >
-                            ::: {isExisting ? "既存訪問先" : "新規訪問先"} (ドラッグ可)
+                            ::: {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ可)
+
                         </div>
 
                         {/* ...以下、コンテンツ部分（localPos.x/y を参照するように）... */}
-                        <h4 style={{
+                        {/*<h4 style={{
                             margin: '3px 0 3px 0', fontSize: '10px', fontWeight: 'bold',
                         }}>
                             {isExisting ? "③ 既存訪問先" : "② 初めての訪問先"}
-                        </h4>
+                        </h4>*/}
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{
-                                fontSize: '10px',
-                                margin: '5x,0,0px,0',
+                            {/*<div style={{
+                                fontSize: '12px',
+                                margin: '2x,0,0px,0',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'flex-start'
 
-                            }}>Google名: <br /></div>
+                            }}>Google名: <br /></div>*/}
                             <div style={{
-                                fontSize: '14px',
-                                marginBottom: '5px'
+                                margin: '2x,0,0px,0',
+                                fontSize: '12px',
+                                marginBottom: '2px'
                             }}>
                                 <strong>{openedModalGoogle?.googleData?.name}</strong>
                             </div>
+
+                            {/*<div style={{
+                                fontSize: '12px',
+                                margin: '2x,0,0px,0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-start'
+
+                            }}>カテゴリ: <br /></div>
+                            <div style={{
+                                fontSize: '12px',
+                                marginBottom: '2px'
+                            }}>
+                                <strong>{modal.data.googleDetailData.type.join(', ')}</strong>
+
+                            </div>*/}
+
+                            {/*<div style={{
+                                fontSize: '12px',
+                                margin: '2x,0,0px,0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-start'
+
+                            }}>住所: <br /></div>*/}
+                            <div style={{
+                                fontSize: '12px',
+                                marginBottom: '2px'
+                            }}>
+                                <strong>{modal?.data?.googleDetailData?.address}</strong>
+
+                            </div>
+
+
                             <button
-                                style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold' }}
+                                style={{ width: '100%', height: '4vh', margin: '0 0 2px 0', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                onClick={() => {
+                                    // 💡 ここに飛ばしたいURLを指定します
+                                    if (modal?.data?.googleDetailData?.url) {
+                                        window.open(modal.data.googleDetailData.url, '_blank', 'noreferrer');
+                                    }
+                                }} >
+                                詳細情報
+                            </button>
+                            <button
+                                style={{ width: '100%', height: '4vh', margin: '0 0 2px 0', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                onClick={() => {
+                                    // 💡 ここに飛ばしたいURLを指定します
+                                    if (modal?.data?.googleDetailData?.url) {
+                                        window.open(modal.data.googleDetailData.website, '_blank', 'noreferrer');
+                                    }
+                                }} >
+                                ウェブサイト
+                            </button>
+                             <button
+                                style={{ width: '100%',  height: '4vh', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 onClick={() => { setopenedModalGoogle({ ...openedModalGoogle, name: openedModalGoogle.googleData.name }); setIsGoogleView(false); }}
                             >
                                 この名称を反映

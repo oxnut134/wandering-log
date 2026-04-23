@@ -19,7 +19,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             if (onSaveSuccess) onSaveSuccess();
 
             // 💡 2. 保存が終わったので入力用モーダルを閉じる
-            onCloseModalLocation();
+            //onCloseModalLocation();
         }
         setOnSaving(false)
         if (res.ok) return;
@@ -114,11 +114,21 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
-            console.log("🖱️ 親の handleDown が呼ばれた！"); 
+        console.log("🖱️ 親の handleDown が呼ばれた！");
         e.stopPropagation();
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
+
+       setOpenedModalLocations((prev: any[]) =>
+            prev.map((m: any) =>
+                m.id === modal.id
+                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
+                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
+            )
+        );
+
+
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -197,9 +207,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             document.removeEventListener('touchmove', handleMove);
             document.removeEventListener('touchend', handleUp);
 
-   if ((document as any).releaseCapture) {
-    (document as any).releaseCapture();
-}
+            if ((document as any).releaseCapture) {
+                (document as any).releaseCapture();
+            }
             if (onPosUpdate && xRef.current !== undefined) {
                 onPosUpdate({ x: xRef.current + 40, y: yRef.current! + 40 });
             }
@@ -294,7 +304,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    zIndex: 99999,
+                    zIndex: modal.zIndex || 100,
                     backgroundColor: 'white',
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
@@ -314,7 +324,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         justifyContent: 'center'
                     }}
                 >
-                    ::: {isExisting ? "既存訪問先" : "新規訪問先"} (ドラッグ可)
+                    ::: {modal.data.isNew ? "新規訪問先" :"既存訪問先" } (ドラッグ可)
                 </div>
 
                 {/* ...以下、コンテンツ部分（localPos.x/y を参照するように）... */}
