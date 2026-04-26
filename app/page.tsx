@@ -80,8 +80,8 @@ export default function WanderingLog() {
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
-            //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
-            const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
+            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
+            //const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
             //console.log("coords:", coords);
             setCurrentPosOfCamera(coords);
             setCurrentPosOfMe(coords);
