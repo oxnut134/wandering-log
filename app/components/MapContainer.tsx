@@ -28,7 +28,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                 map.setZoom(currentZoom);
             }
 
-            console.log("🚀 自作API発動: ズームを維持して移動完了");
+            //console.log("🚀 自作API発動: ズームを維持して移動完了");
         }
     }, [homeTrigger, map]); // 💡 ボタンが押された時（homeTrigger変化時）だけ動く
 
@@ -192,7 +192,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                                 <Pin
                                     background={'#FBBC04'}
                                     glyphColor={'#000000'}
-                                    glyphText={'👣'}
+                                    glyph={'👣'}
                                 />
                             )
                             }

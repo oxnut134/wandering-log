@@ -4,30 +4,41 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setopenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
+export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
     const map = useMap();
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const [deffPos, setDiffpos] = useState({ x: null, y: null });
-    const handleSave = async () => {
-        setOnSaving(true)
-        const res = await fetch("/api/wandering_where", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(openedModalGoogle) });
-        if (res.ok) {
-            // 💡 1. 親(page.tsx)から渡された refreshHistory を実行して地図にピンを出す
-            if (onSaveSuccess) onSaveSuccess();
+    const [isConfirming, setIsConfirming] = useState(false);
 
-            // 💡 2. 保存が終わったので入力用モーダルを閉じる
-            //onCloseModalLocation();
+    const handleSave = async () => {
+
+        setOnSaving(true)
+        const payload = {
+            id: openedModalGoogle.id, // 既存ならID、新規ならnull
+            latitude: openedModalGoogle.latitude,
+            longitude: openedModalGoogle.longitude,
+            name: openedModalGoogle.name,
+            comment: openedModalGoogle.comment
+        };
+
+        const res = await fetch("/api/save_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            if (onSaveSuccess) onSaveSuccess();
         }
         setOnSaving(false)
         if (res.ok) return;
     }
 
     const handleDelete = async () => {
-        if (!confirm("削除しますか？")) return;
-        const res = await fetch("/api/wandering_where", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
+        //if (!confirm("削除しますか？")) return;
+        const res = await fetch("/api/delete_this_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
         if (res.ok) { onSaveSuccess(); onCloseModalLocation(); }
     };
 
@@ -40,52 +51,69 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const handleGoogleSearch = () => {
         if (!map || !(window as any).google) return;
         const service = new google.maps.places.PlacesService(map as any);
+
         service.nearbySearch({
             location: {
                 lat: Number(openedModalGoogle.latitude),
                 lng: Number(openedModalGoogle.longitude)
-            }, rankBy: google.maps.places.RankBy.DISTANCE, type: 'establishment'
-        },
-            (results: any, status: any) => {
-                //console.log("onsetting true to IsGoogleView");
-                //console.log("=====openedModalGoogle:",openedModalGoogle);
-                if (status === "OK" && results) {
-                    const p = results[0];
-                    setopenedModalGoogle({ ...openedModalGoogle, googleData: { place_id: p.place_id, name: p.name, category: p.types?.join(','), address: p.vicinity } });
-                    setIsGoogleView(true);
-                }
-                if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
-                    const p = results[0];
+            },
+            rankBy: google.maps.places.RankBy.DISTANCE,
+            type: 'establishment'
+        }, (results: any, status: any) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
+                const p = results[0];
 
-                    // 💡 自分のデータ（openedModalGoogle）の中にあるフラグだけを true にする
-                    setopenedModalGoogle({
-                        ...openedModalGoogle,
-                        googleData: {
-                            place_id: p.place_id,
-                            name: p.name,
-                            category: p.types?.join(','),
-                            address: p.vicinity
-                        },
-                        isShowingGoogle: true // 👈 全体のフラグではなく、このモーダル固有のフラグを立てる
-                    });
-                    setOpenedModalLocations((prev: any[]) => {
-                        return prev.map((m: any) =>
-                            m.id === modal.id  // 👈 modalId（または id）で自分を探す
-                                ? {
-                                    ...m,
-                                    data: {
-                                        ...m.data,
-                                        googleData: { name: p.name, place_id: p.place_id }, // 検索結果を格納
-                                        isShowingGoogle: true // 👈 ここでフラグをONにする
-                                    }
-                                }
-                                : m
+                // 💡 ここで getDetails を呼び出して詳細情報を取得する
+                service.getDetails({
+                    placeId: p.place_id,
+                    fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website'] // 💡 欲しい項目を指定
+                }, (place: any, detailStatus: any) => {
+                    if (detailStatus === google.maps.places.PlacesServiceStatus.OK && place) {
+                        const include = p.types.includes("establishment") || p.types.includes("point_of_interest");
+                        const ignore = p.types.includes("political") || p.types.includes("locality");
+                        //💡 クリックした位置と、見つかった場所の位置
+                        const clickPos = new google.maps.LatLng(
+                            Number(openedModalGoogle.latitude),
+                            Number(openedModalGoogle.longitude)
                         );
-                    });
-                } else {
-                    console.log("🚫 検索結果が見つかりませんでした");
-                }
-            });
+                        const placePos = p.geometry.location;
+
+                        // 💡 距離（メートル）を計算
+                        const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
+                        if (!include || ignore || distance > 10) {
+                            place.name = "取得できませんでした。";
+                            place.place_id = "";
+                            place.types = [];
+                            place.formatted_address = ""; 
+                            place.url = "";      
+                            place.website = ""; 
+                        }
+
+                        setOpenedModalLocations((prev: any[]) => {
+                            return prev.map((m: any) =>
+                                m.id === modal.id
+                                    ? {
+                                        ...m,
+                                        googleData: {
+                                            name: place.name,
+                                            place_id: place.place_id,
+                                            category: Array.isArray(place.types) ? place.types.join(',') : "", 
+                                            address: place.formatted_address, // vicinityより詳細な住所
+                                            url: place.url,      // 👈 これで取得可能
+                                            website: place.website, // 👈 これで取得可能
+                                            isShowingGoogle: true
+                                        }
+                                    }
+                                    : m
+                            );
+                        });
+                        setIsGoogleView(true);
+                    }
+                });
+            }
+        });
+
+
     };
     //****************************************************
     const handleShowLogs = () => {
@@ -114,13 +142,13 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
-        console.log("🖱️ 親の handleDown が呼ばれた！");
+        //console.log("🖱️ 親の handleDown が呼ばれた！");
         e.stopPropagation();
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
 
-       setOpenedModalLocations((prev: any[]) =>
+        setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
                     ? { ...m, zIndex: 1001 } // 👈 常に一番上
@@ -135,7 +163,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         const startX = clientX - localPos.x;
         const startY = clientY - localPos.y;
 
-        console.log("*****clientX,Y:", clientX, clientY, "srartX,Y:", startX, startY, "localPos.x,.y", localPos.x, localPos.y);
+        //console.log("*****clientX,Y:", clientX, clientY, "srartX,Y:", startX, startY, "localPos.x,.y", localPos.x, localPos.y);
 
         const handleMove = (moveEvent: any) => {
             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
@@ -146,7 +174,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             let newY = moveY - startY;
             xRef.current = newX;
             yRef.current = newY;
-            console.log("✈️ 代入成功 (Ref):", xRef.current);
+            //console.log("✈️ 代入成功 (Ref):", xRef.current);
 
 
 
@@ -191,7 +219,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             }
 
             // 監査ログ（これで数値が出るようになります）
-            console.log("✈️ 移動中監査:", { newX, newY });
+            //console.log("✈️ 移動中監査:", { newX, newY });
 
             setLocalPos({ x: newX, y: newY });
 
@@ -223,8 +251,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
             const currentDiffX = upX - clientX;
             const currentDiffY = upY - clientY;
             const dist = Math.sqrt(currentDiffX ** 2 + currentDiffY ** 2)
-            console.log("🔥 setMoveDistの型:", typeof setMoveDist);
-            console.log("📦 setMoveDistの実体:", setMoveDist);
+            //console.log("🔥 setMoveDistの型:", typeof setMoveDist);
+            //console.log("📦 setMoveDistの実体:", setMoveDist);
             setMoveDist({
                 x: Math.abs(upX - clientX),
                 y: Math.abs(upY - clientY)
@@ -275,12 +303,12 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         if (latLng) {
             // 3. 親のステート (openedModalGoogle) を更新
             // これにより、地図をドラッグしてもこの新しい地点にモーダルが固定されます
-            setopenedModalGoogle((prev: any) => ({
+            setOpenedModalGoogle((prev: any) => ({
                 ...prev,
                 latitude: latLng.lat(),
                 longitude: latLng.lng()
             }));
-            console.log("📍 地図上の位置を同期しました:", latLng.lat(), latLng.lng());
+            //console.log("📍 地図上の位置を同期しました:", latLng.lat(), latLng.lng());
         }
     };
 
@@ -292,7 +320,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         //e.stopPropagation(); // 💡 イベントの連鎖を断ち切る
         setIsGoogleView(false); // 💡 ただのフラグオフ
     };
-    console.log("openedModalGoogle:", openedModalGoogle);
+    //console.log("openedModalGoogle:", openedModalGoogle);
     return (
         <>
             <div
@@ -324,19 +352,19 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         justifyContent: 'center'
                     }}
                 >
-                    ::: {modal.data.isNew ? "新規訪問先" :"既存訪問先" } (ドラッグ可)
+                     {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                 </div>
 
                 {/* ...以下、コンテンツ部分（localPos.x/y を参照するように）... */}
                 <div style={{
                     display: 'flex',           // 💡 横並びにする
-                    justifyContent: 'space-between', // 💡 左右の両端に振り分ける
+                    justifyContent: 'flex-end', // 💡 左右の両端に振り分ける
                     alignItems: 'center',      // 💡 上下の高さを中央で揃える
                     margin: '0 0 0px 0'       // 下の余白
                 }}>
-                    <h4 style={{ margin: '0 0 0 0', fontSize: '10px', fontWeight: 'bold' }}>
+                    {/*<h4 style={{ margin: '0 0 0 0', fontSize: '10px', fontWeight: 'bold' }}>
                         {isExisting ? "③ 既存訪問先" : "② 初めての訪問先"}
-                    </h4>
+                    </h4>*/}
                     <button
                         onClick={setCurrentMarker}
                         style={{
@@ -355,8 +383,8 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     </button>
                 </div>
                 <p style={{ fontSize: '11px', color: '#777', marginBottom: '5px' }}>
-                    緯度: {Number(openedModalGoogle.latitude || 0).toFixed(5)} /
-                    経度: {Number(openedModalGoogle.longitude || 0).toFixed(5)}
+                    緯度: {Number(openedModalGoogle.latitude || 0).toFixed(4)} /
+                    経度: {Number(openedModalGoogle.longitude || 0).toFixed(4)}
                 </p>
                 <input
                     style={{
@@ -369,7 +397,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         outline: 'none'
                     }}
                     value={openedModalGoogle.name || ""}
-                    onChange={e => setopenedModalGoogle({ ...openedModalGoogle, name: e.target.value })}
+                    onChange={e => setOpenedModalGoogle({ ...openedModalGoogle, name: e.target.value })}
                     placeholder="名称を入力"
                 />
 
@@ -385,7 +413,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         resize: 'none'
                     }}
                     value={openedModalGoogle.comment || ""}
-                    onChange={e => setopenedModalGoogle({ ...openedModalGoogle, comment: e.target.value })}
+                    onChange={e => setOpenedModalGoogle({ ...openedModalGoogle, comment: e.target.value })}
                     placeholder="コメントを残す"
                 />
 
@@ -465,13 +493,31 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         訪問記録
                     </button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '10px' }}>
                     <button
                         onClick={onCloseModalLocation}
                         style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
                         閉じる
                     </button>
-                    {isExisting && <button onClick={handleDelete} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>履歴を削除</button>}
+                    {isExisting && (isConfirming ? (
+                        <button
+                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            onClick={handleDelete} // 💡 2回目で実行
+                        >
+                            削除確定
+                        </button>
+                    ) : (
+                        <button
+                            //style={{ width: '30%', height: '3vh', background: '#9ca3af', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            onClick={() => setIsConfirming(true)} // 💡 1回目で「確認モード」へ
+                        >
+                            削除
+                        </button>
+                    ))
+                    }
+                    {/*{isExisting && <button onClick={handleDelete} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>履歴を削除</button>}*/}
+
                 </div>
             </div>
         </>

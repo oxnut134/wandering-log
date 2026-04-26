@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setopenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
+export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
-    console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
+    //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
 
     useEffect(() => {
         if (initialModalPosLogs) {
@@ -43,7 +43,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
     const handleMouseDown = (e: any) => {
         //setIsDragging(true);
         if (!localPos) return;
-        console.log("🖱️ 子の handleDown が呼ばれた！");
+        //console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
 
         setOpenedModalLocations((prev: any[]) =>
@@ -72,7 +72,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
             xRef.current = newX;
             yRef.current = newY;
-            console.log("✈️ 代入成功 (Ref):", xRef.current);
+            //console.log("✈️ 代入成功 (Ref):", xRef.current);
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
@@ -98,7 +98,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
             }
 
             // 監査ログ（これで数値が出るようになります）
-            console.log("✈️ 移動中監査:", { newX, newY });
+            //console.log("✈️ 移動中監査:", { newX, newY });
             //modal.data.localPosLogs = { x: newX, y: newY };
 
             setLocalPos({ x: newX, y: newY });
@@ -124,7 +124,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
     /*if (!logs || logs.length === 0) {
         return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;
     }*/
-    console.log("isShowingLogs:", modal.data.isShowingLogs)
+    //console.log("isShowingLogs:", modal.data.isShowingLogs)
     //if (!localPos) return null;
     if (!localPos) return;
     return (
@@ -163,7 +163,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
                         }}
                     >
-                        ::: {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ可)
+                         {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                     </div>
 
                     <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
@@ -179,12 +179,29 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
                                     display: 'flex',
                                     justifyContent: 'space-between'
                                 }}>
-                                    <span style={{ fontWeight: index === 0 ? 'normal' : 'normal' }}>
-                                        {new Date(log.visited_at).toLocaleString('ja-JP', {
-                                            year: 'numeric', month: '2-digit', day: '2-digit',
-                                            hour: '2-digit', minute: '2-digit'
-                                        })}
+                                    <span style={{ fontWeight: 'normal' }}>
+                                        {(() => {
+                                            // 1. 文字列として受け取り、必ず末尾に 'Z' がある状態にする
+                                            // (バックエンドが ISOString を送っていれば、これで UTC と認識されます)
+                                            const dateStr = String(log.visited_at);
+                                            const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+                                            //console.log(">>>>>>>>date:", date);
+
+                                            if (isNaN(date.getTime())) return 'Invalid Date';
+
+                                            // 2. 日本時間（Asia/Tokyo）を指定して出力
+                                            // これで 02:07(UTC) が 11:07(JST) に変換されます
+                                            return date.toLocaleString('ja-JP', {
+                                                year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                timeZone: 'Asia/Tokyo'
+                                            });
+                                        })()}
                                     </span>
+
                                     <span style={{ color: '#aaa' }}>#{logs.length - index}</span>
                                 </div>
                             ))}

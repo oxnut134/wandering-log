@@ -5,7 +5,7 @@ export async function GET(request: Request) {
   // 💡 URLから特定の location_id を取得
   const { searchParams } = new URL(request.url);
   const locationId = searchParams.get('location_id');
-
+console.log("====================================================");
   if (!locationId) {
     return NextResponse.json({ error: 'location_id is required' }, { status: 400 });
   }
@@ -26,9 +26,17 @@ export async function GET(request: Request) {
       WHERE location_id = ${Number(locationId)}
       ORDER BY visited_at DESC
     `;
+    const formattedLogs = logs.map(log => ({
+      ...log,
+      // DateオブジェクトならISO形式(Z付き)に、文字列ならTとZを補完する
+      visited_at: log.visited_at
+        ? (log.visited_at instanceof Date
+          ? log.visited_at.toISOString()
+          : String(log.visited_at).replace(' ', 'T') + 'Z')
+        : null
+    }));
 
-    console.log(`📜 LocationID: ${locationId} の履歴を ${logs.length} 件取得しました`);
-    return NextResponse.json(logs);
+    return NextResponse.json(formattedLogs);
 
   } catch (error) {
     console.error('❌ Database Error:', error);
