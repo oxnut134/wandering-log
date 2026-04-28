@@ -5,6 +5,7 @@ import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
 import ModalGoogle from "./components/ModalGoogle";
 import ModalLogs from "./components/ModalLogs";
+import ModalComments from "./components/ModalComments";
 //import { useMap } from "@vis.gl/react-google-maps";
 //declare const google: any;
 export default function WanderingLog() {
@@ -27,29 +28,9 @@ export default function WanderingLog() {
 
     const [dummy, setDummy] = useState(false);
 
-    // 💡 呼び出すたびに true ⇄ false が入れ替わるので、確実に再描画が走ります
     const renderMe = () => {
         setDummy(prev => !prev);
     };
-    /*const onSaveSuccess = async () => {
-        // 1. 赤の位置を退避
-        const originalPos = { ...currentPosOfCamera };
-
-        // 2. 赤を消す
-        setCurrentPosOfCamera(null);
-
-        // 3. 黄色を最新にする（awaitで取得完了を待つ）
-        await refreshHistory();
-
-        // 4. 1秒後に赤をちょっと「ずらして」復活させる
-        // 全く同じ場所だとまた重なるので、少し上(北)に出すと「ハンコ感」が出ます
-        setTimeout(() => {
-            setCurrentPosOfCamera({
-                lat: originalPos.lat + 0.0003, // 約30mほど上にずらす
-                lng: originalPos.lng
-            });
-        }, 800);
-    };*/
     const refreshHistory = useCallback(async () => {
         const res = await fetch("/api/get_locations_and_places");//default:GET
         const data = await res.json();
@@ -74,14 +55,14 @@ export default function WanderingLog() {
         console.log("visitedLocations : ", visitedLocations);
     }, [visitedLocations]);
 
-     useEffect(() => {
-         console.log("openedModalLocations:", openedModalLocations)
-     }, [openedModalLocations]);
+    useEffect(() => {
+        console.log("openedModalLocations:", openedModalLocations)
+    }, [openedModalLocations]);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
-            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
-            //const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
+            //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
+            const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
             //console.log("coords:", coords);
             setCurrentPosOfCamera(coords);
             setCurrentPosOfMe(coords);
@@ -333,7 +314,7 @@ export default function WanderingLog() {
                         modal.data.hasMovedEnough ?
                             {
                                 x: modal.currentPos.x,
-                                y: modal.currentPos.y+40,
+                                y: modal.currentPos.y + 40,
                             }
                             : null
                         //: {x:0,y:0}
@@ -369,13 +350,13 @@ export default function WanderingLog() {
 
                     }}
 
-                    //setOpenedModalGoogle={setOpenedModalGoogle}
+                //setOpenedModalGoogle={setOpenedModalGoogle}
 
-                setOpenedModalGoogle={(newData: any) => {
-                    setOpenedModalLocations(prev => prev.map(m =>
-                        m.id === modal.id ? { ...m, data: newData } : m
-                    ));
-                }}
+                // setOpenedModalGoogle={(newData: any) => {
+                //     setOpenedModalLocations(prev => prev.map(m =>
+                //         m.id === modal.id ? { ...m, data: newData } : m
+                //     ));
+                // }}
                 />
             ))}
             {openedModalLocations.map((modal) => {
@@ -431,16 +412,50 @@ export default function WanderingLog() {
                             });
 
                         }}
-                        //setOpenedModalGoogle={setOpenedModalGoogle}
+                    //setOpenedModalGoogle={setOpenedModalGoogle}
 
-                    setOpenedModalGoogle={(newData: any) => {
-                        setOpenedModalLocations(prev => prev.map(m =>
-                            m.id === modal.id ? { ...m, data: newData } : m
-                        ));
-                    }}
+                    // setOpenedModalGoogle={(newData: any) => {
+                    //     setOpenedModalLocations(prev => prev.map(m =>
+                    //         m.id === modal.id ? { ...m, data: newData } : m
+                    //     ));
+                    // }}
                     />
                 )
             })}
+            {openedModalLocations.map((modal) => (
+                modal.activeComments?.map((c: any) => (
+                    c.isShowingComment && (
+                        <ModalComments
+                            logs={modal.logs || []}// dummy just for test 
+                            key={c.logId}  // 地点IDではなく「ログID」をキーにするのがコツ！
+                            logId={c.logId}
+                            modal={modal}  // これで親(Location)の座標に追従できる
+                            initialPos={c.pos}
+                            onFetchLogs={() => fetchLogsForModal(modal.id)}
+                            openedModalLocations={openedModalLocations}
+                            setOpenedModalLocations={setOpenedModalLocations}
+
+                            onClose={() => {
+                                setOpenedModalLocations(prev => prev.map(loc =>
+                                    loc.id === modal.id
+                                        ? { ...loc, activeComments: loc.activeComments.filter((item: any) => item.logId !== c.logId) }
+                                        : loc
+                                ));
+                            }}
+                            initialModalPosComments={
+                                modal.data.hasMovedEnough ?
+                                    {
+                                        x: modal.currentPos.x + 80,
+                                        y: modal.currentPos.y + 80
+                                    }
+                                    : null
+                                //: null
+                                //: {x:0,y:0}
+                            }
+
+                        />)
+                ))
+            ))}
         </APIProvider>
     );
 }

@@ -121,6 +121,35 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
     };
 
+   const handleShowComments = (logId: number) => { // 💡 どのログのコメントかを受け取る
+    if (!localPos) return;
+    
+    setOpenedModalLocations((prev: any[]) => {
+        console.log("activeComment generated")
+        return prev.map((m: any) => {
+            if (m.id !== modal.id) return m;
+
+            // 💡 既に開いているコメントの配列を取得（なければ空）
+            const currentComments = m.activeComments || [];
+            
+            // 💡 同じログのコメントが既にあるかチェック
+            if (currentComments.some((c: any) => c.logId === logId)) return m;
+
+            return {
+                ...m,
+                activeComments: [
+                    ...currentComments,
+                    { 
+                        logId: logId, 
+                        isShowingComment:true,
+                        pos: { x: localPos.x + 40, y: localPos.y + 40 } // 💡 親の隣に出す
+                    }
+                ]
+            };
+        });
+    });
+};
+
     /*if (!logs || logs.length === 0) {
         return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;
     }*/
@@ -163,7 +192,7 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
                         }}
                     >
-                         {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                        {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                     </div>
 
                     <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
@@ -172,14 +201,18 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
                         </h5>
                         <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                             {logs.map((log: any, index: any) => (
-                                <div key={log.id || index} style={{
-                                    fontSize: '12px',
-                                    padding: '1px 0',
-                                    borderBottom: '1px dashed #f0f0f0',
-                                    display: 'flex',
-                                    justifyContent: 'space-between'
-                                }}>
-                                    <span style={{ fontWeight: 'normal' }}>
+                                <div
+                                    key={log.id || index} style={{
+                                        fontSize: '12px',
+                                        padding: '1px 0',
+                                        borderBottom: '1px dashed #f0f0f0',
+                                        display: 'flex',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                    <span
+                                        style={{ fontWeight: 'normal' }}
+                                        onClick={() => handleShowComments(log.id)}>
+
                                         {(() => {
                                             // 1. 文字列として受け取り、必ず末尾に 'Z' がある状態にする
                                             // (バックエンドが ISOString を送っていれば、これで UTC と認識されます)
