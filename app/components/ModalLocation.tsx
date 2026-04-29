@@ -12,7 +12,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const [deffPos, setDiffpos] = useState({ x: null, y: null });
     const [isConfirming, setIsConfirming] = useState(false);
-
+    
+    //-----！！！ このコンポーネントこのopenedModalGoogleはopenedModalGoogle=modal.dataのことなので注意！！！----------
+    
     const handleSave = async () => {
 
         setOnSaving(true)
@@ -125,7 +127,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         data: {
                             ...m.data,
                             isShowingLogs: true, // 👈 ここでフラグをONにする
-                            hasMovedEnough: false,
+                            //hasMovedEnough: false,
                             localPosLogs: { x: localPos.x + 80, y: localPos.y + 80 }
                         }
                     }

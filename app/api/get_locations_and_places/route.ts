@@ -26,11 +26,4 @@ export async function GET() {
 
 // 📍 POST: 保存（②新規・③上書き）
 
-// 🗑️ DELETE: 削除
-export async function DELETE(request: Request) {
-  try {
-    const { id } = await request.json();
-    await db.delete(visitedLocations).where(eq(visitedLocations.id, id));
-    return NextResponse.json({ success: true });
-  } catch (e) { return NextResponse.json({ error: "削除失敗" }, { status: 500 }); }
-}
+

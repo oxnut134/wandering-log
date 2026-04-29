@@ -3,47 +3,51 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalComments({ modal, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef }: any) {
+export default function ModalComments({ modal, logId, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
+    const [onSaving, setOnSaving] = useState(false);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
 
     useEffect(() => {
         if (initialModalPosComments) {
             // ① 親のドラッグに追従して位置を更新
             //setLocalPos(initialModalPosComments);
-           setLocalPos((prev) => {
-        // prev（直前の自分の位置）がなければ届いた値を使い、
-        // あればその prev に 20 を足す
-        const basePos = prev ? prev : initialModalPosComments;
-        
-        return {
-            x: basePos.x + 20,
-            y: basePos.y + 20
-        };
-    });
+            setLocalPos({
+                x: initialModalPosComments.x + 20,
+                y: initialModalPosComments.y + 20
+            });
+
             // ② 【重要】追従が完了したので、親のフラグを即座にリセット
-            // これをしないと、次に足跡をクリックした時にまた initialModalPosComments が届いてしまいます
-            setOpenedModalLocations((prev: any[]) =>
+            // これをしないと、次に足跡をクリックした時にまた  initialModalPosComments が届いてしまいます
+            /*setOpenedModalLocations((prev: any[]) =>
                 prev.map((m: any) =>
                     m.id === modal.id
                         ? { ...m, data: { ...m.data, hasMovedEnough: false } }
                         : m
                 )
-            );
+            );*/
         } else if (!localPos) {
             // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
             setLocalPos({ x: modal.currentPos.x + 20, y: modal.currentPos.y + 10 });
             modal.currentPos.x += 20; modal.currentPos.y += 20;
         }
-    }, [initialModalPosComments]); // 💡 initialModalPosComments の変化（親の大きな移動）を監視
+    }, [initialModalPosComments]); // 💡  initialModalPosComments の変化（親の大きな移動）を監視
 
-    useEffect(() => {
-        onFetchLogs();
-    }, []);
+ useEffect(() => {
+    // 1. 履歴データの取得（既存の関数）
+    onFetchLogs();
+
+    // 2. コメントデータの取得（非同期処理）
+ 
+  
+
+ 
+}, []); // 💡 初回マウント時のみ実行
+
 
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
@@ -131,6 +135,35 @@ export default function ModalComments({ modal, renderMe, setOpenedModalLocations
 
     };
 
+    const handleSave = async () => {
+        console.log("************ in handle save ***************")
+        const currentData = modal.activeComments?.find((c: any) => c.logId === logId);
+        console.log("currentData:", currentData)
+
+        if (!currentData) {
+            console.error("保存対象のデータが見つかりません");
+            return;
+        }
+
+        setOnSaving(true)
+        const payload = {
+            log_id: logId, // 既存ならID、新規ならnull
+            commentText: currentData.comment,
+        };
+
+        const res = await fetch("/api/save_comment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            console.log("************ ref.ok ***************")
+
+            if (onSaveSuccess) onSaveSuccess();
+        }
+        setOnSaving(false)
+        if (res.ok) return;
+    }
 
     /*if (!logs || logs.length === 0) {
         return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;
@@ -186,42 +219,110 @@ export default function ModalComments({ modal, renderMe, setOpenedModalLocations
                         <strong>🚩 コメント</strong>
                     </h5>
                     <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                        {logs.map((log: any, index: any) => (
-                            <div key={log.id || index} style={{
-                                fontSize: '12px',
-                                padding: '1px 0',
-                                borderBottom: '1px dashed #f0f0f0',
-                                display: 'flex',
-                                justifyContent: 'space-between'
-                            }}>
-                                <span style={{ fontWeight: 'normal' }}>
-                                    {(() => {
-                                        // 1. 文字列として受け取り、必ず末尾に 'Z' がある状態にする
-                                        // (バックエンドが ISOString を送っていれば、これで UTC と認識されます)
-                                        const dateStr = String(log.visited_at);
-                                        const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
-                                        //console.log(">>>>>>>>date:", date);
+                        {logs
+                            .filter((log: any) => log.id === logId)
+                            .map((log: any, index: any) => (
+                                <div key={log.id || index} style={{
+                                    fontSize: '12px',
+                                    padding: '1px 0',
+                                    borderBottom: '1px dashed #f0f0f0',
+                                    display: 'flex',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <span style={{ fontWeight: 'normal' }}>
+                                        {(() => {
+                                            // 1. 文字列として受け取り、必ず末尾に 'Z' がある状態にする
+                                            // (バックエンドが ISOString を送っていれば、これで UTC と認識されます)
+                                            const dateStr = String(log.visited_at);
+                                            const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+                                            //console.log(">>>>>>>>date:", date);
 
-                                        if (isNaN(date.getTime())) return 'Invalid Date';
+                                            if (isNaN(date.getTime())) return 'Invalid Date';
 
-                                        // 2. 日本時間（Asia/Tokyo）を指定して出力
-                                        // これで 02:07(UTC) が 11:07(JST) に変換されます
-                                        return date.toLocaleString('ja-JP', {
-                                            year: 'numeric',
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            timeZone: 'Asia/Tokyo'
-                                        });
-                                    })()}
-                                </span>
+                                            // 2. 日本時間（Asia/Tokyo）を指定して出力
+                                            // これで 02:07(UTC) が 11:07(JST) に変換されます
+                                            return date.toLocaleString('ja-JP', {
+                                                year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                timeZone: 'Asia/Tokyo'
+                                            });
+                                        })()}
+                                    </span>
 
-                                <span style={{ color: '#aaa' }}>#{logs.length - index}</span>
-                            </div>
-                        ))}
+                                    <span style={{ color: '#aaa' }}>#{logs.length - index}</span>
+                                </div>
+                            ))}
                     </div>
+                    <textarea
+                        style={{
+                            width: '100%',
+                            height: '10vh',
+                            marginBottom: '1%',
+                            border: '1px solid #bbb',
+                            borderRadius: '6px',
+                            padding: '4px',
+                            fontSize: '10px',
+                            resize: 'none'
+                        }}
+                        // 💡 Propsから現在のコメントを表示
+                        value={modal.activeComments?.find((l: any) => l.logId === logId)?.comment || ""}
+                        onChange={(e) => {
+                            const newValue = e.target.value;
+                            // 💡 親の巨大な配列の中から、自分に関連する「地点」と「ログ」を探して更新
+                            setOpenedModalLocations((prev: any[]) =>
+                                prev.map((m: any) =>
+                                    m.id === modal.id
+                                        ? {
+                                            ...m,
+                                            activeComments: m.activeComments?.map((c: any) =>
+                                                // 💡 logId が一致する要素を探して、その comment だけを更新する
+                                                c.logId === logId ? { ...c, logId: logId, comment: newValue } : c
+                                            )
+                                            // logs: m.logs.map((l: any) =>
+                                            //     l.id === logId ? { ...l, comment: newValue } : l
+                                            // )
+                                        }
+                                        : m
+                                )
+                            );
+                        }}
+                        placeholder="コメントを残す"
+                    />
+
                 </div>
+                <button
+                    onClick={handleSave}
+                    style={{
+                        width: '100%',
+                        height: '4vh',
+                        background: '#2563eb',
+                        color: 'white',
+                        marginBottom: '6px',
+                        borderRadius: '6px',
+                        padding: '10px', // 押しやすいボタンサイズ
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',    // 💡 中身を真ん中に
+                        alignItems: 'center',
+                        justifyContent: 'center',
+
+                    }}
+                >
+                    {onSaving ? (
+                        <>
+                            <div>
+                                <span>処理中...</span>
+                            </div>
+                        </>
+                    ) : (
+                        "保存する"
+                    )}
+                </button>
                 <div>
                     <button
                         onClick={onClose}

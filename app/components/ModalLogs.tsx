@@ -18,13 +18,13 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
 
             // ② 【重要】追従が完了したので、親のフラグを即座にリセット
             // これをしないと、次に足跡をクリックした時にまた initialModalPosLogs が届いてしまいます
-            setOpenedModalLocations((prev: any[]) =>
+            /*setOpenedModalLocations((prev: any[]) =>
                 prev.map((m: any) =>
                     m.id === modal.id
                         ? { ...m, data: { ...m.data, hasMovedEnough: false } }
                         : m
                 )
-            );
+            );*/
         } else if (!localPos) {
             // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
             setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
@@ -120,35 +120,75 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         document.addEventListener('touchend', handleMouseUp);
 
     };
-
-   const handleShowComments = (logId: number) => { // 💡 どのログのコメントかを受け取る
+const handleShowComments = async (logId: number) => { // 💡 async に変更
     if (!localPos) return;
-    
+
+    // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
+    let existingComment = "";
+    try {
+        const res = await fetch(`/api/get_comments?log_id=${logId}`);
+        const data = await res.json();
+        // 配列の0番目にコメントがあれば取得
+        if (data && data.length > 0) {
+            existingComment = data[0].comment;
+        }
+    } catch (error) {
+        console.error("既存コメントの取得に失敗:", error);
+    }
+
+    // 2. 💡 取得したコメントを含めて State を更新
     setOpenedModalLocations((prev: any[]) => {
-        console.log("activeComment generated")
+        console.log("activeComment generated with comment:", existingComment);
         return prev.map((m: any) => {
             if (m.id !== modal.id) return m;
 
-            // 💡 既に開いているコメントの配列を取得（なければ空）
             const currentComments = m.activeComments || [];
-            
-            // 💡 同じログのコメントが既にあるかチェック
             if (currentComments.some((c: any) => c.logId === logId)) return m;
 
             return {
                 ...m,
                 activeComments: [
                     ...currentComments,
-                    { 
-                        logId: logId, 
-                        isShowingComment:true,
-                        pos: { x: localPos.x + 40, y: localPos.y + 40 } // 💡 親の隣に出す
+                    {
+                        logId: logId,
+                        isShowingComment: true,
+                        comment: existingComment, // 💡 ここで初期値を注入！
+                        pos: { x: localPos.x + 40, y: localPos.y + 40 }
                     }
                 ]
             };
         });
     });
 };
+
+    /*const handleShowComments = async (logId: number) => { // 💡 どのログのコメントかを受け取る
+        if (!localPos) return;
+
+        setOpenedModalLocations((prev: any[]) => {
+            console.log("activeComment generated")
+            return prev.map((m: any) => {
+                if (m.id !== modal.id) return m;
+
+                // 💡 既に開いているコメントの配列を取得（なければ空）
+                const currentComments = m.activeComments || [];
+
+                // 💡 同じログのコメントが既にあるかチェック
+                if (currentComments.some((c: any) => c.logId === logId)) return m;
+
+                return {
+                    ...m,
+                    activeComments: [
+                        ...currentComments,
+                        {
+                            logId: logId,
+                            isShowingComment: true,
+                            pos: { x: localPos.x + 40, y: localPos.y + 40 } // 💡 親の隣に出す
+                        }
+                    ]
+                };
+            });
+        });
+    };*/
 
     /*if (!logs || logs.length === 0) {
         return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;

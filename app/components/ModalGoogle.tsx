@@ -62,6 +62,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     }, [])
 */
     useEffect(() => {
+        console.log("*****************************************")
         if (initialModalPosGoogle) {
             // 💡 親から「ずらした位置」が届いていればそれを使う
             setLocalPos(initialModalPosGoogle);

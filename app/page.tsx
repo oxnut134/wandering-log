@@ -190,11 +190,11 @@ export default function WanderingLog() {
         }
     };
 
-    const resetMoveFlag = (id: string) => {
+    /*const resetMoveFlag = (id: string) => {
         setOpenedModalLocations(prev => prev.map(m =>
             m.id === id ? { ...m, hasMovedEnough: false } : m
         ));
-    };
+    };*/
 
 
     //console.log("openedModalLocations:", openedModalLocations)
@@ -314,7 +314,7 @@ export default function WanderingLog() {
                         modal.data.hasMovedEnough ?
                             {
                                 x: modal.currentPos.x,
-                                y: modal.currentPos.y + 40,
+                                y: modal.currentPos.y,
                             }
                             : null
                         //: {x:0,y:0}
@@ -380,7 +380,7 @@ export default function WanderingLog() {
                             //: null
                             //: {x:0,y:0}
                         }
-                        resetMoveFlag={() => resetMoveFlag(modal.id)}
+                        //resetMoveFlag={() => resetMoveFlag(modal.id)}
                         openedModalGoogle={modal.data} moda
                         //isGoogleView={isGoogleView}
                         isGoogleView={modal.data.isShowingGoogle}
@@ -423,13 +423,13 @@ export default function WanderingLog() {
                 )
             })}
             {openedModalLocations.map((modal) => (
-                modal.activeComments?.map((c: any) => (
+                modal.activeComments?.map((c: any, index: number) => (
                     c.isShowingComment && (
                         <ModalComments
                             logs={modal.logs || []}// dummy just for test 
                             key={c.logId}  // 地点IDではなく「ログID」をキーにするのがコツ！
                             logId={c.logId}
-                            modal={modal}  // これで親(Location)の座標に追従できる
+                            modal={modal}// これで親(Location)の座標に追従できる
                             initialPos={c.pos}
                             onFetchLogs={() => fetchLogsForModal(modal.id)}
                             openedModalLocations={openedModalLocations}
@@ -445,8 +445,8 @@ export default function WanderingLog() {
                             initialModalPosComments={
                                 modal.data.hasMovedEnough ?
                                     {
-                                        x: modal.currentPos.x + 80,
-                                        y: modal.currentPos.y + 80
+                                        x: modal.currentPos.x + 80 + 40 * index,
+                                        y: modal.currentPos.y + 80 + 40 * index
                                     }
                                     : null
                                 //: null
