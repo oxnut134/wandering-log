@@ -162,7 +162,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
-        //onFocus();
+        onFocus();
         /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
