@@ -44,8 +44,10 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
     
         if (x === undefined || x === null) {
-            x = window.innerWidth / 2 - 130; // モーダル幅260の半分
-            y = window.innerHeight / 2 - 160; // モーダル高さの半分
+            //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
+            //y = window.innerHeight / 2 - 160; // モーダル高さの半分
+            x = 10; // モーダル幅260の半分
+            y = 10; // モーダル高さの半分
         }
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
@@ -54,7 +56,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         const bx = 260; // モーダルの幅
         const by = 320; // モーダルの高さ（おおよそ）
 
-        /*if (x < 0) {
+        if (x < 0) {
             x = 0; // 左端固定
         } else if (x + bx > ax) {
             x = ax - bx - 30; // 右端固定
@@ -64,7 +66,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
             y = by + 60; // 上端固定 (transformの影響を考慮)
         } else if (y > ay) {
             y = ay; // 下端固定
-        }*/
+        }
 
         // 💡 4. 安全が確認された座標を State に保存
         setModalPos({ x, y });
