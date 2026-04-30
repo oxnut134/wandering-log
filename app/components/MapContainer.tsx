@@ -42,11 +42,11 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-    
+
         if (x === undefined || x === null) {
             x = window.innerWidth / 2 - 130; // モーダル幅260の半分
             y = window.innerHeight / 2 - 160; // モーダル高さの半分
-       }
+        }
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
         const ax = window.innerWidth;
@@ -121,7 +121,85 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
             }
         });
     };
+    const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
+        // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
+        //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
+        //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
 
+        let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
+        let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
+
+        let xCheck
+        let yCheck
+
+        // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
+        if (x === undefined || x === null) {
+            //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
+            //y = window.innerHeight / 2 -160; // モーダル高さの半分
+            //x = 10; // モーダル幅260の半分
+            //y = 20; // モーダル高さの半分
+            const projection = map.getProjection();
+            const bounds = map.getBounds();
+
+            if (projection && bounds) {
+                // 地図の左上の緯度経度を取得
+                const nw = new google.maps.LatLng(
+                    bounds.getNorthEast().lat(),
+                    bounds.getSouthWest().lng()
+                );
+                const nwPoint = projection.fromLatLngToPoint(nw)!;
+                const clickPoint = projection.fromLatLngToPoint(latLng)!;
+                const scale = Math.pow(2, map.getZoom()!);
+
+                // 💡 これでマーカーの正確なピクセル座標が計算されます
+                //x = (clickPoint.x - nwPoint.x) * scale;
+                //y = (clickPoint.y - nwPoint.y) * scale;
+                xCheck = (clickPoint.x - nwPoint.x) * scale;
+                yCheck = (clickPoint.y - nwPoint.y) * scale;
+                x=60;
+                y=80;
+            }
+        }
+
+        // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
+        const ax = window.innerWidth;
+        const ay = window.innerHeight;
+        const bx = 260; // モーダルの幅
+        const by = 320; // モーダルの高さ（おおよそ）
+
+        if (x < 0) {
+            x = 0; // 左端固定
+        } else if (x + bx > ax) {
+            x = ax - bx - 30; // 右端固定
+        }
+
+        if (y < by) {
+            y = by + 60; // 上端固定 (transformの影響を考慮)
+        } else if (y > ay) {
+            y = ay; // 下端固定
+        }
+
+        // 💡 4. 安全が確認された座標を State に保存
+        setModalPos({ x, y });
+
+        const newModal = {
+            id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+            //pos: { x: x, y: y },
+            pos: { x: x, y: y, xCheck:xCheck, yCheck:yCheck },
+            currentPos: { x: x + 40, y: y + 40 },
+            //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+            data: place
+                ? { ...place, isNew: false }
+                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: true },
+        };
+
+        // 💡 すでに同じIDのモーダルが開いていなければ追加
+        setOpenedModalLocations((prev: any) => {
+            if (prev.find((m: any) => m.id === newModal.id)) return prev;
+            return [...prev, newModal];
+        });
+
+    };
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Map
@@ -179,7 +257,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                                 const latLng = ev.detail?.latLng || ev.latLng;
                                 const domEvent = ev.detail?.domEvent || ev.domEvent;
                                 //alert("座標: " + JSON.stringify(latLng));
-                                onMarkerClick(item, latLng, domEvent)
+                                handleMarkerClick(item, latLng, domEvent)
                             }}
                         >
                             {isCurrent ? (

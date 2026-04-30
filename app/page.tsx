@@ -9,7 +9,7 @@ import ModalComments from "./components/ModalComments";
 import { useMap } from "@vis.gl/react-google-maps";
 declare const google: any;
 export default function WanderingLog() {
-    const map = useMap();
+    //const map = useMap();
 
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
     const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
@@ -70,6 +70,7 @@ export default function WanderingLog() {
         refreshHistory();
     }, [refreshHistory]);
 
+    /*
     const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
         // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
         //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
@@ -141,6 +142,7 @@ export default function WanderingLog() {
         });
 
     };
+    */
 
     const updatedCurrentPos = (id: any, newPos: any) => {
         setOpenedModalLocations(prev => prev.map(m =>
@@ -231,7 +233,7 @@ export default function WanderingLog() {
                 setCurrentPosOfCamera={setCurrentPosOfCamera}
                 visitedLocations={visitedLocations}
                 //onRedMarkerClick={handleRedMarkerClick}
-                onMarkerClick={handleMarkerClick}
+                //onMarkerClick={handleMarkerClick}
                 homeTrigger={homeTrigger}
                 openedModalLocations={openedModalLocations}
                 setOpenedModalLocations={setOpenedModalLocations}
