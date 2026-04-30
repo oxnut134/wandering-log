@@ -401,8 +401,10 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     </button>
                 </div>
                 <p style={{ fontSize: '11px', color: '#777', marginBottom: '5px' }}>
-                    緯度: {Number(openedModalGoogle.latitude || 0).toFixed(4)} /
-                    経度: {Number(openedModalGoogle.longitude || 0).toFixed(4)}
+                    {/*緯度: {Number(openedModalGoogle.latitude || 0).toFixed(4)} /
+                    経度: {Number(openedModalGoogle.longitude || 0).toFixed(4)}*/}
+                    緯度: {localPos.x} /
+                    経度: {localPos.y}
                 </p>
                 <input
                     style={{
