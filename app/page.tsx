@@ -245,7 +245,7 @@ export default function WanderingLog() {
             </button>
             {/*<button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
             <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>*/}
-            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: 0, pointerEvents: 'none', zIndex: 2000 }}>
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: 0, pointerEvents: 'auto', zIndex: 2000 }}>
                 {openedModalLocations.map((modal) => (
 
                     <ModalLocation
