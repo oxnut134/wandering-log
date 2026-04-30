@@ -25,7 +25,7 @@ export default function WanderingLog() {
     const [currentZoom, setCurrentZoom] = useState(15);
     const [moveDist, setMoveDist] = useState({ x: 0, y: 0 });
     //const isDraggingRef = useRef(false);
-
+    const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
     const [dummy, setDummy] = useState(false);
 
     const renderMe = () => {
@@ -247,9 +247,12 @@ export default function WanderingLog() {
             <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>*/}
 
             {openedModalLocations.map((modal) => (
+
                 <ModalLocation
                     key={modal.id}
                     modal={modal}
+                    isFocused={activeGroupId === modal.id}
+                    onFocus={() => setActiveGroupId(modal.id)}
                     initialModalPos={modal.pos}
                     setOpenedModalLocations={setOpenedModalLocations}
                     openedModalGoogle={modal.data}
@@ -307,6 +310,8 @@ export default function WanderingLog() {
                 <ModalGoogle
                     key={modal.id}
                     modal={modal}
+                    isFocused={activeGroupId === modal.id}
+                    onFocus={() => setActiveGroupId(modal.id)}
                     //openedModalLocations={openedModalLocations}
                     setOpenedModalLocations={setOpenedModalLocations}
                     //initialModalPosGoogle={modal.currentPos}
@@ -366,6 +371,8 @@ export default function WanderingLog() {
                     <ModalLogs
                         key={modal.id}
                         modal={modal}
+                        isFocused={activeGroupId === modal.id}
+                        onFocus={() => setActiveGroupId(modal.id)}
                         renderMe={renderMe}
                         openedModalLocations={openedModalLocations}
                         setOpenedModalLocations={setOpenedModalLocations}
@@ -430,6 +437,8 @@ export default function WanderingLog() {
                             key={c.logId}  // 地点IDではなく「ログID」をキーにするのがコツ！
                             logId={c.logId}
                             modal={modal}// これで親(Location)の座標に追従できる
+                            isFocused={activeGroupId === modal.id}
+                            onFocus={() => setActiveGroupId(modal.id)}
                             initialPos={c.pos}
                             onFetchLogs={() => fetchLogsForModal(modal.id)}
                             openedModalLocations={openedModalLocations}

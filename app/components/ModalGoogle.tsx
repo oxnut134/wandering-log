@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving }: any) {
+export default function ModalGoogle({ modal, isFocused, onFocus, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving }: any) {
     const map = useMap();
 
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
@@ -12,55 +12,19 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const service = new google.maps.places.PlacesService(map);
 
-/*
+    // ModalComments.tsx の中に追加
     useEffect(() => {
-        if (!modal.data.google_place_id) return;
-
-        service.getDetails({
-            placeId: modal.data.google_place_id,
-            // 💡 取得したいフィールドを正確に指定（不要な項目を削ると節約になります）
-            fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website']
-        }, (place: any, status: any) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-                //console.log("カテゴリー:", place.types);             // Array: ['establishment', 'point_of_interest', ...]
-                //console.log("住所:", place.formatted_address);      // String: "日本、〒169-0074 東京都新宿区..."
-                //console.log("GoogleマップURL:", place.url);         // String: "https://maps.google.com/..."
-                //console.log("公式ウェブサイト:", place.website);   // String: (あれば) "https://example.com"
-                setOpenedModalLocations((prev: any[]) => {
-                    return prev.map((m: any) =>
-                        m.id === modal.id  // 👈 modalId（または id）で自分を探す
-                            ? {
-                                ...m,
-                                googleData: {
-                                    name: place.name,
-                                    place_id: place.place_id,
-                                    types: place.types?.join(','),
-                                    address: place.formatted_address,
-                                    url: place.url,
-                                    website: place.website,
-                                    // 検索結果を格納
-                                    isShowingGoogle: true // 👈 ここでフラグをONにする
-                                },
-                                // googleData: {
-                                //     type: place.types,
-                                //     address: place.formatted_address,
-                                //     url: place.url,
-                                //     website: place.website,
-                                // }, // 検索結果を格納
-                                //isShowingGoogle: true // 👈 ここでフラグをONにする
-                            }
-                            : m
-                    );
-                });
-
-                // 💡 ここでStateを更新してモーダルに表示
-
-            } else {
-                console.error("詳細情報の取得に失敗しました:", status);
-            }
-        });
-    }, [])
-*/
+        // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
+        return () => {
+            // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
+            // ※本当は handleMouseMove を関数外に出すのが理想ですが、まずはこれで「幽霊」を消せます
+            document.removeEventListener('mousemove', () => { });
+            document.removeEventListener('mouseup', () => { });
+            document.removeEventListener('touchmove', () => { });
+            document.removeEventListener('touchend', () => { });
+            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+        };
+    }, []);
     useEffect(() => {
         console.log("*****************************************")
         if (initialModalPosGoogle) {
@@ -89,13 +53,14 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     const handleMouseDown = (e: any) => {
         if (!localPos) return;
 
-        setOpenedModalLocations((prev: any[]) =>
+        onFocus();
+        /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
                     ? { ...m, zIndex: 1001 } // 👈 常に一番上
                     : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
             )
-        );
+        );*/
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -166,9 +131,9 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
     const reflectGoogleData = async () => {
         //const newName = modal.googleData.name;
         console.log("==========opendModalGoogle:", modal);
-      setIsGoogleView(false);
-          const payload = {
-            location_id: modal.id, 
+        setIsGoogleView(false);
+        const payload = {
+            location_id: modal.id,
             google_place_id: modal.googleData.place_id,
             name: modal.googleData.name,
             category: modal.googleData.category,
@@ -215,11 +180,14 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
                             top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
-                            zIndex: modal.zIndex || 100,
+                            zIndex: isFocused ? 2000 : 1000,
+                            border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                            boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
+                            //zIndex: modal.zIndex || 100,
                             backgroundColor: 'white',
                             padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                             borderRadius: '10px',
-                            boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+                            //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                             fontSize: '13px' // 小さすぎず読みやすいサイズ
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -238,7 +206,7 @@ export default function ModalGoogle({ modal, setOpenedModalLocations, isGoogleVi
 
                             }}
                         >
-                             {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                            {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
 
                         </div>
 

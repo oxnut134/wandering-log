@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
+export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
     const map = useMap();
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -12,9 +12,22 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const [deffPos, setDiffpos] = useState({ x: null, y: null });
     const [isConfirming, setIsConfirming] = useState(false);
-    
+
     //-----！！！ このコンポーネントこのopenedModalGoogleはopenedModalGoogle=modal.dataのことなので注意！！！----------
-    
+
+    // ModalComments.tsx の中に追加
+    useEffect(() => {
+        // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
+        return () => {
+            // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
+            // ※本当は handleMouseMove を関数外に出すのが理想ですが、まずはこれで「幽霊」を消せます
+            document.removeEventListener('mousemove', () => { });
+            document.removeEventListener('mouseup', () => { });
+            document.removeEventListener('touchmove', () => { });
+            document.removeEventListener('touchend', () => { });
+            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+        };
+    }, []);
     const handleSave = async () => {
 
         setOnSaving(true)
@@ -86,9 +99,9 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                             place.name = "取得できませんでした。";
                             place.place_id = "";
                             place.types = [];
-                            place.formatted_address = ""; 
-                            place.url = "";      
-                            place.website = ""; 
+                            place.formatted_address = "";
+                            place.url = "";
+                            place.website = "";
                         }
 
                         setOpenedModalLocations((prev: any[]) => {
@@ -99,7 +112,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                                         googleData: {
                                             name: place.name,
                                             place_id: place.place_id,
-                                            category: Array.isArray(place.types) ? place.types.join(',') : "", 
+                                            category: Array.isArray(place.types) ? place.types.join(',') : "",
                                             address: place.formatted_address, // vicinityより詳細な住所
                                             url: place.url,      // 👈 これで取得可能
                                             website: place.website, // 👈 これで取得可能
@@ -149,14 +162,14 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
-
-        setOpenedModalLocations((prev: any[]) =>
+        onFocus();
+        /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
                     ? { ...m, zIndex: 1001 } // 👈 常に一番上
                     : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
             )
-        );
+        );*/
 
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -334,11 +347,14 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    zIndex: modal.zIndex || 100,
+                    zIndex: isFocused ? 2000 : 1000,
+                    border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                    boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
+                    //zIndex: modal.zIndex || 100,
                     backgroundColor: 'white',
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+                    //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                     fontSize: '13px' // 小さすぎず読みやすいサイズ
                 }}
                 onClick={(e) => e.stopPropagation()}
@@ -354,7 +370,7 @@ export default function ModalLocation({ modal, setCurrentMarker, setOpenedModalL
                         justifyContent: 'center'
                     }}
                 >
-                     {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                    {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                 </div>
 
                 {/* ...以下、コンテンツ部分（localPos.x/y を参照するように）... */}

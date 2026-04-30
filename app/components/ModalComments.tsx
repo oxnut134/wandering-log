@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalComments({ modal, logId, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess }: any) {
+export default function ModalComments({ modal, logId, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -11,6 +11,19 @@ export default function ModalComments({ modal, logId, renderMe, setOpenedModalLo
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const [onSaving, setOnSaving] = useState(false);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
+    // ModalComments.tsx の中に追加
+    useEffect(() => {
+        // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
+        return () => {
+            // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
+            // ※本当は handleMouseMove を関数外に出すのが理想ですが、まずはこれで「幽霊」を消せます
+            document.removeEventListener('mousemove', () => { });
+            document.removeEventListener('mouseup', () => { });
+            document.removeEventListener('touchmove', () => { });
+            document.removeEventListener('touchend', () => { });
+            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+        };
+    }, []);
 
     useEffect(() => {
         if (initialModalPosComments) {
@@ -37,16 +50,16 @@ export default function ModalComments({ modal, logId, renderMe, setOpenedModalLo
         }
     }, [initialModalPosComments]); // 💡  initialModalPosComments の変化（親の大きな移動）を監視
 
- useEffect(() => {
-    // 1. 履歴データの取得（既存の関数）
-    onFetchLogs();
+    useEffect(() => {
+        // 1. 履歴データの取得（既存の関数）
+        onFetchLogs();
 
-    // 2. コメントデータの取得（非同期処理）
- 
-  
+        // 2. コメントデータの取得（非同期処理）
 
- 
-}, []); // 💡 初回マウント時のみ実行
+
+
+
+    }, []); // 💡 初回マウント時のみ実行
 
 
     const xRef = useRef<number | undefined>(undefined);
@@ -60,13 +73,14 @@ export default function ModalComments({ modal, logId, renderMe, setOpenedModalLo
         //console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
 
-        setOpenedModalLocations((prev: any[]) =>
+        onFocus();
+        /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
                     ? { ...m, zIndex: 1001 } // 👈 常に一番上
                     : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
             )
-        );
+        );*/
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -188,11 +202,14 @@ export default function ModalComments({ modal, logId, renderMe, setOpenedModalLo
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    zIndex: modal.zIndex || 100,
+                    zIndex: isFocused ? 2000 : 1000,
+                    border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                    boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
+                    //zIndex: modal.zIndex || 100,
                     backgroundColor: 'white',
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+                    //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                     fontSize: '13px' // 小さすぎず読みやすいサイズ
                 }}
                 onClick={(e) => e.stopPropagation()}

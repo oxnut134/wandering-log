@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
+export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -11,6 +11,19 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
 
+    // ModalComments.tsx の中に追加
+    useEffect(() => {
+        // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
+        return () => {
+            // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
+            // ※本当は handleMouseMove を関数外に出すのが理想ですが、まずはこれで「幽霊」を消せます
+            document.removeEventListener('mousemove', () => { });
+            document.removeEventListener('mouseup', () => { });
+            document.removeEventListener('touchmove', () => { });
+            document.removeEventListener('touchend', () => { });
+            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+        };
+    }, []);
     useEffect(() => {
         if (initialModalPosLogs) {
             // ① 親のドラッグに追従して位置を更新
@@ -46,13 +59,14 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         //console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
 
-        setOpenedModalLocations((prev: any[]) =>
+        onFocus();
+        /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
                     ? { ...m, zIndex: 1001 } // 👈 常に一番上
                     : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
             )
-        );
+        );*/
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -120,46 +134,46 @@ export default function ModalLogs({ modal, renderMe, setOpenedModalLocations, is
         document.addEventListener('touchend', handleMouseUp);
 
     };
-const handleShowComments = async (logId: number) => { // 💡 async に変更
-    if (!localPos) return;
+    const handleShowComments = async (logId: number) => { // 💡 async に変更
+        if (!localPos) return;
 
-    // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
-    let existingComment = "";
-    try {
-        const res = await fetch(`/api/get_comments?log_id=${logId}`);
-        const data = await res.json();
-        // 配列の0番目にコメントがあれば取得
-        if (data && data.length > 0) {
-            existingComment = data[0].comment;
+        // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
+        let existingComment = "";
+        try {
+            const res = await fetch(`/api/get_comments?log_id=${logId}`);
+            const data = await res.json();
+            // 配列の0番目にコメントがあれば取得
+            if (data && data.length > 0) {
+                existingComment = data[0].comment;
+            }
+        } catch (error) {
+            console.error("既存コメントの取得に失敗:", error);
         }
-    } catch (error) {
-        console.error("既存コメントの取得に失敗:", error);
-    }
 
-    // 2. 💡 取得したコメントを含めて State を更新
-    setOpenedModalLocations((prev: any[]) => {
-        console.log("activeComment generated with comment:", existingComment);
-        return prev.map((m: any) => {
-            if (m.id !== modal.id) return m;
+        // 2. 💡 取得したコメントを含めて State を更新
+        setOpenedModalLocations((prev: any[]) => {
+            console.log("activeComment generated with comment:", existingComment);
+            return prev.map((m: any) => {
+                if (m.id !== modal.id) return m;
 
-            const currentComments = m.activeComments || [];
-            if (currentComments.some((c: any) => c.logId === logId)) return m;
+                const currentComments = m.activeComments || [];
+                if (currentComments.some((c: any) => c.logId === logId)) return m;
 
-            return {
-                ...m,
-                activeComments: [
-                    ...currentComments,
-                    {
-                        logId: logId,
-                        isShowingComment: true,
-                        comment: existingComment, // 💡 ここで初期値を注入！
-                        pos: { x: localPos.x + 40, y: localPos.y + 40 }
-                    }
-                ]
-            };
+                return {
+                    ...m,
+                    activeComments: [
+                        ...currentComments,
+                        {
+                            logId: logId,
+                            isShowingComment: true,
+                            comment: existingComment, // 💡 ここで初期値を注入！
+                            pos: { x: localPos.x + 40, y: localPos.y + 40 }
+                        }
+                    ]
+                };
+            });
         });
-    });
-};
+    };
 
     /*const handleShowComments = async (logId: number) => { // 💡 どのログのコメントかを受け取る
         if (!localPos) return;
@@ -209,11 +223,14 @@ const handleShowComments = async (logId: number) => { // 💡 async に変更
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',
-                        zIndex: modal.zIndex || 100,
+                        zIndex: isFocused ? 2000 : 1000,
+                        border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                        boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
+                        //zIndex: modal.zIndex || 100,
                         backgroundColor: 'white',
                         padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                         borderRadius: '10px',
-                        boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+                        //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                         fontSize: '13px' // 小さすぎず読みやすいサイズ
                     }}
                     onClick={(e) => e.stopPropagation()}
