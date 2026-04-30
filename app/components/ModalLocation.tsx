@@ -221,7 +221,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
             gBx = bx;
 
             // 💡 4. あなたの定義した境界線ガード・ロジック (Mmyu < Bmyu => Mbyu = 0)
-            /*if (newX < 0) {
+            if (newX < 0) {
                 newX = -10; // 左端固定
             } else if (newX + bx > ax) {
                 newX = ax - bx + 10; // 右端固定
@@ -231,7 +231,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                 newY = by - 20; // 上端固定 (transformの影響を考慮)
             } else if (newY > ay) {
                 newY = ay + 10; // 下端固定
-            }*/
+            }
 
             // 監査ログ（これで数値が出るようになります）
             //console.log("✈️ 移動中監査:", { newX, newY });
