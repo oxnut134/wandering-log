@@ -42,7 +42,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-        console.log("================ x,y ================",x,y)
+     alert("xの値は: " + x);
         if (x === undefined || x === null) {
             x = window.innerWidth / 2 - 130; // モーダル幅260の半分
             y = window.innerHeight / 2 - 160; // モーダル高さの半分
