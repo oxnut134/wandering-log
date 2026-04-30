@@ -6,10 +6,10 @@ import ModalLocation from "./components/ModalLocation";
 import ModalGoogle from "./components/ModalGoogle";
 import ModalLogs from "./components/ModalLogs";
 import ModalComments from "./components/ModalComments";
-//import { useMap } from "@vis.gl/react-google-maps";
-//declare const google: any;
+import { useMap } from "@vis.gl/react-google-maps";
+declare const google: any;
 export default function WanderingLog() {
-    //const map = useMap();
+    const map = useMap();
 
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
     const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
@@ -82,8 +82,25 @@ export default function WanderingLog() {
         if (x === undefined || x === null) {
             //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
             //y = window.innerHeight / 2 -160; // モーダル高さの半分
-             x = 10; // モーダル幅260の半分
-            y = 20; // モーダル高さの半分
+            //x = 10; // モーダル幅260の半分
+            //y = 20; // モーダル高さの半分
+            const projection = map.getProjection();
+            const bounds = map.getBounds();
+
+            if (projection && bounds) {
+                // 地図の左上の緯度経度を取得
+                const nw = new google.maps.LatLng(
+                    bounds.getNorthEast().lat(),
+                    bounds.getSouthWest().lng()
+                );
+                const nwPoint = projection.fromLatLngToPoint(nw)!;
+                const clickPoint = projection.fromLatLngToPoint(latLng)!;
+                const scale = Math.pow(2, map.getZoom()!);
+
+                // 💡 これでマーカーの正確なピクセル座標が計算されます
+                x = (clickPoint.x - nwPoint.x) * scale;
+                y = (clickPoint.y - nwPoint.y) * scale;
+            }
         }
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
