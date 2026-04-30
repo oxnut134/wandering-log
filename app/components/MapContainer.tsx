@@ -152,12 +152,12 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                 const scale = Math.pow(2, map.getZoom()!);
 
                 // 💡 これでマーカーの正確なピクセル座標が計算されます
-                //x = (clickPoint.x - nwPoint.x) * scale;
-                //y = (clickPoint.y - nwPoint.y) * scale;
-                xCheck = (clickPoint.x - nwPoint.x) * scale;
-                yCheck = (clickPoint.y - nwPoint.y) * scale;
-                x=60;
-                y=80;
+                x = (clickPoint.x - nwPoint.x) * scale;
+                y = (clickPoint.y - nwPoint.y) * scale;
+                //xCheck = (clickPoint.x - nwPoint.x) * scale;
+                //yCheck = (clickPoint.y - nwPoint.y) * scale;
+                xCheck=x;
+                yCheck=y;
             }
         }
 
