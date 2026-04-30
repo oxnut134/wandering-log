@@ -6,8 +6,7 @@ declare const google: any;
 
 export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
     const map = useMap();
-    const [localPos, setLocalPos] = useState(() => initialModalPos);
-    //const [localPos, setLocalPos] = useState(initialModalPos);
+    const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -348,7 +347,6 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    touchAction: 'none',
                     zIndex: isFocused ? 2000 : 1000,
                     border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
                     boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
