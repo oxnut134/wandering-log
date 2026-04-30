@@ -346,7 +346,11 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     position: 'absolute',
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
-                    transform: 'translate(0, -100%)',
+                    //transform: 'translate(0, -100%)',
+                    transform: 'none',   // 👈 強制的に打ち消す
+                    margin: 0,           // 👈 強制的に打ち消す
+                    right: 'auto',       // 👈 強制的に打ち消す
+                    bottom: 'auto',      // 👈 強制的に打ち消す
                     zIndex: isFocused ? 2000 : 1000,
                     border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
                     boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',

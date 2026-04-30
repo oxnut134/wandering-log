@@ -245,67 +245,67 @@ export default function WanderingLog() {
             </button>
             {/*<button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
             <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>*/}
-<div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: 0, pointerEvents: 'none', zIndex: 2000 }}>
-            {openedModalLocations.map((modal) => (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: 0, pointerEvents: 'none', zIndex: 2000 }}>
+                {openedModalLocations.map((modal) => (
 
-                <ModalLocation
-                    key={modal.id}
-                    modal={modal}
-                    isFocused={activeGroupId === modal.id}
-                    onFocus={() => setActiveGroupId(modal.id)}
-                    initialModalPos={modal.pos}
-                    setOpenedModalLocations={setOpenedModalLocations}
-                    openedModalGoogle={modal.data}
-                    onPosUpdate={(newPos: any) => updatedCurrentPos(modal.id, newPos)}
-                    //isGoogleView={isGoogleView}
-                    isGoogleView={modal.data.isShowingGoogle}
-                    //isGoogleView={modal.data?.isShowingGoogle || false}
-                    setIsGoogleView={setIsGoogleView}
-                    // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
-                    logs={modal.logs || []}
-                    onSaveSuccess={refreshHistory}
-                    //onSaveSuccess={onSaveSuccess}
-                    isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
-                    // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
-                    onFetchLogs={() => fetchLogsForModal(modal.id)}
-                    moveDist={moveDist}
-                    setMoveDist={setMoveDist}
+                    <ModalLocation
+                        key={modal.id}
+                        modal={modal}
+                        isFocused={activeGroupId === modal.id}
+                        onFocus={() => setActiveGroupId(modal.id)}
+                        initialModalPos={modal.pos}
+                        setOpenedModalLocations={setOpenedModalLocations}
+                        openedModalGoogle={modal.data}
+                        onPosUpdate={(newPos: any) => updatedCurrentPos(modal.id, newPos)}
+                        //isGoogleView={isGoogleView}
+                        isGoogleView={modal.data.isShowingGoogle}
+                        //isGoogleView={modal.data?.isShowingGoogle || false}
+                        setIsGoogleView={setIsGoogleView}
+                        // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
+                        logs={modal.logs || []}
+                        onSaveSuccess={refreshHistory}
+                        //onSaveSuccess={onSaveSuccess}
+                        isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
+                        // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
+                        onFetchLogs={() => fetchLogsForModal(modal.id)}
+                        moveDist={moveDist}
+                        setMoveDist={setMoveDist}
 
-                    onCloseModalLocation={() => {
-                        setOpenedModalLocations(prev =>
-                            prev.filter(record => record.id !== modal.id)
+                        onCloseModalLocation={() => {
+                            setOpenedModalLocations(prev =>
+                                prev.filter(record => record.id !== modal.id)
 
-                        );
-
-                    }}
-                    onClose={() => {
-                        setOpenedModalLocations(prev => prev.filter(m => m.id !== modal.id));
-                    }}
-                    //setOpenedModalGoogle={setOpenedModalGoogle}
-                    setOpenedModalGoogle={(newData: any) => {
-                        setOpenedModalLocations(prev => prev.map(m =>
-                            m.id === modal.id ? { ...m, data: newData } : m
-                        ));
-                    }}
-                    setCurrentMarker={() => {
-                        //console.log("in setCurrentMaker");
-                        setOpenedModalLocations((prev: any[]) => {
-                            return prev.map((m: any) =>
-                                m.id === modal.id
-                                    ? {
-                                        ...m,
-                                        data: {
-                                            ...m.data,
-                                            isCurrentMarker: m.data.isCurrentMarker ? false : true,
-                                        }
-                                    }
-                                    : m
                             );
-                        });
 
-                    }}
-                />
-            ))}
+                        }}
+                        onClose={() => {
+                            setOpenedModalLocations(prev => prev.filter(m => m.id !== modal.id));
+                        }}
+                        //setOpenedModalGoogle={setOpenedModalGoogle}
+                        setOpenedModalGoogle={(newData: any) => {
+                            setOpenedModalLocations(prev => prev.map(m =>
+                                m.id === modal.id ? { ...m, data: newData } : m
+                            ));
+                        }}
+                        setCurrentMarker={() => {
+                            //console.log("in setCurrentMaker");
+                            setOpenedModalLocations((prev: any[]) => {
+                                return prev.map((m: any) =>
+                                    m.id === modal.id
+                                        ? {
+                                            ...m,
+                                            data: {
+                                                ...m.data,
+                                                isCurrentMarker: m.data.isCurrentMarker ? false : true,
+                                            }
+                                        }
+                                        : m
+                                );
+                            });
+
+                        }}
+                    />
+                ))}
             </div>
             {openedModalLocations.map((modal) => (
                 <ModalGoogle
