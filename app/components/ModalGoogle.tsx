@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalGoogle({ modal, isFocused, onFocus, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving }: any) {
+export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving }: any) {
     const map = useMap();
 
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
@@ -22,7 +22,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, setOpenedModalL
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+            //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
     useEffect(() => {
@@ -54,6 +54,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, setOpenedModalL
         if (!localPos) return;
 
         onFocus();
+        //onFocusGoogle();
         /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
@@ -181,6 +182,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, setOpenedModalL
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
                             zIndex: isFocused ? 2000 : 1000,
+                            //zIndex: (isFocused && isFocusedGoogle) ? 3000 :(isFocused ? 2000 : 1000),
                             border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
                             boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                             //zIndex: modal.zIndex || 100,

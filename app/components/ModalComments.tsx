@@ -3,15 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalComments({ modal, logId, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess }: any) {
+export default function ModalComments({ modal, logId, commentId, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess, isCommentRecordExist }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const [onSaving, setOnSaving] = useState(false);
+    const [text, setText] = useState("");
+    const LIMIT = 500;
+    const [isConfirming, setIsConfirming] = useState(false);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
     // ModalComments.tsx の中に追加
+    
     useEffect(() => {
         // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
         return () => {
@@ -21,7 +25,7 @@ export default function ModalComments({ modal, logId, isFocused, onFocus, render
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+            //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
 
@@ -188,6 +192,32 @@ export default function ModalComments({ modal, logId, isFocused, onFocus, render
         console.log("==================localPos=NULL")
         return;
     }
+    const handleDeleteComment = async () => {
+        console.log("commentId:", commentId)
+        //if (!confirm("削除しますか？")) return;
+        const res = await fetch("/api/delete_comments_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: commentId }) });
+        if (res.ok) { onSaveSuccess(); onClose(); handleLogsClose();}
+    };
+    const handleLogsClose = () => {
+        //console.log("On closing");
+        // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
+        setOpenedModalLocations((prev: any[]) => {
+            return prev.map((m: any) =>
+                m.id === modal.id
+                    ? {
+                        ...m,
+                        data: {
+                            ...m.data,
+                            isShowingLogs: false
+                        }
+                    }
+                    : m
+            );
+        });
+
+
+    }
+
     //console.log("modal.activeComments.isShowingComment:",C)
 
     return (
@@ -274,10 +304,12 @@ export default function ModalComments({ modal, logId, isFocused, onFocus, render
                             ))}
                     </div>
                     <textarea
+                        maxLength={500}
                         style={{
                             width: '100%',
                             height: '10vh',
-                            marginBottom: '1%',
+                            display: 'block',
+                            //marginBottom: '2px',
                             border: '1px solid #bbb',
                             borderRadius: '6px',
                             padding: '4px',
@@ -308,7 +340,9 @@ export default function ModalComments({ modal, logId, isFocused, onFocus, render
                         }}
                         placeholder="コメントを残す"
                     />
-
+                    <div style={{ textAlign: 'right', margin: '0 0 2px 0', fontSize: '8px', color: '#888' }}>
+                        {(modal.activeComments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500文字
+                    </div>
                 </div>
                 <button
                     onClick={handleSave}
@@ -340,14 +374,36 @@ export default function ModalComments({ modal, logId, isFocused, onFocus, render
                         "保存する"
                     )}
                 </button>
-                <div>
+                <div style={{
+                    display: 'flex',    // 💡 中身を真ん中に
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '10px'
+                }}>
                     <button
                         onClick={onClose}
                         style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
                         閉じる
                     </button>
+                    {/*{isExisting && (*/}
+                    {  isCommentRecordExist && (isConfirming ? (
+                        <button
+                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            onClick={handleDeleteComment} // 💡 2回目で実行
+                        >
+                            削除確定
+                        </button>
+                    ) : (
+                        <button
+                            //style={{ width: '30%', height: '3vh', background: '#9ca3af', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            onClick={() => setIsConfirming(true)} // 💡 1回目で「確認モード」へ
+                        >
+                            削除
+                        </button>
+                    ))}
+                    {/*})}*/}
                 </div>
-
             </div>
         </>
     );

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef }: any) {
+export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef,setIsCommentRecordExist }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -21,7 +21,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+            //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
     useEffect(() => {
@@ -139,13 +139,19 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
 
         // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
         let existingComment = "";
+        let commentId="";
         try {
             const res = await fetch(`/api/get_comments?log_id=${logId}`);
             const data = await res.json();
             // 配列の0番目にコメントがあれば取得
             if (data && data.length > 0) {
+                commentId = data[0].id;
                 existingComment = data[0].comment;
+                setIsCommentRecordExist(true)
+            }else{
+                setIsCommentRecordExist(false)
             }
+            console.log("comments:",data)
         } catch (error) {
             console.error("既存コメントの取得に失敗:", error);
         }
@@ -164,6 +170,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                     activeComments: [
                         ...currentComments,
                         {
+                            id:commentId,
                             logId: logId,
                             isShowingComment: true,
                             comment: existingComment, // 💡 ここで初期値を注入！
@@ -300,7 +307,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                     <div>
                         <button
                             onClick={onClose}
-                            style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
+                            style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '10px' }}>
                             閉じる
                         </button>
                     </div>

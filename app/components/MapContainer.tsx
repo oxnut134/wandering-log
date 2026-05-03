@@ -3,7 +3,7 @@ import { Map, AdvancedMarker, Marker, useMap, Pin, ControlPosition } from "@vis.
 import { useState, useEffect, useCallback } from "react";
 declare const google: any;
 
-export default function MapContainer({ setModalPos, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom }: any) {
+export default function MapContainer({ setModalPos, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
 
@@ -69,6 +69,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         // 💡 4. 安全が確認された座標を State に保存
         setModalPos({ x, y });
 
+        //Google情報取得
         const service = new google.maps.places.PlacesService(map as any);
         const latNum = typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat;
         const lngNum = typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng;
@@ -156,8 +157,8 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                 y = (clickPoint.y - nwPoint.y) * scale;
                 //xCheck = (clickPoint.x - nwPoint.x) * scale;
                 //yCheck = (clickPoint.y - nwPoint.y) * scale;
-                xCheck=x;
-                yCheck=y;
+                xCheck = x;
+                yCheck = y;
             }
         }
 
@@ -185,7 +186,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         const newModal = {
             id: place?.id || `new-${Date.now()}`, // 複数識別用のID
             //pos: { x: x, y: y },
-            pos: { x: x, y: y, xCheck:xCheck, yCheck:yCheck },
+            pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
             currentPos: { x: x + 40, y: y + 40 },
             //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
             data: place
@@ -237,8 +238,10 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                         const latLng = ev.detail?.latLng || ev.latLng;
                         const domEvent = ev.detail?.domEvent || ev.domEvent;
                         handleRedMarkerClick(null, latLng, domEvent);
-                    }}
-                />
+                    }}>
+                    <Pin scale={0.9} />
+                </AdvancedMarker>
+
                 {/* 過去の足跡も AdvancedMarker に揃える */}
                 {visitedLocations.map((item: any) => {
                     const isCurrent = openedModalLocations.find(
@@ -271,7 +274,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                                 <Pin
                                     background={'#FBBC04'}
                                     glyphColor={'#000000'}
-                                    glyph={'👣'}
+                                    glyphText={'👣'}
                                 />
                             )
                             }

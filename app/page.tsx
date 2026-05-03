@@ -25,8 +25,12 @@ export default function WanderingLog() {
     const [currentZoom, setCurrentZoom] = useState(15);
     const [moveDist, setMoveDist] = useState({ x: 0, y: 0 });
     //const isDraggingRef = useRef(false);
-    const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
     const [dummy, setDummy] = useState(false);
+    const [isCommentRecordExist, setIsCommentRecordExist] = useState(false);
+    const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
+    const [activeGroupGoogleId, setActiveGroupGoogleId] = useState<number | null>(null);
+    const [activeGroupLocationId, setActiveGroupLocationId] = useState<number | null>(null);
+    const [recordDeleted, isRecordDeleted] = useState(false);
 
     const renderMe = () => {
         setDummy(prev => !prev);
@@ -70,79 +74,6 @@ export default function WanderingLog() {
         refreshHistory();
     }, [refreshHistory]);
 
-    /*
-    const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
-        // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
-        //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
-        //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
-
-        let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
-        let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
-
-        // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-        if (x === undefined || x === null) {
-            //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
-            //y = window.innerHeight / 2 -160; // モーダル高さの半分
-            //x = 10; // モーダル幅260の半分
-            //y = 20; // モーダル高さの半分
-            const projection = map.getProjection();
-            const bounds = map.getBounds();
-
-            if (projection && bounds) {
-                // 地図の左上の緯度経度を取得
-                const nw = new google.maps.LatLng(
-                    bounds.getNorthEast().lat(),
-                    bounds.getSouthWest().lng()
-                );
-                const nwPoint = projection.fromLatLngToPoint(nw)!;
-                const clickPoint = projection.fromLatLngToPoint(latLng)!;
-                const scale = Math.pow(2, map.getZoom()!);
-
-                // 💡 これでマーカーの正確なピクセル座標が計算されます
-                x = (clickPoint.x - nwPoint.x) * scale;
-                y = (clickPoint.y - nwPoint.y) * scale;
-            }
-        }
-
-        // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
-        const ax = window.innerWidth;
-        const ay = window.innerHeight;
-        const bx = 260; // モーダルの幅
-        const by = 320; // モーダルの高さ（おおよそ）
-
-        if (x < 0) {
-            x = 0; // 左端固定
-        } else if (x + bx > ax) {
-            x = ax - bx - 30; // 右端固定
-        }
-
-        if (y < by) {
-            y = by + 60; // 上端固定 (transformの影響を考慮)
-        } else if (y > ay) {
-            y = ay; // 下端固定
-        }
-
-        // 💡 4. 安全が確認された座標を State に保存
-        setModalPos({ x, y });
-
-        const newModal = {
-            id: place?.id || `new-${Date.now()}`, // 複数識別用のID
-            pos: { x: x, y: y },
-            currentPos: { x: x + 40, y: y + 40 },
-            //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
-            data: place
-                ? { ...place, isNew: false }
-                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: true },
-        };
-
-        // 💡 すでに同じIDのモーダルが開いていなければ追加
-        setOpenedModalLocations(prev => {
-            if (prev.find(m => m.id === newModal.id)) return prev;
-            return [...prev, newModal];
-        });
-
-    };
-    */
 
     const updatedCurrentPos = (id: any, newPos: any) => {
         setOpenedModalLocations(prev => prev.map(m =>
@@ -211,15 +142,6 @@ export default function WanderingLog() {
         }
     };
 
-    /*const resetMoveFlag = (id: string) => {
-        setOpenedModalLocations(prev => prev.map(m =>
-            m.id === id ? { ...m, hasMovedEnough: false } : m
-        ));
-    };*/
-
-
-    //console.log("openedModalLocations:", openedModalLocations)
-    //console.log("📍📍moveDist:", moveDist);
 
     return (
         <APIProvider
@@ -274,6 +196,11 @@ export default function WanderingLog() {
                     modal={modal}
                     isFocused={activeGroupId === modal.id}
                     onFocus={() => setActiveGroupId(modal.id)}
+                    // isFocusedLocation={activeGroupLocationId === modal.id}
+                    // onFocusLocation={() => {
+                    //     setActiveGroupLocationId(modal.id)
+                    //     setActiveGroupGoogleId(null)
+                    // }}
                     initialModalPos={modal.pos}
                     setOpenedModalLocations={setOpenedModalLocations}
                     openedModalGoogle={modal.data}
@@ -291,7 +218,6 @@ export default function WanderingLog() {
                     onFetchLogs={() => fetchLogsForModal(modal.id)}
                     moveDist={moveDist}
                     setMoveDist={setMoveDist}
-
                     onCloseModalLocation={() => {
                         setOpenedModalLocations(prev =>
                             prev.filter(record => record.id !== modal.id)
@@ -333,6 +259,11 @@ export default function WanderingLog() {
                     modal={modal}
                     isFocused={activeGroupId === modal.id}
                     onFocus={() => setActiveGroupId(modal.id)}
+                    //isFocusedGoogle={activeGroupGoogleId === modal.id}
+                    // onFocusGoogle={() => {
+                    //     setActiveGroupLocationId(null)
+                    //     setActiveGroupGoogleId(modal.id)
+                    // }}
                     //openedModalLocations={openedModalLocations}
                     setOpenedModalLocations={setOpenedModalLocations}
                     //initialModalPosGoogle={modal.currentPos}
@@ -376,13 +307,6 @@ export default function WanderingLog() {
 
                     }}
 
-                //setOpenedModalGoogle={setOpenedModalGoogle}
-
-                // setOpenedModalGoogle={(newData: any) => {
-                //     setOpenedModalLocations(prev => prev.map(m =>
-                //         m.id === modal.id ? { ...m, data: newData } : m
-                //     ));
-                // }}
                 />
             ))}
             {openedModalLocations.map((modal) => {
@@ -397,6 +321,7 @@ export default function WanderingLog() {
                         renderMe={renderMe}
                         openedModalLocations={openedModalLocations}
                         setOpenedModalLocations={setOpenedModalLocations}
+                        setIsCommentRecordExist={setIsCommentRecordExist}
                         //isDraggingRef={isDraggingRef}
                         initialModalPosLogs={
                             modal.data.hasMovedEnough ?
@@ -440,13 +365,6 @@ export default function WanderingLog() {
                             });
 
                         }}
-                    //setOpenedModalGoogle={setOpenedModalGoogle}
-
-                    // setOpenedModalGoogle={(newData: any) => {
-                    //     setOpenedModalLocations(prev => prev.map(m =>
-                    //         m.id === modal.id ? { ...m, data: newData } : m
-                    //     ));
-                    // }}
                     />
                 )
             })}
@@ -455,8 +373,9 @@ export default function WanderingLog() {
                     c.isShowingComment && (
                         <ModalComments
                             logs={modal.logs || []}// dummy just for test 
-                            key={c.logId}  // 地点IDではなく「ログID」をキーにするのがコツ！
+                            key={c.logId}
                             logId={c.logId}
+                            commentId={c.id}
                             modal={modal}// これで親(Location)の座標に追従できる
                             isFocused={activeGroupId === modal.id}
                             onFocus={() => setActiveGroupId(modal.id)}
@@ -464,6 +383,8 @@ export default function WanderingLog() {
                             onFetchLogs={() => fetchLogsForModal(modal.id)}
                             openedModalLocations={openedModalLocations}
                             setOpenedModalLocations={setOpenedModalLocations}
+                            onSaveSuccess={refreshHistory}
+                            isCommentRecordExist={isCommentRecordExist}
 
                             onClose={() => {
                                 setOpenedModalLocations(prev => prev.map(loc =>
@@ -479,8 +400,6 @@ export default function WanderingLog() {
                                         y: modal.currentPos.y + 80 + 40 * index
                                     }
                                     : null
-                                //: null
-                                //: {x:0,y:0}
                             }
 
                         />)

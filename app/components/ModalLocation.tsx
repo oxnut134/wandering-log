@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
+export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLocation, onFocusLocation, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
     const map = useMap();
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -25,7 +25,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+            //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
     const handleSave = async () => {
@@ -44,16 +44,32 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        if (res.ok) {
-            if (onSaveSuccess) onSaveSuccess();
+        console.log(">>>>>>>>>>>modal", modal)
+        if(res.ok) {
+            const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
+
+            setOpenedModalLocations((prev:any) =>
+                prev.map((m:any) =>
+                    // 今開いている「new-xxx」というIDのモーダルを探して
+                    m.id === modal.id
+                        ? { ...m, id: savedData.id, data: { ...m.data,id: savedData.id,savedData, isNew: false } } // 本物のデータに差し替える
+                        : m
+                )
+            );
+
+            if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
         }
-        setOnSaving(false)
+        // if (res.ok) {
+        //     if (onSaveSuccess) onSaveSuccess();
+        // }
+        //onCloseModalLocation()
+        setOnSaving(false);
         if (res.ok) return;
     }
 
     const handleDelete = async () => {
         //if (!confirm("削除しますか？")) return;
-        const res = await fetch("/api/delete_this_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
+        const res = await fetch("/api/delete_locations_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
         if (res.ok) { onSaveSuccess(); onCloseModalLocation(); }
     };
 
@@ -163,6 +179,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
             if (e.cancelable) e.preventDefault();
         }
         onFocus();
+        //Location();
         /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
                 m.id === modal.id
@@ -318,6 +335,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
         if (latLng) {
             // 3. 親のステート (openedModalGoogle) を更新
             // これにより、地図をドラッグしてもこの新しい地点にモーダルが固定されます
+            //setOpenedModalGoogle((prev: any) => ({
             setOpenedModalGoogle((prev: any) => ({
                 ...prev,
                 latitude: latLng.lat(),
@@ -348,6 +366,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
                     zIndex: isFocused ? 2000 : 1000,
+                    //zIndex: (isFocused && isFocusedLocation) ? 3000: (isFocused ? 2000 : 1000),
                     border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
                     boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                     //zIndex: modal.zIndex || 100,
@@ -355,22 +374,42 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                     borderRadius: '10px',
                     //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
-                    fontSize: '13px' // 小さすぎず読みやすいサイズ
+                    fontSize: '13px', // 小さすぎず読みやすいサイズ
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
+                <div style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <div style={{
+                        width: '96%',
+                        height: '6px', // 2px〜3pxがおすすめ
+                        background: 'linear-gradient(90deg, #10b981 0%, #a3e635 100%)',
+                        borderRadius: '15px 15px 0 0',
+                        boxShadow: '0 4px 6px -4px rgba(0,0,0,0.1)'
+                    }} />
+                </div>
                 <div
                     onMouseDown={handleDown}
                     onTouchStart={handleDown}
                     style={{
                         height: '4vh', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',
-                        borderBottom: '1px solid #ddd', userSelect: 'none', fontSize: '11px', borderRadius: '6px',      // 💡 ここから追加：縦横センターにする設定
+                        boxShadow: '0 4px 6px -4px rgba(0,0,0,0.1)', userSelect: 'none', fontSize: '11px', borderRadius: '0 0 6px 6px',      // 💡 ここから追加：縦横センターにする設定
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
                 >
-                    {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                    {/*<div style={{
+                        width: '30px',
+                        height: '4px',
+                        backgroundColor: '#ccc',
+                        borderRadius: '2px'
+                    }} />*/}
+                    {/*{modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)*/}
                 </div>
 
                 {/* ...以下、コンテンツ部分（localPos.x/y を参照するように）... */}
@@ -531,7 +570,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, setCurrentMar
                     ) : (
                         <button
                             //style={{ width: '30%', height: '3vh', background: '#9ca3af', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
-                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px' }}
                             onClick={() => setIsConfirming(true)} // 💡 1回目で「確認モード」へ
                         >
                             削除
