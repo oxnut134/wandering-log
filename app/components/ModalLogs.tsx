@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef,setIsCommentRecordExist }: any) {
+export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef, setIsCommentRecordExist }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -139,7 +139,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
 
         // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
         let existingComment = "";
-        let commentId="";
+        let commentId = "";
         try {
             const res = await fetch(`/api/get_comments?log_id=${logId}`);
             const data = await res.json();
@@ -148,10 +148,10 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                 commentId = data[0].id;
                 existingComment = data[0].comment;
                 setIsCommentRecordExist(true)
-            }else{
+            } else {
                 setIsCommentRecordExist(false)
             }
-            console.log("comments:",data)
+            console.log("comments:", data)
         } catch (error) {
             console.error("既存コメントの取得に失敗:", error);
         }
@@ -170,7 +170,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                     activeComments: [
                         ...currentComments,
                         {
-                            id:commentId,
+                            id: commentId,
                             logId: logId,
                             isShowingComment: true,
                             comment: existingComment, // 💡 ここで初期値を注入！
@@ -182,40 +182,6 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
         });
     };
 
-    /*const handleShowComments = async (logId: number) => { // 💡 どのログのコメントかを受け取る
-        if (!localPos) return;
-
-        setOpenedModalLocations((prev: any[]) => {
-            console.log("activeComment generated")
-            return prev.map((m: any) => {
-                if (m.id !== modal.id) return m;
-
-                // 💡 既に開いているコメントの配列を取得（なければ空）
-                const currentComments = m.activeComments || [];
-
-                // 💡 同じログのコメントが既にあるかチェック
-                if (currentComments.some((c: any) => c.logId === logId)) return m;
-
-                return {
-                    ...m,
-                    activeComments: [
-                        ...currentComments,
-                        {
-                            logId: logId,
-                            isShowingComment: true,
-                            pos: { x: localPos.x + 40, y: localPos.y + 40 } // 💡 親の隣に出す
-                        }
-                    ]
-                };
-            });
-        });
-    };*/
-
-    /*if (!logs || logs.length === 0) {
-        return <p style={{ fontSize: '12px', color: '#999', padding: '10px' }}>まだ訪問記録がありません</p>;
-    }*/
-    //console.log("isShowingLogs:", modal.data.isShowingLogs)
-    //if (!localPos) return null;
     if (!localPos) return;
     return (
         <>
@@ -275,7 +241,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                                     }}>
                                     <span
                                         style={{ fontWeight: 'normal' }}
-                                        onClick={() => handleShowComments(log.id)}>
+                                    >
 
                                         {(() => {
                                             // 1. 文字列として受け取り、必ず末尾に 'Z' がある状態にする
@@ -299,7 +265,10 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                                         })()}
                                     </span>
 
-                                    <span style={{ color: '#aaa' }}>#{logs.length - index}</span>
+                                    <button
+                                        onClick={() => handleShowComments(log.id)}
+                                        style={{    cursor:'pointer', display: 'inline-block', width: '40px', height: '20px', lineHeight: '20px', textAlign: 'center', borderRadius: '6px', border: '1px solid #374151', color: '#374151', fontSize: '10px' }}>メモ#{logs.length - index}
+                                    </button>
                                 </div>
                             ))}
                         </div>

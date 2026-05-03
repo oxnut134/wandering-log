@@ -263,7 +263,7 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
 
                 <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                     <h5 style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
-                        <strong>🚩 コメント</strong>
+                        <strong>🚩 メモ</strong>
                     </h5>
                     <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                         {logs
@@ -338,7 +338,7 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                                 )
                             );
                         }}
-                        placeholder="コメントを残す"
+                        placeholder="メモを残す"
                     />
                     <div style={{ textAlign: 'right', margin: '0 0 2px 0', fontSize: '8px', color: '#888' }}>
                         {(modal.activeComments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500文字

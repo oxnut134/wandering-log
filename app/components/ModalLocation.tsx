@@ -45,20 +45,25 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
             body: JSON.stringify(payload)
         });
         console.log(">>>>>>>>>>>modal", modal)
-        if(res.ok) {
-            const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
+        if (res.ok) {
+            if (modal.data.isNew) {
+                const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
 
-            setOpenedModalLocations((prev:any) =>
-                prev.map((m:any) =>
-                    // 今開いている「new-xxx」というIDのモーダルを探して
-                    m.id === modal.id
-                        ? { ...m, id: savedData.id, data: { ...m.data,id: savedData.id,savedData, isNew: false } } // 本物のデータに差し替える
-                        : m
-                )
-            );
-
-            if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
+                setOpenedModalLocations((prev: any) =>
+                    prev.map((m: any) =>
+                        // 今開いている「new-xxx」というIDのモーダルを探して
+                        m.id === modal.id
+                            ? { ...m, id: savedData.id, data: { ...m.data, id: savedData.id, savedData, isNew: false } } // 本物のデータに差し替える
+                            : m
+                    )
+                );
+            }
+            // } else {
+            //     setOpenedModalLocations((prev: any) => [...prev, savedData])
+            // }
         }
+        if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
+
         // if (res.ok) {
         //     if (onSaveSuccess) onSaveSuccess();
         // }
@@ -475,7 +480,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     }}
                     value={openedModalGoogle.comment || ""}
                     onChange={e => setOpenedModalGoogle({ ...openedModalGoogle, comment: e.target.value })}
-                    placeholder="コメントを残す"
+                    placeholder="メモを残す"
                 />
 
                 <button
@@ -520,11 +525,12 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                             color: '#2563eb',
                             borderRadius: '6px',
                             padding: '8px',
-                            fontSize: '8px',
+                            fontSize: '10px',
                             border: '1px solid #2563eb',
                             display: 'flex',    // 💡 中身を真ん中に
                             alignItems: 'center',
                             justifyContent: 'center',
+                            cursor: 'pointer',
 
                         }}
                     >
@@ -536,15 +542,16 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                         style={{
                             flex: 1,
                             height: '4vh',
-                            background: '#f3f4f6',
+                            background: '#fff',
                             color: '#374151',
                             borderRadius: '6px',
                             padding: '8px',
-                            fontSize: '8px',
-                            border: '1px solid #d1d5db',
+                            fontSize: '10px',
+                            border: '1px solid #374151',
                             display: 'flex',    // 💡 中身を真ん中に
                             alignItems: 'center',
                             justifyContent: 'center',
+                            cursor: 'pointer',
 
                         }}
                     >
@@ -562,7 +569,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     </button>
                     {isExisting && (isConfirming ? (
                         <button
-                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
+                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px', cursor:'pointer',  }}
                             onClick={handleDelete} // 💡 2回目で実行
                         >
                             削除確定
@@ -570,7 +577,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     ) : (
                         <button
                             //style={{ width: '30%', height: '3vh', background: '#9ca3af', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
-                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px' }}
+                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px', cursor:'pointer',  }}
                             onClick={() => setIsConfirming(true)} // 💡 1回目で「確認モード」へ
                         >
                             削除
