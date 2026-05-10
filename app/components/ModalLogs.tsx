@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef, setIsCommentRecordExist }: any) {
+export default function ModalLogs({ modal, updateModalElements, isFocused, onFocus, renderMe, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef, setIsCommentRecordExist, setActiveGroupId, }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
-    const [isDragging, setIsDragging] = useState(false);
+    //const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
 
@@ -26,20 +26,21 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
     }, []);
     useEffect(() => {
         if (initialModalPosLogs) {
-            // ① 親のドラッグに追従して位置を更新
+            // 追従後、位置を更新
             setLocalPos(initialModalPosLogs);
+            if (modal.data.hasMovedEnough) {
+                updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    data: {
+                        ...dummy.data,
+                        hasMovedEnough: false // 役割終了のためリセット
+                    }
+                }));
+            }
 
-            // ② 【重要】追従が完了したので、親のフラグを即座にリセット
-            // これをしないと、次に足跡をクリックした時にまた initialModalPosLogs が届いてしまいます
-            /*setOpenedModalLocations((prev: any[]) =>
-                prev.map((m: any) =>
-                    m.id === modal.id
-                        ? { ...m, data: { ...m.data, hasMovedEnough: false } }
-                        : m
-                )
-            );*/
+
         } else if (!localPos) {
-            // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
+            //  初回マウント時、初期位置セット
             setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
         }
     }, [initialModalPosLogs]); // 💡 initialModalPosLogs の変化（親の大きな移動）を監視
@@ -48,25 +49,67 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
         onFetchLogs();
     }, []);
 
+    /*const handleUpdateZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.zIndexValue) || 1000,
+            Number(m.zIndexValueRight) || 1000,
+            Number(m.data?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValueRight) || 1000,
+            Number(m.log?.zIndexValueRight) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+
+        // 1. 全体の最大値を計算 (計算には今の最新の状態 openedModalLocations を使う)
+        // const allValues = openedModalLocations.flatMap((m: any) => [
+        //     Number(m.zIndexValue) || 1000,
+        //     Number(m.data?.zIndexValue) || 1000,
+        //     ...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        // ]);
+        // const nextZ = Math.max(1000, ...allValues) + 1;
+
+        console.log("✈️ 共通関数で更新:", { nextZ });
+
+        // 2. 共通の「魔法の杖」を振る
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            zIndexValue: nextZ,
+            log: {
+                ...dummy.log,
+                zIndexValueRight: nextZ
+            },
+            hasMovedEnough: false,
+            rightClick: false,
+        }));
+    };*/
+
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
 
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: any) => {
+        if (e.button !== 0) return;
+
         //setIsDragging(true);
         if (!localPos) return;
         //console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
 
         onFocus();
-        /*setOpenedModalLocations((prev: any[]) =>
-            prev.map((m: any) =>
-                m.id === modal.id
-                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
-                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
-            )
-        );*/
+        //handleUpdateZIndex(); // for group zIndexs
+        // handleUpdateZIndex();
+        //  hasMovedEnough リセット
+        /*updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            log: {
+                ...dummy.data,
+                hasMovedEnough: false,
+                rightClick: false,
+
+            }
+        }));*/
+
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -138,8 +181,9 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
         if (!localPos) return;
 
         // 1. 💡 まず、DBから既存のコメントがあるか取ってくる
-        let existingComment = "";
+        let existingComment = null;
         let commentId = "";
+        let isExist: any;
         try {
             const res = await fetch(`/api/get_comments?log_id=${logId}`);
             const data = await res.json();
@@ -147,9 +191,9 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
             if (data && data.length > 0) {
                 commentId = data[0].id;
                 existingComment = data[0].comment;
-                setIsCommentRecordExist(true)
+                isExist = true
             } else {
-                setIsCommentRecordExist(false)
+                isExist = false
             }
             console.log("comments:", data)
         } catch (error) {
@@ -162,19 +206,20 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
             return prev.map((m: any) => {
                 if (m.id !== modal.id) return m;
 
-                const currentComments = m.activeComments || [];
+                const currentComments = m.comments || [];
                 if (currentComments.some((c: any) => c.logId === logId)) return m;
 
                 return {
                     ...m,
-                    activeComments: [
+                    comments: [
                         ...currentComments,
                         {
                             id: commentId,
                             logId: logId,
                             isShowingComment: true,
                             comment: existingComment, // 💡 ここで初期値を注入！
-                            pos: { x: localPos.x + 40, y: localPos.y + 40 }
+                            isExistingComment: isExist,
+                            //pos: { x: localPos.x + 40, y: localPos.y + 40 }
                         }
                     ]
                 };
@@ -196,8 +241,12 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                         top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                         left: `${localPos.x + 15}px`,
                         transform: 'translate(0, -100%)',
-                        zIndex: isFocused ? 2000 : 1000,
-                        border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                        zIndex: modal.log?.zIndexValue,
+                        //zIndex: (isFocused && modal.log?.rightClick) ? modal.log.zIndexValueRight : (isFocused ? modal.zIndexValue : null),
+                        //zIndex: modal.log?.rightClick ? modal.log.zIndexValueRight : modal.zIndexValue,
+                        //zIndex: modal.zIndexValue,
+                        //zIndex: isFocused ? 2000 : 1000,
+                        border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                         boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                         //zIndex: modal.zIndex || 100,
                         backgroundColor: 'white',
@@ -221,6 +270,66 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                             justifyContent: 'center'
 
                         }}
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isFocused) return;
+                            console.log("===== right click executed =======")
+                            e.preventDefault(); // ブラウザ標準のメニューを出さない
+                            const allValues = openedModalLocations.flatMap((m: any) => [
+                                    Number(m.locations?.zIndexValue) || 1000,
+                                    Number(m.google?.zIndexValue) || 1000,
+                                    Number(m.log?.zIndexValue) || 1000,
+                                    ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                                ]);
+                                const nextZ = Math.max(1000, ...allValues) + 1;
+
+                                console.log("✈️ 共通関数で更新:", { nextZ });
+
+                                updateModalElements(modal.id, (dummy: any) => ({
+                                    ...dummy,
+                                    log: {
+                                        ...dummy.dummy,
+                                        zIndexValue: nextZ,
+
+                                    }
+                                    //zIndexValue: nextZ,
+                                }));
+
+                            //if (modal.zIndex !== maxZ) return;
+                            /*const allValues = openedModalLocations.flatMap((m: any) => [
+                                Number(m.zIndexValue) || 1000,
+                                Number(m.zIndexValueRight) || 1000,
+                                Number(m.data?.zIndexValue) || 1000,
+                                Number(m.google?.zIndexValueRight) || 1000,
+                                Number(m.log?.zIndexValueRight) || 1000,
+                                ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+                                //...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                            ]);
+                            const maxZ = Math.max(1000, ...allValues);
+                            //if (modal.zIndex !== maxZ) return;
+
+
+                            console.log("maxZ:", maxZ)
+
+                            // グループ全体の zIndex を最新の最大値 + 1 に更新
+                            updateModalElements(modal.id, (dummy: any) => ({
+                                ...dummy,
+                                //zIndexValueRight: maxZ + 1,
+                                //rightClick: true,       // 右クリックフラグオン
+                                log: {
+                                    ...dummy.log,
+                                    zIndexValueRight: maxZ + 1,
+                                    rightClick: true,
+                                }
+                            }));*/
+
+                            // フォーカスもこのグループに合わせる
+                            setActiveGroupId(modal.id);
+                            //console.log("maxZGoogle:", maxZ)
+                            console.log("modalGoogle:::", modal)
+                        }}
+
                     >
                         {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                     </div>
@@ -232,9 +341,13 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
                         <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                             {logs.map((log: any, index: any) => (
                                 <div
-                                    key={log.id || index} style={{
+                                    key={log.id || index}
+                                    onClick={() => handleShowComments(log.id)}
+                                    style={{
+                                        cursor: 'pointer',
                                         fontSize: '12px',
                                         padding: '1px 0',
+
                                         borderBottom: '1px dashed #f0f0f0',
                                         display: 'flex',
                                         justifyContent: 'space-between'
@@ -267,7 +380,7 @@ export default function ModalLogs({ modal, isFocused, onFocus, renderMe, setOpen
 
                                     <button
                                         onClick={() => handleShowComments(log.id)}
-                                        style={{    cursor:'pointer', display: 'inline-block', width: '40px', height: '20px', lineHeight: '20px', textAlign: 'center', borderRadius: '6px', border: '1px solid #374151', color: '#374151', fontSize: '10px' }}>メモ#{logs.length - index}
+                                        style={{ cursor: 'pointer', display: 'inline-block', width: '40px', height: '20px', lineHeight: '20px', textAlign: 'center', color: '#374151', fontSize: '10px' }}>#{logs.length - index}
                                     </button>
                                 </div>
                             ))}

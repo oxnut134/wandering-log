@@ -20,24 +20,7 @@ export async function GET(request: Request) {
 
   const sql = neon(databaseUrl);
 
-  /*try {
-    // 💡 履歴テーブル(visited_log)から、その場所の記録を降順(DESC)で取得
-    // place_id や ID も含めて、フロント側で key に使えるようにします
-    const logs = await sql`
-      SELECT id, visited_at, place_id
-      FROM visited_logs
-      WHERE location_id = ${Number(locationId)}
-      ORDER BY visited_at DESC
-    `;
-    const formattedLogs = logs.map(log => ({
-      ...log,
-      // DateオブジェクトならISO形式(Z付き)に、文字列ならTとZを補完する
-      visited_at: log.visited_at
-        ? (log.visited_at instanceof Date
-          ? log.visited_at.toISOString()
-          : String(log.visited_at).replace(' ', 'T') + 'Z')
-        : null
-    }));*/
+
 try {
   // 💡 Drizzleで取得
   const logs = await db

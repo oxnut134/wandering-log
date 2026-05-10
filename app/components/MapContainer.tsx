@@ -1,9 +1,10 @@
 "use client";
 import { Map, AdvancedMarker, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback,memo } from "react";
+
 declare const google: any;
 
-export default function MapContainer({ setModalPos, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
 
@@ -67,7 +68,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         }
 
         // 💡 4. 安全が確認された座標を State に保存
-        setModalPos({ x, y });
+        //setModalPos({ x, y });
 
         //Google情報取得
         const service = new google.maps.places.PlacesService(map as any);
@@ -92,6 +93,7 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                 // 💡 距離（メートル）を計算
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
                 if (!include || ignore || distance > 10) { p.name = "取得できませんでした。" }
+                console.log("x;",x," y:",y)
                 const newModal = {
                     id: place?.id || `new-${Date.now()}`, // 複数識別用のID
                     pos: { x: x, y: y },
@@ -109,8 +111,10 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
                     return [...prev, newModal];
                 });
             } else {
+                console.log("x;",x," y:",y)
                 const newModal = {
                     id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                    tempId:Date.now,
                     pos: { x: x, y: y },
                     currentPos: { x: x + 40, y: y + 40 },
                     data: place || { name: "取得できませんでした", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
@@ -181,17 +185,17 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         }
 
         // 💡 4. 安全が確認された座標を State に保存
-        setModalPos({ x, y });
+        //setModalPos({ x, y });
 
         const newModal = {
             id: place?.id || `new-${Date.now()}`, // 複数識別用のID
             //pos: { x: x, y: y },
             pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
-            currentPos: { x: x + 40, y: y + 40 },
+            currentPos: { x: x + 40, y: y + 40 },//<<<<<<<<<<<<<<<<<<<<<<<========modalLoc.が移動した位置に合わせて変化しないといけない
             //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
             data: place
                 ? { ...place, isNew: false }
-                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: true },
+                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: false },
         };
 
         // 💡 すでに同じIDのモーダルが開いていなければ追加
@@ -285,3 +289,4 @@ export default function MapContainer({ setModalPos, openedModalLocations, setOpe
         </div>
     );
 }
+export default memo(MapContainer);

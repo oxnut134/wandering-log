@@ -3,19 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalComments({ modal, logId, commentId, isFocused, onFocus, renderMe, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess, isCommentRecordExist }: any) {
+export default function ModalComments({ modal, comment, updateModalElements, activeComment, logId, commentId, isFocused, onFocus, renderMe, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosComments, onFetchLogs, logs, isDraggingRef, onSaveSuccess, isCommentRecordExist, memoNo, setActiveGroupId }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
-    const [isDragging, setIsDragging] = useState(false);
+    //const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const [onSaving, setOnSaving] = useState(false);
-    const [text, setText] = useState("");
+    //const [text, setText] = useState("");
     const LIMIT = 500;
     const [isConfirming, setIsConfirming] = useState(false);
     //console.log(" =====modal.data.localPosLogs:", modal.data.localPosLogs);
     // ModalComments.tsx の中に追加
-    
+
     useEffect(() => {
         // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
         return () => {
@@ -26,27 +26,61 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
             //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
+
+            //zIndex最大値取得
+            const allValues = openedModalLocations.flatMap((m: any) => [
+                Number(m.locations?.zIndexValue) || 1000,
+                Number(m.google?.zIndexValue) || 1000,
+                Number(m.log?.zIndexValue) || 1000,
+                ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+            ]);
+            //const nextZ = Math.max(1000, ...allValues);
+            const nextZ = Math.max(1000, ...allValues) + 1;
+
+            console.log("allValues:", allValues);
+
+            // call back zIndex グループ設定
+            updateModalElements(modal.id, (dummy: any) => ({
+                ...dummy,
+                locations: {
+                    ...dummy.dummy,
+                    zIndexValue: nextZ,
+                },
+                google: {
+                    ...dummy.dummy,
+                    zIndexValue: nextZ,
+                },
+                log: {
+                    ...dummy.dummy,
+                    zIndexValue: nextZ,
+                },
+                comments: (dummy.comments || []).map((c: any) => ({
+                    ...c,
+                    zIndexValue: nextZ,
+                })),
+                //zIndexValue: nextZ,
+            }));
         };
     }, []);
 
     useEffect(() => {
         if (initialModalPosComments) {
-            // ① 親のドラッグに追従して位置を更新
             //setLocalPos(initialModalPosComments);
             setLocalPos({
                 x: initialModalPosComments.x + 20,
                 y: initialModalPosComments.y + 20
             });
 
-            // ② 【重要】追従が完了したので、親のフラグを即座にリセット
-            // これをしないと、次に足跡をクリックした時にまた  initialModalPosComments が届いてしまいます
-            /*setOpenedModalLocations((prev: any[]) =>
-                prev.map((m: any) =>
-                    m.id === modal.id
-                        ? { ...m, data: { ...m.data, hasMovedEnough: false } }
-                        : m
-                )
-            );*/
+            if (modal.data.hasMovedEnough) {
+                updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    data: {
+                        ...dummy.data,
+                        hasMovedEnough: false // 追従終了
+                    }
+                }));
+            }
+
         } else if (!localPos) {
             // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
             setLocalPos({ x: modal.currentPos.x + 20, y: modal.currentPos.y + 10 });
@@ -65,6 +99,39 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
 
     }, []); // 💡 初回マウント時のみ実行
 
+    /*const handleUpdateZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.zIndexValue) || 1000,
+            Number(m.zIndexValueRight) || 1000,
+            Number(m.data?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValueRight) || 1000,
+            Number(m.log?.zIndexValueRight) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+
+
+        console.log("✈️ 共通関数で更新:", { nextZ });
+
+        // 2. 共通の「魔法の杖」を振る
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            zIndexValue: nextZ,
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValueRight: nextZ,
+                rightClick: false
+            })),
+            // comments: {
+            //     ...dummy.activecomments,
+            //     zIndexValue: nextZ
+            // },
+            hasMovedEnough: false,
+            rightClick: false,
+        }));
+    };*/
+
+
 
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
@@ -72,19 +139,17 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: any) => {
+        if (e.button !== 0) return;
+
         //setIsDragging(true);
         if (!localPos) return;
         //console.log("🖱️ 子の handleDown が呼ばれた！");
         e.stopPropagation();
 
         onFocus();
-        /*setOpenedModalLocations((prev: any[]) =>
-            prev.map((m: any) =>
-                m.id === modal.id
-                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
-                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
-            )
-        );*/
+        //handleUpdateZIndex();
+
+
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -155,7 +220,7 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
 
     const handleSave = async () => {
         console.log("************ in handle save ***************")
-        const currentData = modal.activeComments?.find((c: any) => c.logId === logId);
+        const currentData = modal.comments?.find((c: any) => c.logId === logId);
         console.log("currentData:", currentData)
 
         if (!currentData) {
@@ -175,7 +240,48 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            console.log("************ ref.ok ***************")
+            if (res.ok) {
+                const savedData = await res.json(); // サーバーからID等の最新情報をもらう
+
+                setOpenedModalLocations((prev: any[]) => {
+                    return prev.map((m: any) => {
+                        if (m.id !== modal.id) return m;
+
+                        const currentComments = m.comments || [];
+
+                        // 💡 1. まず今あるかチェック
+                        const exists = currentComments.some((c: any) => c.logId === logId);
+
+                        let updatedComments;
+                        if (exists) {
+                            // 💡 既存なら、中身を更新（isExistingCommentをtrueに）
+                            updatedComments = currentComments.map((c: any) =>
+                                c.logId === logId ? { ...c, id: savedData.id, isExistingComment: true } : c
+                            );
+                        } else {
+                            // 💡 新規なら、配列の末尾に追加
+                            updatedComments = [
+                                ...currentComments,
+                                {
+                                    id: savedData.id,
+                                    logId: logId,
+                                    comment: currentData.comment,
+                                    isExistingComment: true,
+                                    // 他に必要なプロパティがあればここに追加
+                                }
+                            ];
+                        }
+
+                        return {
+                            ...m,
+                            comments: updatedComments
+                        };
+                    });
+                });
+
+                if (onSaveSuccess) onSaveSuccess();
+            }
+
 
             if (onSaveSuccess) onSaveSuccess();
         }
@@ -196,7 +302,10 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
         console.log("commentId:", commentId)
         //if (!confirm("削除しますか？")) return;
         const res = await fetch("/api/delete_comments_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: commentId }) });
-        if (res.ok) { onSaveSuccess(); onClose(); handleLogsClose();}
+        if (res.ok) {
+            //onSaveSuccess();
+            onClose(); //handleLogsClose();
+        }
     };
     const handleLogsClose = () => {
         //console.log("On closing");
@@ -218,8 +327,8 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
 
     }
 
-    //console.log("modal.activeComments.isShowingComment:",C)
-
+    //console.log("modal.comments.zIndexValue",modal.comments.zIndexValue)
+    //console.log("isCommentRecordExist:",isCommentRecordExist,"isConfirming:",isConfirming);
     return (
         <>
             <div
@@ -232,8 +341,12 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    zIndex: isFocused ? 2000 : 1000,
-                    border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                    zIndex: comment?.zIndexValue,
+                    //zIndex: (isFocused && activeComment?.rightClick) ? activeComment.zIndexValueRight : (isFocused ? modal.zIndexValue : null),
+                    //zIndex: activeComment?.rightClick ? activeComment.zIndexValueRight : modal.zIndexValue,
+                    //zIndex: modal.zIndexValue,
+                    //zIndex: isFocused ? 2000 : 1000,
+                    border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                     boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                     //zIndex: modal.zIndex || 100,
                     backgroundColor: 'white',
@@ -257,6 +370,100 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                         justifyContent: 'center'
 
                     }}
+                    onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!isFocused) return;
+                        console.log("===== right click executed =======")
+                        e.preventDefault(); // ブラウザ標準のメニューを出さない
+                        const allValues = openedModalLocations.flatMap((m: any) => [
+                            Number(m.locations?.zIndexValue) || 1000,
+                            Number(m.google?.zIndexValue) || 1000,
+                            Number(m.log?.zIndexValue) || 1000,
+                            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                        ]);
+                        const nextZ = Math.max(1000, ...allValues) + 1;
+
+                        console.log("✈️ 共通関数で更新:", { nextZ });
+
+
+                        updateModalElements(modal.id, (dummy: any) => ({
+                            ...dummy,
+                            comments: (dummy.comments || []).map((c: any) => {
+                                if (c.logId === comment.logId) {
+                                    return {
+                                        ...c,
+                                        zIndexValue: nextZ,
+                                    }
+                                }
+
+                                return c;
+
+
+                            }),
+
+                            /*comments: {
+                                ...dummy.dummy,
+                                zIndexValue: nextZ,
+
+                            }*/
+                            //zIndexValue: nextZ,
+                        }));
+
+                        //if (modal.zIndex !== maxZ) return;
+                        /*const allValues = openedModalLocations.flatMap((m: any) => [
+                            Number(m.zIndexValue) || 1000,
+                            Number(m.zIndexValueRight) || 1000,
+                            Number(m.data?.zIndexValue) || 1000,
+                            Number(m.google?.zIndexValueRight) || 1000,
+                            Number(m.log?.zIndexValueRight) || 1000,
+                            //...(m.activeComment || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+                            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+                        ]);
+                        const maxZ = Math.max(1000, ...allValues);
+                        //if (modal.zIndex !== maxZ) return;
+
+
+                        console.log("maxZ:", maxZ)
+
+                        // グループ全体の zIndex を最新の最大値 + 1 に更新
+                        updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    // 💡 activeComment 配列を map で回して、対象のものを更新する
+                    comments: (dummy.comments || []).map((c: any) =>
+                // もし特定のコメントID(commentId)があるならそれで判定
+                // 全てを最前面にするならそのまま map で回す
+                {
+                                if (c.logId === logId) {
+                    console.log("*** c.log.Id = logId")
+                                    return ({
+                    ...c,
+                    zIndexValueRight: maxZ + 1,
+                rightClick: true,
+                                    })
+                                }
+                return c;
+                            })
+                        }));
+                console.log("activeComment :", activeComment, "commentId:", commentId, "logtId:", logId)
+                        updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    //zIndexValueRight: maxZ + 1,
+                    //rightClick: true,       // 右クリックフラグオン
+                    activeComment: {
+                    ...dummy.activecomment,
+                    zIndexValueRight: maxZ + 1,
+                rightClick: true,
+                            }
+                        }));*/
+
+                        // フォーカスもこのグループに合わせる
+                        setActiveGroupId(modal.id);
+                        //console.log("maxZGoogle:", maxZ)
+                        console.log("modalGoogle:::", modal)
+
+                    }}
+
                 >
                     {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
                 </div>
@@ -299,7 +506,8 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                                         })()}
                                     </span>
 
-                                    <span style={{ color: '#aaa' }}>#{logs.length - index}</span>
+                                    <span style={{ color: '#aaa' }}>#{memoNo}</span>
+                                    {/*<span style={{ color: '#aaa' }}>#{logs.length - index}</span>*/}
                                 </div>
                             ))}
                     </div>
@@ -317,16 +525,16 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                             resize: 'none'
                         }}
                         // 💡 Propsから現在のコメントを表示
-                        value={modal.activeComments?.find((l: any) => l.logId === logId)?.comment || ""}
+                        value={modal.comments?.find((l: any) => l.logId === logId)?.comment || ""}
                         onChange={(e) => {
                             const newValue = e.target.value;
-                            // 💡 親の巨大な配列の中から、自分に関連する「地点」と「ログ」を探して更新
+                            // 💡 親の配列の中から、自分に関連する「地点」と「ログ」を探して更新
                             setOpenedModalLocations((prev: any[]) =>
                                 prev.map((m: any) =>
                                     m.id === modal.id
                                         ? {
                                             ...m,
-                                            activeComments: m.activeComments?.map((c: any) =>
+                                            comments: m.comments?.map((c: any) =>
                                                 // 💡 logId が一致する要素を探して、その comment だけを更新する
                                                 c.logId === logId ? { ...c, logId: logId, comment: newValue } : c
                                             )
@@ -341,7 +549,7 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                         placeholder="メモを残す"
                     />
                     <div style={{ textAlign: 'right', margin: '0 0 2px 0', fontSize: '8px', color: '#888' }}>
-                        {(modal.activeComments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500文字
+                        {(modal.comments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500文字
                     </div>
                 </div>
                 <button
@@ -386,7 +594,9 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                         閉じる
                     </button>
                     {/*{isExisting && (*/}
-                    {  isCommentRecordExist && (isConfirming ? (
+                    {/*{  isCommentRecordExist && (isConfirming ?*/}
+                    {/*{activeComment.isExistingComment && (isConfirming ? (*/}
+                    {comment.isExistingComment && (isConfirming ? (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
                             onClick={handleDeleteComment} // 💡 2回目で実行
@@ -404,7 +614,7 @@ export default function ModalComments({ modal, logId, commentId, isFocused, onFo
                     ))}
                     {/*})}*/}
                 </div>
-            </div>
+            </div >
         </>
     );
 }

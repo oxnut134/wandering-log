@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
@@ -14,23 +14,25 @@ export default function WanderingLog() {
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
     const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
     const [visitedLocations, setvisitedLocations] = useState([]);
-    // const [isModalOpen, setIsModalOpen] = useState(false);
     const [homeTrigger, setHomeTrigger] = useState(0);
     const [modalPos, setModalPos] = useState({})
     const [openedModalLocations, setOpenedModalLocations] = useState<any[]>([]);
-    const [openedModalGoogle, setOpenedModalGoogle] = useState<any[]>([]);
+    //  setOpenedModalLocations.currentPos: corrent coodinate value of left-bottom corner of the ModalLocation
+    //  setOpenedModalLocations.pos:        original coodinate value of left-bottom corner of the ModalLocation
+
+    //const [openedModalGoogle, setOpenedModalGoogle] = useState<any[]>([]);
     const [isGoogleView, setIsGoogleView] = useState(false);
-    const [currentMarker, setCurrentMarker] = useState(false);
-    const [isModalLogsView, setIsModalLogsView] = useState(false);
+    //const [currentMarker, setCurrentMarker] = useState(false);
+    //const [isModalLogsView, setIsModalLogsView] = useState(false);
     const [currentZoom, setCurrentZoom] = useState(15);
     const [moveDist, setMoveDist] = useState({ x: 0, y: 0 });
-    //const isDraggingRef = useRef(false);
     const [dummy, setDummy] = useState(false);
     const [isCommentRecordExist, setIsCommentRecordExist] = useState(false);
     const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
-    const [activeGroupGoogleId, setActiveGroupGoogleId] = useState<number | null>(null);
-    const [activeGroupLocationId, setActiveGroupLocationId] = useState<number | null>(null);
-    const [recordDeleted, isRecordDeleted] = useState(false);
+    //const [activeGroupGoogleId, setActiveGroupGoogleId] = useState<number | null>(null);
+    //const [activeGroupLocationId, setActiveGroupLocationId] = useState<number | null>(null);
+    //const [recordDeleted, isRecordDeleted] = useState(false);
+    const [clickedModalId, setClickedModalId] = useState<number | null>(null)
 
     const renderMe = () => {
         setDummy(prev => !prev);
@@ -80,6 +82,14 @@ export default function WanderingLog() {
             m.id === id ? { ...m, currentPos: newPos } : m // 👈 スプレッド構文で currentPos だけ上書き
         ));
     };
+    const updatedPos = (id: any, newPos: any) => {
+        console.log("id:", id, " pos.x:", newPos.x, "pos.y:", newPos.y)
+        setOpenedModalLocations(prev => prev.map(m =>
+            m.id === id ? { ...m, pos: newPos } : m // 👈 スプレッド構文で pos だけ上書き
+        ));
+    };
+
+
     const handleCurrentLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -123,7 +133,7 @@ export default function WanderingLog() {
             </div>
         );
     }
-    const fetchLogsForModal = async (id: number | string) => {
+    const onFetchLogs = async (id: number | string) => {
         // 💡 文字列 ID（new-123など）の場合は履歴がないのでスキップ
         if (typeof id === 'string' && id.startsWith('new-')) return;
 
@@ -142,6 +152,12 @@ export default function WanderingLog() {
         }
     };
 
+    const updateModalElements = ((targetId: any, updater: any) => {
+        setOpenedModalLocations((prev: any) =>
+            prev.map((m: any) => m.id === targetId ? updater(m) : m)
+        )
+
+    })
 
     return (
         <APIProvider
@@ -186,225 +202,256 @@ export default function WanderingLog() {
             >
                 🏠
             </button>
-            {/*<button onClick={() => setCurrentZoom(prev => prev + 1)}>＋</button>
-            <button onClick={() => setCurrentZoom(prev => prev - 1)}>ー</button>*/}
 
-            {openedModalLocations.map((modal) => (
+            {openedModalLocations.map((modal, index: number) => {
+                const isFocused = activeGroupId === modal.id
+                /*console.log("openedModalLocations.comments:",openedModalLocations)
+                const allValues = openedModalLocations.flatMap((m: any) => [
+                    Number(m.zIndexValue) || 1000,
+                    Number(m.zIndexValueRight) || 1000,
+                    Number(m.data?.zIndexValue) || 1000,
+                    Number(m.google?.zIndexValueRight) || 1000,
+                    Number(m.log?.zIndexValueRight) || 1000,
+                    //...(Array.isArray(m.comments) ? m.comments.map((c: any) => Number(c.zIndexValueRight) || 1000) : [])
+                    ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+                ]);
 
-                <ModalLocation
-                    key={modal.id}
-                    modal={modal}
-                    isFocused={activeGroupId === modal.id}
-                    onFocus={() => setActiveGroupId(modal.id)}
-                    // isFocusedLocation={activeGroupLocationId === modal.id}
-                    // onFocusLocation={() => {
-                    //     setActiveGroupLocationId(modal.id)
-                    //     setActiveGroupGoogleId(null)
-                    // }}
-                    initialModalPos={modal.pos}
-                    setOpenedModalLocations={setOpenedModalLocations}
-                    openedModalGoogle={modal.data}
-                    onPosUpdate={(newPos: any) => updatedCurrentPos(modal.id, newPos)}
-                    //isGoogleView={isGoogleView}
-                    isGoogleView={modal.data.isShowingGoogle}
-                    //isGoogleView={modal.data?.isShowingGoogle || false}
-                    setIsGoogleView={setIsGoogleView}
-                    // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
-                    logs={modal.logs || []}
-                    onSaveSuccess={refreshHistory}
-                    //onSaveSuccess={onSaveSuccess}
-                    isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
-                    // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
-                    onFetchLogs={() => fetchLogsForModal(modal.id)}
-                    moveDist={moveDist}
-                    setMoveDist={setMoveDist}
-                    onCloseModalLocation={() => {
-                        setOpenedModalLocations(prev =>
-                            prev.filter(record => record.id !== modal.id)
+                const maxZ = Math.max(1000, ...allValues);
 
-                        );
-
-                    }}
-                    onClose={() => {
-                        setOpenedModalLocations(prev => prev.filter(m => m.id !== modal.id));
-                    }}
-                    //setOpenedModalGoogle={setOpenedModalGoogle}
-                    setOpenedModalGoogle={(newData: any) => {
-                        setOpenedModalLocations(prev => prev.map(m =>
-                            m.id === modal.id ? { ...m, data: newData } : m
-                        ));
-                    }}
-                    setCurrentMarker={() => {
-                        //console.log("in setCurrentMaker");
-                        setOpenedModalLocations((prev: any[]) => {
-                            return prev.map((m: any) =>
-                                m.id === modal.id
-                                    ? {
-                                        ...m,
-                                        data: {
-                                            ...m.data,
-                                            isCurrentMarker: m.data.isCurrentMarker ? false : true,
-                                        }
-                                    }
-                                    : m
-                            );
-                        });
-
-                    }}
-                />
-            ))}
-            {openedModalLocations.map((modal) => (
-                <ModalGoogle
-                    key={modal.id}
-                    modal={modal}
-                    isFocused={activeGroupId === modal.id}
-                    onFocus={() => setActiveGroupId(modal.id)}
-                    //isFocusedGoogle={activeGroupGoogleId === modal.id}
-                    // onFocusGoogle={() => {
-                    //     setActiveGroupLocationId(null)
-                    //     setActiveGroupGoogleId(modal.id)
-                    // }}
-                    //openedModalLocations={openedModalLocations}
-                    setOpenedModalLocations={setOpenedModalLocations}
-                    //initialModalPosGoogle={modal.currentPos}
-                    initialModalPosGoogle={
-                        modal.data.hasMovedEnough ?
-                            {
-                                x: modal.currentPos.x,
-                                y: modal.currentPos.y,
-                            }
-                            : null
-                        //: {x:0,y:0}
-                    }
-
-                    openedModalGoogle={modal.data}
-                    //isGoogleView={isGoogleView}
-                    isGoogleView={modal.data.isShowingGoogle}
-
-                    setIsGoogleView={setIsGoogleView}
-
-                    // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
-                    logs={modal.logs || []}
-
-                    // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
-                    onFetchLogs={() => fetchLogsForModal(modal.id)}
-                    onClose={() => {
-                        //console.log("On closing");
-                        // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
-                        setOpenedModalLocations((prev: any[]) => {
-                            return prev.map((m: any) =>
-                                m.id === modal.id
-                                    ? {
-                                        ...m,
-                                        googleData: {
-                                            ...m,
-                                            isShowingGoogle: false
-                                        }
-                                    }
-                                    : m
-                            );
-                        });
-
-                    }}
-
-                />
-            ))}
-            {openedModalLocations.map((modal) => {
-                //const hasMovedEnough = moveDist.x > 100 || moveDist.y > 100;
-                //console.log("***modal.hasMovedEnough:", modal.hasMovedEnough)
+                //const groupZ = isFocused ? maxZ + 10 : (Number(modal.zIndexValue) || 1000);
+                let groupZ: any
+                if (isFocused && modal.data.hasMovedEnough) {
+                    groupZ = maxZ + 10;
+                } else {
+                    groupZ = (Number(modal.zIndexValue) || 1000)
+                }
+                const maxZ = Math.max(
+                    1000, // 最小値のベース
+                    ...openedModalLocations.flatMap((m: any) => [
+                        m.zIndexValue || 1000, // モーダル自体の値
+                        m.data.zIndexValue || 1000, // モーダル自体の値
+                        ...(m.comments || []).map((c: any) => c.zIndexValue || 1000), // コメントそれぞれの値
+                    ])
+                );*/
                 return (
-                    <ModalLogs
-                        key={modal.id}
-                        modal={modal}
-                        isFocused={activeGroupId === modal.id}
-                        onFocus={() => setActiveGroupId(modal.id)}
-                        renderMe={renderMe}
-                        openedModalLocations={openedModalLocations}
-                        setOpenedModalLocations={setOpenedModalLocations}
-                        setIsCommentRecordExist={setIsCommentRecordExist}
-                        //isDraggingRef={isDraggingRef}
-                        initialModalPosLogs={
-                            modal.data.hasMovedEnough ?
-                                {
-                                    x: modal.currentPos.x + 40,
-                                    y: modal.currentPos.y + 40
-                                }
-                                : null
-                            //: null
-                            //: {x:0,y:0}
-                        }
-                        //resetMoveFlag={() => resetMoveFlag(modal.id)}
-                        openedModalGoogle={modal.data} moda
-                        //isGoogleView={isGoogleView}
-                        isGoogleView={modal.data.isShowingGoogle}
+                    //<React.Fragment key={`group-${modal.id}`}>
+                    <React.Fragment key={`group-${modal.tempId || modal.id}`}>
+                        <ModalLocation
+                            key={`location-${modal.id}`}
+                            //key={index}
+                            modal={modal}
+                            updateModalElements={updateModalElements}
+                            isFocused={isFocused}
+                            //handleFocused={handleFocused}
+                            onFocus={() => {
+                                setActiveGroupId(modal.id)
+                            }}
+                            clickedModalId={clickedModalId}
+                            setClickedModalId={setClickedModalId}
+                            //maxZ={maxZ}
+                            //groupZ={groupZ}
+                            initialModalPos={modal.pos}
+                            openedModalLocations={openedModalLocations}
+                            setOpenedModalLocations={setOpenedModalLocations}
+                            openedModalGoogle={modal.data}
+                            updateCurrentPos={(newPos: any) => updatedCurrentPos(modal.id, newPos)}
+                            updatePos={(newPos: any) => updatedPos(modal.id, newPos)}
+                            isGoogleView={modal.data.isShowingGoogle}
+                            setIsGoogleView={setIsGoogleView}
+                            logs={modal.logs || []}
+                            onSaveSuccess={refreshHistory}
+                            isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
+                            onFetchLogs={() => onFetchLogs(modal.id)}
+                            moveDist={moveDist}
+                            setMoveDist={setMoveDist}
+                            setActiveGroupId={setActiveGroupId}
+                            onCloseModalLocation={() => {
+                                setOpenedModalLocations(prev =>
+                                    prev.filter(record => record.id !== modal.id)
 
-                        setIsGoogleView={setIsGoogleView}
+                                );
 
-                        // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
-                        logs={modal.logs || []}
+                            }}
+                            onClose={() => {
+                                setOpenedModalLocations(prev => prev.filter(m => m.id !== modal.id));
+                            }}
+                            //setOpenedModalGoogle={setOpenedModalGoogle}
+                            setOpenedModalGoogle={(newData: any) => {
+                                setOpenedModalLocations(prev => prev.map(m =>
+                                    m.id === modal.id ? { ...m, data: newData } : m
+                                ));
+                            }}
+                            setCurrentMarker={() => {
+                                //console.log("in setCurrentMaker");
+                                setOpenedModalLocations((prev: any[]) => {
+                                    return prev.map((m: any) =>
+                                        m.id === modal.id
+                                            ? {
+                                                ...m,
+                                                data: {
+                                                    ...m.data,
+                                                    isCurrentMarker: m.data.isCurrentMarker ? false : true,
+                                                }
+                                            }
+                                            : m
+                                    );
+                                });
 
-                        // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
-                        onFetchLogs={() => fetchLogsForModal(modal.id)}
+                            }}
 
-                        onSavigSuccess="onSavigSuccess"
-                        onClose={() => {
-                            //console.log("On closing");
-                            // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
-                            setOpenedModalLocations((prev: any[]) => {
-                                return prev.map((m: any) =>
-                                    m.id === modal.id
-                                        ? {
+                        />
+                        <ModalGoogle
+                            key={`google-${modal.id}`}
+                            modal={modal}
+                            //groupZ={groupZ}
+                            updateModalElements={updateModalElements}
+                            isFocused={activeGroupId === modal.id}
+                            onFocus={() => setActiveGroupId(modal.id)}
+                            clickedModalId={clickedModalId}
+                            setClickedModalId={setClickedModalId}
+                            setActiveGroupId={setActiveGroupId}
+                            setOpenedModalLocations={setOpenedModalLocations}
+                            openedModalLocations={openedModalLocations}
+                            initialModalPosGoogle={
+                                modal.data.hasMovedEnough ?
+                                    {
+                                        x: modal.currentPos.x - 40,
+                                        y: modal.currentPos.y + 40,
+                                    }
+                                    : null
+                            }
+
+                            openedModalGoogle={modal.data}
+                            //isGoogleView={isGoogleView}
+                            isGoogleView={modal.data.isShowingGoogle}
+
+                            setIsGoogleView={setIsGoogleView}
+
+                            // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
+                            logs={modal.logs || []}
+
+                            // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
+                            onFetchLogs={() => onFetchLogs(modal.id)}
+                            onClose={() => {
+                                //console.log("On closing");
+                                // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
+                                setOpenedModalLocations((prev: any[]) => {
+                                    return prev.map((m: any) =>
+                                        m.id === modal.id
+                                            ? {
+                                                ...m,
+                                                googleData: {
+                                                    ...m,
+                                                    isShowingGoogle: false
+                                                }
+                                            }
+                                            : m
+                                    );
+                                });
+
+                            }}
+
+                        />
+                        <ModalLogs
+                            key={`log-${modal.id}`}
+                            modal={modal}
+                            //groupZ={groupZ}
+                            updateModalElements={updateModalElements}
+                            isFocused={activeGroupId === modal.id}
+                            onFocus={() => setActiveGroupId(modal.id)}
+                            clickedModalId={clickedModalId}
+                            setClickedModalId={setClickedModalId}
+                            setActiveGroupId={setActiveGroupId}
+                            renderMe={renderMe}
+                            openedModalLocations={openedModalLocations}
+                            setOpenedModalLocations={setOpenedModalLocations}
+                            setIsCommentRecordExist={setIsCommentRecordExist}
+                            //isDraggingRef={isDraggingRef}
+                            initialModalPosLogs={
+                                modal.data.hasMovedEnough ?
+                                    {
+                                        x: modal.currentPos.x + 40,
+                                        y: modal.currentPos.y + 40
+                                    }
+                                    : null
+                            }
+                            //resetMoveFlag={() => resetMoveFlag(modal.id)}
+                            openedModalGoogle={modal.data} moda
+                            //isGoogleView={isGoogleView}
+                            isGoogleView={modal.data.isShowingGoogle}
+
+                            setIsGoogleView={setIsGoogleView}
+
+                            // 💡 1. このモーダル専用の履歴データを渡す（未取得なら空配列）
+                            logs={modal.logs || []}
+
+                            // 💡 2. 履歴を取りに行く関数（idを添えて親に頼む）
+                            onFetchLogs={() => onFetchLogs(modal.id)}
+
+                            onSavigSuccess="onSavigSuccess"
+                            onClose={() => {
+                                //console.log("On closing");
+                                // 💡 親の配列をまるごと更新（イミュータビリティを保つ）
+                                setOpenedModalLocations((prev: any[]) => {
+                                    return prev.map((m: any) =>
+                                        m.id === modal.id ? {
                                             ...m,
                                             data: {
                                                 ...m.data,
                                                 isShowingLogs: false
                                             }
                                         }
-                                        : m
-                                );
-                            });
+                                            : m
+                                    );
+                                });
 
-                        }}
-                    />
-                )
-            })}
-            {openedModalLocations.map((modal) => (
-                modal.activeComments?.map((c: any, index: number) => (
-                    c.isShowingComment && (
-                        <ModalComments
-                            logs={modal.logs || []}// dummy just for test 
-                            key={c.logId}
-                            logId={c.logId}
-                            commentId={c.id}
-                            modal={modal}// これで親(Location)の座標に追従できる
-                            isFocused={activeGroupId === modal.id}
-                            onFocus={() => setActiveGroupId(modal.id)}
-                            initialPos={c.pos}
-                            onFetchLogs={() => fetchLogsForModal(modal.id)}
-                            openedModalLocations={openedModalLocations}
-                            setOpenedModalLocations={setOpenedModalLocations}
-                            onSaveSuccess={refreshHistory}
-                            isCommentRecordExist={isCommentRecordExist}
-
-                            onClose={() => {
-                                setOpenedModalLocations(prev => prev.map(loc =>
-                                    loc.id === modal.id
-                                        ? { ...loc, activeComments: loc.activeComments.filter((item: any) => item.logId !== c.logId) }
-                                        : loc
-                                ));
                             }}
-                            initialModalPosComments={
-                                modal.data.hasMovedEnough ?
-                                    {
-                                        x: modal.currentPos.x + 80 + 40 * index,
-                                        y: modal.currentPos.y + 80 + 40 * index
-                                    }
-                                    : null
-                            }
+                        />
+                        {modal.comments?.map((c: any, index: number) => (
+                            c.isShowingComment && (
+                                <ModalComments
+                                    key={`comment-${c.logId}`}
+                                    updateModalElements={updateModalElements}
+                                    logs={modal.logs || []}// dummy just for test 
+                                    comment={c}
+                                    logId={c.logId}
+                                    commentId={c.id}
+                                    modal={modal}// これで親(Location)の座標に追従できる
+                                    //groupZ={groupZ}
+                                    isFocused={activeGroupId === modal.id}
+                                    onFocus={() => setActiveGroupId(modal.id)}
+                                    clickedModalId={clickedModalId}
+                                    setClickedModalId={setClickedModalId}
+                                    setActiveGroupId={setActiveGroupId}
+                                    initialPos={c.pos}
+                                    onFetchLogs={() => onFetchLogs(modal.id)}
+                                    openedModalLocations={openedModalLocations}
+                                    setOpenedModalLocations={setOpenedModalLocations}
+                                    onSaveSuccess={refreshHistory}
+                                    isCommentRecordExist={isCommentRecordExist}
 
-                        />)
-                ))
-            ))}
+                                    onClose={() => {
+                                        setOpenedModalLocations(prev => prev.map(loc =>
+                                            loc.id === modal.id
+                                                ? { ...loc, comments: loc.comments.filter((item: any) => item.logId !== c.logId) }
+                                                : loc
+                                        ));
+                                    }}
+                                    initialModalPosComments={
+                                        modal.data.hasMovedEnough ?
+                                            {
+                                                x: modal.currentPos.x + 80 + 40 * index,
+                                                y: modal.currentPos.y + 80 + 40 * index
+                                            }
+                                            : null
+                                    }
+                                />
+                            )
+                        ))}
+                    </React.Fragment>
+                )
+            })
+            }
         </APIProvider>
     );
 }

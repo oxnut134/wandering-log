@@ -4,18 +4,32 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLocation, onFocusLocation, setCurrentMarker, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, onPosUpdate, moveDist, setMoveDist }: any) {
+export default function ModalLocation({ modal, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId }: any) {
     const map = useMap();
+    //const [localPos, setLocalPos] = useState(initialModalPos);
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const [deffPos, setDiffpos] = useState({ x: null, y: null });
+    //const [deffPos, setDiffpos] = useState({ x: null, y: null });
     const [isConfirming, setIsConfirming] = useState(false);
+
 
     //-----！！！ このコンポーネントこのopenedModalGoogleはopenedModalGoogle=modal.dataのことなので注意！！！----------
 
+    //let zIndexValue: any;
+    // useEffect(() => {
+    //     //isFocused ? modal.zIndexValue=2000: modal.zIndexValue=2000
+    //     if (isFocused) {
+    //          console.log("maxZ:", maxZ)
+    //         zIndexValue = maxZ + 1
+    //     }
+    // }, [isFocused]);
+
     // ModalComments.tsx の中に追加
+    //useEffect(() => {console.log("clickedModalId: ",clickedModalId)},[clickedModalId])
+    //console.log("clickedModalId: ",clickedModalId)
+    if (clickedModalId) { console.log("<<<<<<<<<<<< Layer System start >>>>>>>>>>>>>>"); }
     useEffect(() => {
         // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
         return () => {
@@ -44,30 +58,36 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        console.log(">>>>>>>>>>>modal", modal)
         if (res.ok) {
             if (modal.data.isNew) {
                 const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
-
+                console.log("savedData: ", savedData)
                 setOpenedModalLocations((prev: any) =>
                     prev.map((m: any) =>
-                        // 今開いている「new-xxx」というIDのモーダルを探して
                         m.id === modal.id
-                            ? { ...m, id: savedData.id, data: { ...m.data, id: savedData.id, savedData, isNew: false } } // 本物のデータに差し替える
+                            ? {
+                                ...m,           // ★ これで現在の currentPos (ドラッグ位置) を保持！
+                                id: savedData.id,
+                                data: {
+                                    ...m.data,  // 既存のデータを保持
+                                    pos: m.pos,
+                                    id: savedData.id,
+                                    isNew: false,
+                                }
+                            }
                             : m
                     )
                 );
-            }
-            // } else {
-            //     setOpenedModalLocations((prev: any) => [...prev, savedData])
-            // }
-        }
-        if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
+                setTimeout(() => {
+                    if (onSaveSuccess) onSaveSuccess();
+                }, 100);
+                if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
 
-        // if (res.ok) {
-        //     if (onSaveSuccess) onSaveSuccess();
-        // }
-        //onCloseModalLocation()
+            } else {
+                onFetchLogs();
+                //     setOpenedModalLocations((prev: any) => [...prev, savedData])
+            }
+        }
         setOnSaving(false);
         if (res.ok) return;
     }
@@ -170,28 +190,108 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
         });
     };
 
-    // ModalLocation.tsx の handleUp 内
+    /*const handleUpdateZIndex = () => {
+        // 1. 全体の最大値を計算（これからセットする「新しい一番上」の数値を作る）
+        setOpenedModalLocations((prev: any[]) => {
+            const allValues = prev.flatMap((m: any) => [
+                Number(m.zIndexValue) || 1000,
+                Number(m.data?.zIndexValue) || 1000,
+                ...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
+            ]);
+            const maxZ = Math.max(1000, ...allValues);
+            const nextZ = maxZ + 1;
+            console.log("maxZ:", maxZ, "nextZ:", nextZ)
+            return prev.map((item: any) =>
+                item.id === modal.id
+                    ? {
+                        ...item,
+                        zIndexValue: nextZ,
+                        data: { ...item.data, zIndexValue: nextZ }
+                    }
+                    : item
+            );
+        })
+    }
+    /*const handleUpdateZIndex = () => {
+        // 1. 全体の最大値を計算 (計算には今の最新の状態 openedModalLocations を使う)
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.zIndexValue) || 1000,
+            Number(m.data?.zIndexValue) || 1000,
+            ...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
 
-    //let gNewX:any,gAx:any,gBx:any;
+        console.log("✈️ 共通関数で更新:", { nextZ });
+
+        // 2. 共通の「魔法の杖」を振る
+        updateModalElements(modal.id, (dummy:any) => ({
+            ...dummy,
+            zIndexValue: nextZ,
+            data: {
+                ...dummy.data,
+                zIndexValue: nextZ
+            }
+        }));
+    };
+    // 2. 配列（State）を更新して、自分の zIndexValue だけを nextZ に上書きする
+    /*setOpenedModalLocations((prev: any) =>
+        prev.map((m: any) =>
+            m.id === modal.id
+                ? { ...m, zIndexValue: nextZ } // 自分のIDなら新しいzIndexをセット
+                : m                           // それ以外はそのままA
+        )
+    );*/
+    //};
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        //const nextZ = Math.max(1000, ...allValues);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+
+        console.log("allValues:", allValues);
+
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+            //zIndexValue: nextZ,
+        }));
+
+    };
+
+
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
+        if (e.button !== 0) return;  // 左クリックでなければリターン
         //console.log("🖱️ 親の handleDown が呼ばれた！");
+
         e.stopPropagation();
         if (e.type === 'touchstart') {
             if (e.cancelable) e.preventDefault();
         }
         onFocus();
-        //Location();
-        /*setOpenedModalLocations((prev: any[]) =>
-            prev.map((m: any) =>
-                m.id === modal.id
-                    ? { ...m, zIndex: 1001 } // 👈 常に一番上
-                    : { ...m, zIndex: 1000 } // 👈 それ以外は一歩下がる
-            )
-        );*/
+        handleUpdateGroupZIndex();
 
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -275,8 +375,16 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
             if ((document as any).releaseCapture) {
                 (document as any).releaseCapture();
             }
-            if (onPosUpdate && xRef.current !== undefined) {
-                onPosUpdate({ x: xRef.current + 40, y: yRef.current! + 40 });
+            if (updateCurrentPos && xRef.current !== undefined) {
+                updateCurrentPos({ x: xRef.current, y: yRef.current! });
+            }
+
+            // if (updateCurrentPos && modal.id && String(modal.id).includes('new-')) {
+            //     //updateCurrentPos({ x: localPos.x, y: localPos.y });// 新規（赤マーカー由来）の時の処理
+            //     updateCurrentPos({ x: xRef.current, y: yRef.current! });// 新規（赤マーカー由来）の時の処理
+            // }
+            if (updatePos && modal.id && String(modal.id).includes('new-')) {
+                updatePos({ x: xRef.current, y: yRef.current! });// 新規（赤マーカー由来）の時の処理
             }
 
             const finalPos = { x: xRef.current, y: yRef.current };
@@ -309,22 +417,15 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                 );
             });
 
-            // if (onPosUpdate && finalPos.x !== undefined) {
-            //     onPosUpdate(finalPos);
-            // }
-
-            // // 💡 1. 最終位置を親の基本座標（ModalLocation用）に一回だけ報告する
-            // if (onPosUpdate && xRef.current !== undefined && yRef.current !== undefined) {
-            //     onPosUpdate({ x: xRef.current + 40, y: yRef.current + 40 });
-            // }
         };
         document.addEventListener('mousemove', handleMove);
         document.addEventListener('mouseup', handleUp);
         document.addEventListener('touchmove', handleMove, { passive: false }); // 💡 passive: false が重要
         document.addEventListener('touchend', handleUp);
+
     };
 
-    const syncMapPositionWithModal = () => {
+    /*const syncMapPositionWithModal = () => {
         if (!map) return;
 
         const projection = map.getProjection();
@@ -357,8 +458,9 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
     const closeGoogleView = () => {
         //e.stopPropagation(); // 💡 イベントの連鎖を断ち切る
         setIsGoogleView(false); // 💡 ただのフラグオフ
-    };
-    //console.log("openedModalGoogle:", openedModalGoogle);
+    };*/
+    useEffect(() => { console.log("openedModalLocations:", openedModalLocations); }, [openedModalLocations])
+    //console.log("openedModalLocations:", openedModalLocations);
     return (
         <>
             <div
@@ -370,9 +472,11 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                     left: `${localPos.x + 15}px`,
                     transform: 'translate(0, -100%)',
-                    zIndex: isFocused ? 2000 : 1000,
+                    zIndex: modal.locations?.zIndexValue,
+                    //zIndex: (isFocused && modal.data.rightClick) ? modal.zIndexValueRight : (isFocused ? modal.zIndexValue : null),
+                    //zIndex: isFocused ? 2000 : 1000,
                     //zIndex: (isFocused && isFocusedLocation) ? 3000: (isFocused ? 2000 : 1000),
-                    border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                    border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                     boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                     //zIndex: modal.zIndex || 100,
                     backgroundColor: 'white',
@@ -406,6 +510,66 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
+                    }}
+                    onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!isFocused) return;
+                        console.log("===== right click executed =======")
+                        e.preventDefault(); // ブラウザ標準のメニューを出さない
+                        setClickedModalId(modal.id)
+                        const allValues = openedModalLocations.flatMap((m: any) => [
+                            Number(m.locations?.zIndexValue) || 1000,
+                            Number(m.google?.zIndexValue) || 1000,
+                            Number(m.log?.zIndexValue) || 1000,
+                            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                        ]);
+                        const nextZ = Math.max(1000, ...allValues) + 1;
+
+                        console.log("✈️ 共通関数で更新:", { nextZ });
+
+                        updateModalElements(modal.id, (dummy: any) => ({
+                            ...dummy,
+                            locations: {
+                                ...dummy.locations,
+                                zIndexValue: nextZ,
+
+                            }
+                            //zIndexValue: nextZ,
+                        }));
+
+                        //if (modal.zIndex !== maxZ) return;
+                        /*const allValues = openedModalLocations.flatMap((m: any) => [
+                            Number(m.zIndexValue) || 1000,
+                            Number(m.zIndexValueRight) || 1000,
+                            Number(m.data?.zIndexValue) || 1000,
+                            Number(m.google?.zIndexValueRight) || 1000,
+                            Number(m.log?.zIndexValueRight) || 1000,
+                            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+                        ]);
+                        const maxZ = Math.max(1000, ...allValues);
+                        const nextZ = maxZ + 1;
+
+
+                        console.log("maxZ:", maxZ)
+
+                        // グループ全体の zIndex を最新の最大値 + 1 に更新
+                        updateModalElements(modal.id, (dummy: any) => ({
+                            ...dummy,
+                            zIndexValueRight: maxZ + 1,
+                            data: {
+                                ...dummy.data,
+                                zIndexValueRight: maxZ + 1,
+                                rightClick: true,
+                            }
+                            //rightClick: true,       // 右クリックフラグオン
+                        }));*/
+
+                        // フォーカスもこのグループに合わせる
+                        setActiveGroupId(modal.id);
+                        console.log("maxZLocatioc:", maxZ)
+                        console.log("modalLocation:::", modal)
+
                     }}
                 >
                     {/*<div style={{
@@ -569,7 +733,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     </button>
                     {isExisting && (isConfirming ? (
                         <button
-                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px', cursor:'pointer',  }}
+                            style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', }}
                             onClick={handleDelete} // 💡 2回目で実行
                         >
                             削除確定
@@ -577,7 +741,7 @@ export default function ModalLocation({ modal, isFocused, onFocus, isFocusedLoca
                     ) : (
                         <button
                             //style={{ width: '30%', height: '3vh', background: '#9ca3af', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
-                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px', cursor:'pointer',  }}
+                            style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', }}
                             onClick={() => setIsConfirming(true)} // 💡 1回目で「確認モード」へ
                         >
                             削除

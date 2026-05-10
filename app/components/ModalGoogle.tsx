@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving }: any) {
+export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId, }: any) {
     const map = useMap();
 
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
@@ -28,21 +28,114 @@ export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle
     useEffect(() => {
         console.log("*****************************************")
         if (initialModalPosGoogle) {
-            // 💡 親から「ずらした位置」が届いていればそれを使う
+            // 追従後、位置を更新
             setLocalPos(initialModalPosGoogle);
-            setOpenedModalLocations((prev: any[]) =>
-                prev.map((m: any) =>
-                    m.id === modal.id
-                        ? { ...m, data: { ...m.data, hasMovedEnough: false } }
-                        : m
-                )
-            );
+            if (modal.data.hasMovedEnough) {
+                updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    data: {
+                        ...dummy.data,
+                        hasMovedEnough: false // 役割終了のためリセット
+                    }
+                }));
+            }
 
         } else {
-            // 💡 そうでなければ、modal自身の現在の位置を使う
-            setLocalPos({ x: modal.currentPos.x, y: modal.currentPos.y });
+            //  初回マウント時、初期位置セット
+            setLocalPos({ x: modal.currentPos.x - 80, y: modal.currentPos.y + 40 });
         }
     }, [initialModalPosGoogle]); // 👈 空の配列にすることで「最初の1回だけ」実行される
+
+    /*const handleUpdateZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.zIndexValue) || 1000,
+            Number(m.zIndexValueRight) || 1000,
+            Number(m.data?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValueRight) || 1000,
+            Number(m.log?.zIndexValueRight) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+        ]);
+        //const maxZ = Math.max(1000, ...allValues);
+        // 1. 全体の最大値を計算 (計算には今の最新の状態 openedModalLocations を使う)
+        // const allValues = openedModalLocations.flatMap((m: any) => [
+        //     Number(m.zIndexValue) || 1000,
+        //     Number(m.data?.zIndexValue) || 1000,
+        //     ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        // ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+
+        console.log("✈️ 共通関数で更新:", { nextZ });
+
+        // 2. 共通の「魔法の杖」を振る
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            zIndexValue: nextZ,
+            google: {
+                ...dummy.data,
+                zIndexValueRight: nextZ
+            },
+            hasMovedEnough: false,
+            rightClick: false,
+
+        }));
+    };*/
+    /*const handleUpdateZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.logs?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) ;
+        //const nextZ = Math.max(1000, ...allValues) + 1;
+
+        console.log("✈️ 共通関数で更新:", { nextZ });
+
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            google: {
+                ...dummy.google,
+                zIndexValue: nextZ,
+
+            }
+            //zIndexValue: nextZ,
+        }));
+
+    };*/
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        //const nextZ = Math.max(1000, ...allValues);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+
+        console.log("allValues:", allValues);
+
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.dummy,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.logs || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+            //zIndexValue: nextZ,
+        }));
+
+    };
 
 
 
@@ -51,9 +144,24 @@ export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: any) => {
+        if (e.button !== 0) return;
         if (!localPos) return;
 
         onFocus();
+        //handleUpdateGroupZIndex();
+
+        //handleUpdateZIndex();
+        //  hasMovedEnough リセット
+        /*updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            data: {
+                ...dummy.data,
+                hasMovedEnough: false,
+                rightClick: false,
+
+            }
+        }));*/
+
         //onFocusGoogle();
         /*setOpenedModalLocations((prev: any[]) =>
             prev.map((m: any) =>
@@ -181,9 +289,13 @@ export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle
                             top: `${localPos.y - 15}px`, // 少し余裕を持たせる
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
-                            zIndex: isFocused ? 2000 : 1000,
+                            zIndex: modal.google?.zIndexValue,
+                            //zIndex: (isFocused && modal.google?.rightClick) ? modal.google.zIndexValueRight : (isFocused ? modal.zIndexValue : null),
+                            //zIndex: modal.google?.rightClick ? modal.google.zIndexValueRight : modal.zIndexValue,
+                            //zIndex: modal.zIndexValue,
+                            //zIndex: isFocused ? 2000 : 1000,
                             //zIndex: (isFocused && isFocusedGoogle) ? 3000 :(isFocused ? 2000 : 1000),
-                            border: isFocused ? '2px solid #ff4444' : '1px solid #ccc',
+                            border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                             boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                             //zIndex: modal.zIndex || 100,
                             backgroundColor: 'white',
@@ -207,6 +319,64 @@ export default function ModalGoogle({ modal, isFocused, onFocus, isFocusedGoogle
                                 justifyContent: 'center'
 
                             }}
+                            onContextMenu={(e) => {
+                                if (!isFocused) return;
+                                console.log("===== right click executed =======")
+                                e.preventDefault(); // ブラウザ標準のメニューを出さない
+                                const allValues = openedModalLocations.flatMap((m: any) => [
+                                    Number(m.locations?.zIndexValue) || 1000,
+                                    Number(m.google?.zIndexValue) || 1000,
+                                    Number(m.log?.zIndexValue) || 1000,
+                                    ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                                ]);
+                                const nextZ = Math.max(1000, ...allValues) + 1;
+
+                                console.log("✈️ 共通関数で更新:", { nextZ });
+
+                                updateModalElements(modal.id, (dummy: any) => ({
+                                    ...dummy,
+                                    google: {
+                                        ...dummy.dummy,
+                                        zIndexValue: nextZ,
+
+                                    }
+                                    //zIndexValue: nextZ,
+                                }));
+
+                                //if (modal.zIndex !== maxZ) return;
+                                /*const allValues = openedModalLocations.flatMap((m: any) => [
+                                    Number(m.zIndexValue) || 1000,
+                                    Number(m.zIndexValueRight) || 1000,
+                                    Number(m.data?.zIndexValue) || 1000,
+                                    Number(m.google?.zIndexValueRight) || 1000,
+                                    Number(m.logs?.zIndexValueRight) || 1000,
+                                    ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
+
+                                ]);
+                                const maxZ = Math.max(1000, ...allValues);
+                                //if (modal.zIndex !== maxZ) return;
+
+
+                                console.log("maxZ:", maxZ)
+
+                                // グループ全体の zIndex を最新の最大値 + 1 に更新
+                                updateModalElements(modal.id, (dummy: any) => ({
+                                    ...dummy,
+                                    //zIndexValueRight: maxZ + 1,
+                                    //rightClick: true,       // 右クリックフラグオン
+                                    google: {
+                                        ...dummy.google,
+                                        zIndexValueRight: maxZ + 1,
+                                        rightClick: true,
+                                    }
+                                }));*/
+
+                                // フォーカスもこのグループに合わせる
+                                setActiveGroupId(modal.id);
+                                console.log("modalGoogle:::", modal)
+
+                            }}
+
                         >
                             {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
 
