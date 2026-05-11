@@ -484,6 +484,9 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                     borderRadius: '10px',
                     //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
                     fontSize: '13px', // 小さすぎず読みやすいサイズ
+
+                    WebkitUserSelect: 'none',//文字選択なし/iPhone
+                    userSelect: 'none',//文字選択なし/PC.android,etc.
                 }}
                 onClick={(e) => e.stopPropagation()}
             >

@@ -253,7 +253,9 @@ export default function ModalLogs({ modal, updateModalElements, isFocused, onFoc
                         padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
                         borderRadius: '10px',
                         //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
-                        fontSize: '13px' // 小さすぎず読みやすいサイズ
+                        fontSize: '13px', // 小さすぎず読みやすいサイズ
+                        WebkitUserSelect: 'none',//文字選択なし/iPhone
+                        userSelect: 'none',//文字選択なし/PC.android,etc.
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -277,24 +279,24 @@ export default function ModalLogs({ modal, updateModalElements, isFocused, onFoc
                             console.log("===== right click executed =======")
                             e.preventDefault(); // ブラウザ標準のメニューを出さない
                             const allValues = openedModalLocations.flatMap((m: any) => [
-                                    Number(m.locations?.zIndexValue) || 1000,
-                                    Number(m.google?.zIndexValue) || 1000,
-                                    Number(m.log?.zIndexValue) || 1000,
-                                    ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
-                                ]);
-                                const nextZ = Math.max(1000, ...allValues) + 1;
+                                Number(m.locations?.zIndexValue) || 1000,
+                                Number(m.google?.zIndexValue) || 1000,
+                                Number(m.log?.zIndexValue) || 1000,
+                                ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                            ]);
+                            const nextZ = Math.max(1000, ...allValues) + 1;
 
-                                console.log("✈️ 共通関数で更新:", { nextZ });
+                            console.log("✈️ 共通関数で更新:", { nextZ });
 
-                                updateModalElements(modal.id, (dummy: any) => ({
-                                    ...dummy,
-                                    log: {
-                                        ...dummy.dummy,
-                                        zIndexValue: nextZ,
+                            updateModalElements(modal.id, (dummy: any) => ({
+                                ...dummy,
+                                log: {
+                                    ...dummy.dummy,
+                                    zIndexValue: nextZ,
 
-                                    }
-                                    //zIndexValue: nextZ,
-                                }));
+                                }
+                                //zIndexValue: nextZ,
+                            }));
 
                             //if (modal.zIndex !== maxZ) return;
                             /*const allValues = openedModalLocations.flatMap((m: any) => [
