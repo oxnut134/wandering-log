@@ -139,7 +139,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: any) => {
-        if (e.button !== 0) return;
+        if (!e.touches && e.button !== 0) return;
 
         //setIsDragging(true);
         if (!localPos) return;

@@ -144,7 +144,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElem
     let gAx: any, gBx: any;
 
     const handleMouseDown = (e: any) => {
-        if (e.button !== 0) return;
+        if (!e.touches && e.button !== 0) return;
         if (!localPos) return;
 
         onFocus();

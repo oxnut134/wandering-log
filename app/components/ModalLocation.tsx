@@ -283,7 +283,7 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
     let gAx: any, gBx: any;
 
     const handleDown = (e: React.MouseEvent | React.TouchEvent | any) => {
-        if (e.button !== 0) return;  // 左クリックでなければリターン
+        if (!e.touches && e.button !== 0) return;  // 左クリックでなければリターン
         //console.log("🖱️ 親の handleDown が呼ばれた！");
 
         e.stopPropagation();
