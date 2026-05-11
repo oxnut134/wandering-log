@@ -321,7 +321,8 @@ export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElem
                                 justifyContent: 'center'
 
                             }}
-                            onContextMenu={(e) => {
+                            //onContextMenu={(e) => {
+                            onDoubleClick={(e) => {
                                 if (!isFocused) return;
                                 console.log("===== right click executed =======")
                                 e.preventDefault(); // ブラウザ標準のメニューを出さない

@@ -272,7 +272,8 @@ export default function ModalLogs({ modal, updateModalElements, isFocused, onFoc
                             justifyContent: 'center'
 
                         }}
-                        onContextMenu={(e) => {
+                        //onContextMenu={(e) => {
+                        onDoubleClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             if (!isFocused) return;

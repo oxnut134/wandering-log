@@ -514,10 +514,11 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
-                    onContextMenu={(e) => {
+                    //onContextMenu={(e) => {
+                    onDoubleClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        //if (!isFocused) return;
+                        if (!isFocused) return;
                         console.log("===== right click executed =======")
                         e.preventDefault(); // ブラウザ標準のメニューを出さない
                         setClickedModalId(modal.id)

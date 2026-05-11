@@ -372,7 +372,8 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                         justifyContent: 'center'
 
                     }}
-                    onContextMenu={(e) => {
+                    //onContextMenu={(e) => {
+                    onDoubleClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         if (!isFocused) return;
