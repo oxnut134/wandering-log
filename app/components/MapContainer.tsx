@@ -1,13 +1,15 @@
 "use client";
 import { Map, AdvancedMarker, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
 import { useState, useEffect, useCallback,memo } from "react";
+//import { useAppContext,} from "../context/AppContext";
 
 declare const google: any;
 
 function MapContainer({ setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
-
+    //const { currentPage, setCurrentPage } = useAppContext();
+ 
 
     useEffect(() => {
         if (map && currentPosOfCamera && homeTrigger !== 0) {
@@ -205,6 +207,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
         });
 
     };
+    console.log("visitedLocations>>>>>>>>>>>>>>>",visitedLocations)
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Map
@@ -247,7 +250,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 </AdvancedMarker>
 
                 {/* 過去の足跡も AdvancedMarker に揃える */}
-                {visitedLocations.map((item: any) => {
+                {visitedLocations ? (visitedLocations.map((item: any) => {
                     const isCurrent = openedModalLocations.find(
                         (loc: any) => loc.id === item.id && loc.data?.isCurrentMarker
                     );
@@ -284,7 +287,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                             }
                         </AdvancedMarker>
                     )
-                })}
+                })):(null)}
             </Map>
         </div>
     );

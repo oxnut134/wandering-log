@@ -261,6 +261,7 @@ export default function ModalLogs({ modal, updateModalElements, isFocused, onFoc
                 >
                     <div
                         onMouseDown={handleMouseDown}
+                        onContextMenu={(e) => e.preventDefault()}
                         onTouchStart={handleMouseDown}
                         style={{
                             touchAction: 'none',

@@ -5,7 +5,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name"),
   email: text("email").unique(),
-  password: text("password"),
+  password: text("password").notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
@@ -13,7 +13,7 @@ export const users = pgTable("users", {
 // 2. visited_locations (位置)
 export const visitedLocations = pgTable("visited_locations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  user_id: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
   latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
   longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
   name: text("name"),
@@ -38,6 +38,7 @@ export const visitedPlaces = pgTable("visited_places", {
 export const visitedLogs = pgTable("visited_logs", {
   id: serial("id").primaryKey(),
   location_id: integer("location_id").references(() => visitedLocations.id, { onDelete: 'cascade' }),
+  user_id: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
   place_id: integer("place_id").references(() => visitedPlaces.id, { onDelete: 'cascade' }),
   visited_at: timestamp("visited_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
@@ -47,7 +48,7 @@ export const visitedLogs = pgTable("visited_logs", {
 // 5. visited_comments (訪問コメント)
 export const visitedComments = pgTable("visited_comments", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  user_id: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
   log_id: integer("log_id").references(() => visitedLogs.id, { onDelete: 'cascade' }),
   comment: text("comment"),
   updated_at: timestamp("updated_at").defaultNow().notNull(),

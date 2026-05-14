@@ -1,13 +1,21 @@
 import { db } from "../../../lib/db";
 import { visitedLocations, visitedPlaces, visitedLogs } from "../../../lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { and,eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
 
         //console.log("body:", body)
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        const currentUserId = parseInt(session.user.id, 10);
+
 
         const { id, latitude, longitude, name, comment, googleData } = body;
 
@@ -18,7 +26,8 @@ export async function POST(request: Request) {
                 //該当レコード検索
                 const locationRecord = await tx.select()
                     .from(visitedLocations)
-                    .where(eq(visitedLocations.id, locationId))
+                    .where(and(eq(visitedLocations.id, locationId),
+                    eq(visitedLocations.user_id,currentUserId)))
                     .limit(1);
 
                 if (locationRecord.length > 0) {

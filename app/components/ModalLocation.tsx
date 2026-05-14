@@ -506,6 +506,7 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                 </div>
                 <div
                     onMouseDown={handleDown}
+                    onContextMenu={(e) => e.preventDefault()}
                     onTouchStart={handleDown}
                     style={{
                         height: '4vh', background: '#f3f4f6', padding: '0px 0px', cursor: 'move',

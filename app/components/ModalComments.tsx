@@ -361,6 +361,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
             >
                 <div
                     onMouseDown={handleMouseDown}
+                    onContextMenu={(e) => e.preventDefault()}
                     onTouchStart={handleMouseDown}
                     style={{
                         touchAction: 'none',

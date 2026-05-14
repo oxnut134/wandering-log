@@ -310,6 +310,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElem
                     >
                         <div
                             onMouseDown={handleMouseDown}
+                            onContextMenu={(e) => e.preventDefault()}
                             onTouchStart={handleMouseDown}
                             style={{
                                 touchAction: 'none',
