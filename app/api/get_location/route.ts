@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { db } from "../../../lib/db";
-import { visitedLocations, visitedPlaces, visitedComments, } from "../../../lib/schema";
-import { and, eq, desc } from "drizzle-orm";
+import { visitedLocations, } from "../../../lib/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { auth } from "@/auth";
 
 export async function GET(request: Request) {
+
+  console.log("request>>>>>>>>>>>>>>>>>>", request)
 
   const session = await auth();
   if (!session?.user?.id) {
@@ -13,11 +15,12 @@ export async function GET(request: Request) {
   }
   const currentUserId = parseInt(session.user.id, 10);
 
+
   // 💡 URLから特定の location_id を取得
   const { searchParams } = new URL(request.url);
-  const logId = searchParams.get('log_id');
+  const id = searchParams.get('id');
 
-  if (!logId) {
+  if (!id) {
     return NextResponse.json({ error: 'location_id is required' }, { status: 400 });
   }
 
@@ -31,20 +34,23 @@ export async function GET(request: Request) {
 
   try {
     // 💡 Drizzleで取得gf
-    const comments = await db
+    const location = await db
       .select({
-        id: visitedComments.id,
-        comment: visitedComments.comment,
+        id: visitedLocations.id,
+        name: visitedLocations.name,
+        comment: visitedLocations.comment,
         //comment: visitedComments.comment, // 💡 これでコメントも一緒に取れます
       })
-      .from(visitedComments)
-      .where(and(
-        eq(visitedComments.log_id, Number(logId)),
-        eq(visitedComments.user_id, currentUserId)
-      ))
+      .from(visitedLocations)
+      .where(
+        and(
+          eq(visitedLocations.id, Number(id)),
+          eq(visitedLocations.user_id, Number(currentUserId)),
+        )
+      )
     //. orderBy(desc(visitedComments.visited_at));
-
-    return NextResponse.json(comments);
+    console.log("id for search >>>>>>>>>>>>>>>>>>", id)
+    return NextResponse.json(location);
 
   } catch (error) {
     console.error('❌ Database Error:', error);

@@ -2,9 +2,17 @@ import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { db } from "../../../lib/db";
 import { visitedLocations, visitedPlaces, visitedLogs } from "../../../lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
+import { auth } from "@/auth";
 
 export async function GET(request: Request) {
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  const currentUserId = parseInt(session.user.id, 10);
+
   // 💡 URLから特定の location_id を取得
   const { searchParams } = new URL(request.url);
   const locationId = searchParams.get('location_id');
@@ -21,28 +29,31 @@ export async function GET(request: Request) {
   const sql = neon(databaseUrl);
 
 
-try {
-  // 💡 Drizzleで取得
-  const logs = await db
-    .select({
-      id: visitedLogs.id,
-      visited_at: visitedLogs.visited_at,
-      place_id: visitedLogs.place_id,
-      //comment: visitedLogs.comment, // 💡 これでコメントも一緒に取れます
-    })
-    .from(visitedLogs)
-    .where(eq(visitedLogs.location_id, Number(locationId)))
-    .orderBy(desc(visitedLogs.visited_at));
+  try {
+    // 💡 Drizzleで取得
+    const logs = await db
+      .select({
+        id: visitedLogs.id,
+        visited_at: visitedLogs.visited_at,
+        place_id: visitedLogs.place_id,
+        //comment: visitedLogs.comment, // 💡 これでコメントも一緒に取れます
+      })
+      .from(visitedLogs)
+      .where(and(
+        eq(visitedLogs.location_id, Number(locationId)),
+        eq(visitedLogs.user_id, currentUserId)
+      ))
+      .orderBy(desc(visitedLogs.visited_at));
 
-  const formattedLogs = logs.map(log => ({
-    ...log,
-    // DrizzleがDateオブジェクトとして返してくれるので、そのまま toISOString() が使えます
-    visited_at: log.visited_at instanceof Date 
-      ? log.visited_at.toISOString() 
-      : log.visited_at 
-        ? String(log.visited_at).replace(' ', 'T') + 'Z' 
-        : null
-  }));
+    const formattedLogs = logs.map(log => ({
+      ...log,
+      // DrizzleがDateオブジェクトとして返してくれるので、そのまま toISOString() が使えます
+      visited_at: log.visited_at instanceof Date
+        ? log.visited_at.toISOString()
+        : log.visited_at
+          ? String(log.visited_at).replace(' ', 'T') + 'Z'
+          : null
+    }));
     return NextResponse.json(formattedLogs);
 
   } catch (error) {

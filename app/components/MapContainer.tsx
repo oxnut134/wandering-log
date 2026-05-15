@@ -1,6 +1,6 @@
 "use client";
 import { Map, AdvancedMarker, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
-import { useState, useEffect, useCallback,memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 //import { useAppContext,} from "../context/AppContext";
 
 declare const google: any;
@@ -9,7 +9,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     //const { currentPage, setCurrentPage } = useAppContext();
- 
+
 
     useEffect(() => {
         if (map && currentPosOfCamera && homeTrigger !== 0) {
@@ -95,7 +95,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 // 💡 距離（メートル）を計算
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
                 if (!include || ignore || distance > 10) { p.name = "取得できませんでした。" }
-                console.log("x;",x," y:",y)
+                console.log("x;", x, " y:", y)
                 const newModal = {
                     id: place?.id || `new-${Date.now()}`, // 複数識別用のID
                     pos: { x: x, y: y },
@@ -113,10 +113,10 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                     return [...prev, newModal];
                 });
             } else {
-                console.log("x;",x," y:",y)
+                console.log("x;", x, " y:", y)
                 const newModal = {
                     id: place?.id || `new-${Date.now()}`, // 複数識別用のID
-                    tempId:Date.now,
+                    tempId: Date.now,
                     pos: { x: x, y: y },
                     currentPos: { x: x + 40, y: y + 40 },
                     data: place || { name: "取得できませんでした", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
@@ -128,7 +128,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
             }
         });
     };
-    const handleMarkerClick = (place?: any, latLng?: any, domEvent?: any) => {
+    const handleMarkerClick = async (place?: any, latLng?: any, domEvent?: any) => {
         // 💡 1. 理想の表示位置（クリックしたピクセル座標）を取得
         //let x = domEvent ? domEvent.clientX : window.innerWidth / 2;
         //let y = domEvent ? domEvent.clientY : window.innerHeight / 2;
@@ -188,26 +188,73 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
 
         // 💡 4. 安全が確認された座標を State に保存
         //setModalPos({ x, y });
+        //let modal:any
+        //const target = openedModalLocations.find((m: any) => m.data.google_place_id === place.id);
+        //console.log("target>>>>>>>>>>>>>>>>>>>>>", target)
 
-        const newModal = {
-            id: place?.id || `new-${Date.now()}`, // 複数識別用のID
-            //pos: { x: x, y: y },
-            pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
-            currentPos: { x: x + 40, y: y + 40 },//<<<<<<<<<<<<<<<<<<<<<<<========modalLoc.が移動した位置に合わせて変化しないといけない
-            //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
-            data: place
-                ? { ...place, isNew: false }
-                : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: false },
-        };
+        //place.idとcurrentUserIdでnameとコメントを取得する
+        console.log("place.id>>>>>>>>>>>>>>>>",place.id)
+        try {
+            const response = await fetch(`/api/get_location?id=${place.id}`, {
+                method: "GET",
+                cache: "no-store"
+            });
 
-        // 💡 すでに同じIDのモーダルが開いていなければ追加
-        setOpenedModalLocations((prev: any) => {
-            if (prev.find((m: any) => m.id === newModal.id)) return prev;
-            return [...prev, newModal];
-        });
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.warn("⚠️ セッションが切れているか未ログインです");
+                }
+                throw new Error(`APIエラー: ステータスコード ${response.status}`);
+            }
+            console.log("response>>>>>>>>>>>>>>>>>",response)
+            const locationArray = await response.json();
+
+            let target: any
+            if (locationArray && locationArray.length > 0) {
+                target = locationArray[0]; // 🎯 先頭の1件を引っこ抜く
+
+                console.log("🧬 Neonから直撃で取得した最新のピン:", target);
+
+            } else { target = null }
+
+            //const target: any = null;
+
+            const newModal = {
+                id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                //pos: { x: x, y: y },
+                pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
+                currentPos: { x: x + 40, y: y + 40 },//<<<<<<<<<<<<<<<<<<<<<<<========targetLoc.が移動した位置に合わせて変化しないといけない
+                /*data: place
+                    ? { ...place, isNew: false } // 既存データ（に見えるが実は...）
+                    : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: false }*/
+                //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+                data:
+                    //!target
+                        //? { ...place, isNew: false }
+                        //:
+                        {
+                            id:target.id,
+                            name: target?.name,
+                            comment: target?.comment,
+                            latitude: latLng.lat(),
+                            longitude: latLng.lng(),
+                            isNew: false
+                        },
+            };
+
+            // 💡 すでに同じIDのモーダルが開いていなければ追加
+            setOpenedModalLocations((prev: any) => {
+                if (prev.find((m: any) => m.id === newModal.id)) return prev;
+                return [...prev, newModal];
+            });
+
+        } catch (error) {
+            console.error("🚨 フロント側でのピン単眼鏡取得フェッチに失敗しました:", error);
+            return null;
+        }
 
     };
-    console.log("visitedLocations>>>>>>>>>>>>>>>",visitedLocations)
+    //console.log("visitedLocations>>>>>>>>>>>>>>>",visitedLocations)
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Map
@@ -287,7 +334,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                             }
                         </AdvancedMarker>
                     )
-                })):(null)}
+                })) : (null)}
             </Map>
         </div>
     );

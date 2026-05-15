@@ -78,9 +78,10 @@ export default function WanderingLog() {
         setDummy(prev => !prev);
     };
     const refreshHistory = useCallback(async () => {
+   
         const res = await fetch("/api/get_locations_and_places");//default:GET
         const data = await res.json();
-        //console.log("data:", data);
+        //console.log("data:>>>>>>>>>>>>>>", data);
         setvisitedLocations(data);
 
 

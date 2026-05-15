@@ -241,7 +241,7 @@ export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElem
         //const newName = modal.googleData.name;
         console.log("==========opendModalGoogle:", modal);
         setIsGoogleView(false);
-        const payload = {
+        let payload = {
             location_id: modal.id,
             google_place_id: modal.googleData.place_id,
             name: modal.googleData.name,
@@ -250,18 +250,48 @@ export default function ModalGoogle({ modal, isFocused, onFocus, updateModalElem
 
         };
         console.log("🔥 いまから fetch を実行します！宛先: /api/save_place");
-        const res = await fetch("/api/save_place", {
+        let res = await fetch("/api/save_place", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        const data = await res.json();
+        let data = await res.json();
         console.log("📍 受信データ:", data);
         if (res.ok) {
             if (onSaveSuccess) onSaveSuccess();
         }
         //setOnSaving(false)
-        if (res.ok) return;
+        if (!res.ok) {
+            // for error
+            return;
+        }
+
+        //openrd_locationsテーブルに保存
+        payload = {
+            id: modal.googleData.location_id,
+            location_id: modal.id,
+            google_place_id: modal.googleData.place_id,
+            name: modal.googleData.name,
+            category: modal.googleData.category,
+            address: modal.googleData.address
+
+        };
+        console.log("🔥 いまから fetch を実行します！宛先: /api/save_location");
+        res = await fetch("/api/save_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        data = await res.json();
+        console.log("📍 受信データ:", data);
+        if (res.ok) {
+            if (onSaveSuccess) onSaveSuccess();
+        }
+        //setOnSaving(false)
+        if (!res.ok) {
+            // for error
+            return;
+        }
 
     }
 

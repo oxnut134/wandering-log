@@ -27,7 +27,7 @@ export async function GET() {
     })
       .from(visitedLocations)
       .leftJoin(visitedPlaces, eq(visitedLocations.id, visitedPlaces.location_id))
-      .where(eq(visitedLocations.userId, currentUserId));
+      .where(eq(visitedLocations.user_id, currentUserId));
     //console.log("results", results);
     return NextResponse.json(results);
   } catch (e) {

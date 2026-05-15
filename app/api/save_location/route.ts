@@ -1,6 +1,6 @@
 import { db } from "../../../lib/db";
 import { visitedLocations, visitedPlaces, visitedLogs } from "../../../lib/schema";
-import { and,eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
@@ -15,9 +15,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
         const currentUserId = parseInt(session.user.id, 10);
-
-
         const { id, latitude, longitude, name, comment, googleData } = body;
+        //console.log("locationId>>>>>>>>>>>>>>>>>>>>>>>>>>>>", id)
+        //console.log("currentUserId>>>>>>>>>>>>>>>>>>>>>>>>>>>>", currentUserId)
 
         const result = await db.transaction(async (tx) => {
             let locationId = id;
@@ -26,8 +26,12 @@ export async function POST(request: Request) {
                 //該当レコード検索
                 const locationRecord = await tx.select()
                     .from(visitedLocations)
-                    .where(and(eq(visitedLocations.id, locationId),
-                    eq(visitedLocations.user_id,currentUserId)))
+                    .where(
+                        and(
+                            eq(visitedLocations.id, locationId),
+                            eq(visitedLocations.user_id, currentUserId)
+                        )
+                    )
                     .limit(1);
 
                 if (locationRecord.length > 0) {
@@ -36,6 +40,7 @@ export async function POST(request: Request) {
                         .set({
                             name,
                             comment,
+                            user_id: currentUserId,
                             created_at: new Date()
                         })
                         .where(eq(visitedLocations.id, id));
@@ -47,6 +52,7 @@ export async function POST(request: Request) {
                         longitude: String(longitude),
                         name,
                         comment,
+                        user_id: currentUserId,
                         updated_at: new Date() // 仕様：最初に登録した日時
                     }).returning();
                     locationId = newLoc.id;
@@ -59,6 +65,7 @@ export async function POST(request: Request) {
                     longitude: String(longitude),
                     name,
                     comment,
+                    user_id: currentUserId,
                     updated_at: new Date()
                 }).returning();
                 locationId = newLoc.id;
@@ -68,6 +75,7 @@ export async function POST(request: Request) {
             await tx.insert(visitedLogs).values({
                 location_id: locationId,
                 place_id: placeId,
+                user_id: currentUserId,
                 visited_at: new Date()
             });
 
@@ -81,10 +89,10 @@ export async function POST(request: Request) {
 }
 
 // 🗑️ DELETE: 削除
-export async function DELETE(request: Request) {
+/*export async function DELETE(request: Request) {
     try {
         const { id } = await request.json();
         await db.delete(visitedLocations).where(eq(visitedLocations.id, id));
         return NextResponse.json({ success: true });
     } catch (e) { return NextResponse.json({ error: "削除失敗" }, { status: 500 }); }
-}
+}*/

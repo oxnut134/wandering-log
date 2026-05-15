@@ -72,6 +72,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                                     ...m.data,  // 既存のデータを保持
                                     pos: m.pos,
                                     id: savedData.id,
+                                    //name:savedData.name,
+                                    //comment:savedData.commnent,
                                     isNew: false,
                                 }
                             }

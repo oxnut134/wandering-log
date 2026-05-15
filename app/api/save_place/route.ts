@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     try {
     const body = await request.json();
 
-    const { location_id, google_place_id, name, category, address } = body;
+    const { id,location_id, google_place_id, name, category, address } = body;
 
     const result = await db.transaction(async (tx) => {
         let locationId = location_id;
