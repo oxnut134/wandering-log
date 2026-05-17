@@ -259,7 +259,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
             });
 
             //Foot mark on/off
-            setVisitedLocations((prev: any[]) => {
+            setOpenedModalLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === newModal.id
                         ? {
