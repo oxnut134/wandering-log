@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 
 declare const google: any;
 
-function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations,setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     //const [redMarkerPos, setRedMarkerPos] = useState(currentPosOfCamera);
@@ -259,7 +259,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
             });
 
             //Foot mark on/off
-            
             setVisitedLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === newModal.id
@@ -267,7 +266,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                             ...m,
                             data: {
                                 ...m.data,
-                                isYellowClicked: m.data?.isYellowClicked ? false : true,
+                                isCurrentMarker: m.data.isCurrentMarker ? false : true,
                             }
                         }
                         : m
@@ -359,11 +358,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
                 {/* 過去の足跡も AdvancedMarker に揃える */}
                 {visitedLocations ? (visitedLocations.map((item: any) => {
-                    const isFootMarkClicked = openedModalLocations.find(
+                    const isCurrent = openedModalLocations.find(
                         (loc: any) => loc.id === item.id && loc.data?.isCurrentMarker
-                    );
-                    const isYellowMarkerClicked = visitedLocations.find(
-                        (loc: any) => loc.id === item.id && (loc.data?.isYellowClicked)
                     );
                     return (
                         <AdvancedMarker
@@ -381,29 +377,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                 handleMarkerClick(item, latLng, domEvent)
                             }}
                         >
-                             {/* 🎯 解決の核心：あなたのIF文を三項演算子の入れ子で100%完全再現！ */}
-            {isFootMarkClicked ? (
-                // 🟣 最優先：今まさに操作中の時は「紫色の足跡ピン（👣）」 [INDEX]
-                <Pin
-                    background={'#610fef'}
-                    glyphColor={'#dfd0d0'}
-                    glyphText={'👣'}
-                />
-            ) : isYellowMarkerClicked ? (
-                // 🔵 mark on：モーダルを閉じても、金庫が覚えている間は「青色マーカー」 [INDEX]
-                <Pin
-                    background={'#610fef'} 
-                    glyphColor={'#dfd0d0'}
-                />
-            ) : (
-                // 🟡 mark off：どちらでもない初期状態、またはトグルで戻した時は「黄色マーカー」 [INDEX]
-                <Pin
-                    background={'#FBBC04'}
-                    glyphColor={'#ffffff'}
-                />
-            )}
-                            {/*{isFootMarkClicked  ? (*/}
-                            {/*{(isFootMarkClicked || isYellowMarkerClicked) ? (
+                            {isCurrent ? (
                                 <Pin
                                     background={'#610fef'}
                                     glyphColor={'#dfd0d0'}
@@ -417,7 +391,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                     glyphText={'👣'}
                                 />
                             )
-                            }*/}
+                            }
                         </AdvancedMarker>
                     )
                 })) : (null)}
