@@ -5,9 +5,10 @@ import { useState, useEffect, useCallback, memo } from "react";
 
 declare const google: any;
 
-function MapContainer({ setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
+    //const [redMarkerPos, setRedMarkerPos] = useState(currentPosOfCamera);
     //const { currentPage, setCurrentPage } = useAppContext();
 
 
@@ -96,8 +97,15 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
                 if (!include || ignore || distance > 10) { p.name = "取得できませんでした。" }
                 console.log("x;", x, " y:", y)
+                // const dateNow=Date.now();
+                // setInitialLocationId(dateNow)
+                const d = new Date(); // 🎯 これだけで「今（なう）」のデータが確定！
+
+                // 🕰️ あとは d から必要な時間データだけを抜き出して合算するだけ！
+                const initialLocationId = (d.getHours() * 10000000) + (d.getMinutes() * 100000) + (d.getSeconds() * 1000) + d.getMilliseconds();
                 const newModal = {
-                    id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                    //id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                    id: place?.id || initialLocationId, // 複数識別用のID newToNull
                     pos: { x: x, y: y },
                     currentPos: { x: x + 40, y: y + 40 },
                     data: place || {
@@ -115,7 +123,8 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
             } else {
                 console.log("x;", x, " y:", y)
                 const newModal = {
-                    id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                    //id: place?.id || `new-${Date.now()}`, // 複数識別用のID newToNull
+                    id: place?.id || initialLocationId, // 複数識別用のID newToNull
                     tempId: Date.now,
                     pos: { x: x, y: y },
                     currentPos: { x: x + 40, y: y + 40 },
@@ -140,7 +149,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
         let yCheck
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-        if (x === undefined || x === null) {
+        if (x === undefined || x === initialLocationId) {
             //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
             //y = window.innerHeight / 2 -160; // モーダル高さの半分
             //x = 10; // モーダル幅260の半分
@@ -193,7 +202,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
         //console.log("target>>>>>>>>>>>>>>>>>>>>>", target)
 
         //place.idとcurrentUserIdでnameとコメントを取得する
-        console.log("place.id>>>>>>>>>>>>>>>>",place.id)
+        console.log("place.id>>>>>>>>>>>>>>>>", place.id)
         try {
             const response = await fetch(`/api/get_location?id=${place.id}`, {
                 method: "GET",
@@ -206,7 +215,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 }
                 throw new Error(`APIエラー: ステータスコード ${response.status}`);
             }
-            console.log("response>>>>>>>>>>>>>>>>>",response)
+            console.log("response>>>>>>>>>>>>>>>>>", response)
             const locationArray = await response.json();
 
             let target: any
@@ -220,7 +229,8 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
             //const target: any = null;
 
             const newModal = {
-                id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                //id: place?.id || `new-${Date.now()}`, // 複数識別用のID
+                id: place?.id || initialLocationId, // 複数識別用のID newToNull
                 //pos: { x: x, y: y },
                 pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
                 currentPos: { x: x + 40, y: y + 40 },//<<<<<<<<<<<<<<<<<<<<<<<========targetLoc.が移動した位置に合わせて変化しないといけない
@@ -229,17 +239,17 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                     : { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng(), isNew: false }*/
                 //data: place || { name: "", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
                 data:
-                    //!target
-                        //? { ...place, isNew: false }
-                        //:
-                        {
-                            id:target.id,
-                            name: target?.name,
-                            comment: target?.comment,
-                            latitude: latLng.lat(),
-                            longitude: latLng.lng(),
-                            isNew: false
-                        },
+                //!target
+                //? { ...place, isNew: false }
+                //:
+                {
+                    id: target.id,
+                    name: target?.name,
+                    comment: target?.comment,
+                    latitude: latLng.lat(),
+                    longitude: latLng.lng(),
+                    isNew: true  //isNewTrue
+                },
             };
 
             // 💡 すでに同じIDのモーダルが開いていなければ追加
@@ -247,6 +257,23 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 if (prev.find((m: any) => m.id === newModal.id)) return prev;
                 return [...prev, newModal];
             });
+
+            //Foot mark on/off
+            
+            setVisitedLocations((prev: any[]) => {
+                return prev.map((m: any) =>
+                    m.id === newModal.id
+                        ? {
+                            ...m,
+                            data: {
+                                ...m.data,
+                                isYellowClicked: m.data?.isYellowClicked ? false : true,
+                            }
+                        }
+                        : m
+                );
+            });
+
 
         } catch (error) {
             console.error("🚨 フロント側でのピン単眼鏡取得フェッチに失敗しました:", error);
@@ -283,7 +310,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                 >
                     <div style={{ fontSize: '30px', transform: 'translateY(-15px)' }}>🚩</div>
                 </AdvancedMarker>
-                <AdvancedMarker
+                {/*<AdvancedMarker
                     zIndex={1000}
                     collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
                     position={currentPosOfCamera}
@@ -294,12 +321,49 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                         handleRedMarkerClick(null, latLng, domEvent);
                     }}>
                     <Pin scale={0.9} />
+                </AdvancedMarker>*/}
+
+                <AdvancedMarker
+                    zIndex={1000}
+                    collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
+
+                    // 🎯 解決の核心①：
+                    // 地図の中心を動かす「currentPosOfCamera」を見に行くのを完全に辞め、
+                    // 今新設した、赤マーカー専用の独立した箱「redMarkerPos」をバインドします！
+                    position={redMarkerPos}
+
+                    gmpDraggable={true}
+
+                    onDragEnd={(ev: any) => {
+                        const newLat = ev.latLng?.lat?.() || ev.detail?.latLng?.lat;
+                        const newLng = ev.latLng?.lng?.() || ev.detail?.latLng?.lng;
+
+                        if (newLat && newLng) {
+                            console.log("📍 赤マーカーの移動完了:", newLat, newLng);
+
+                            // 🎯 解決の核心②：
+                            // 指を離した瞬間に、赤マーカーの「ピンの場所だけ」を上書きします！
+                            // 地図の中心（Center）を動かすステートには1ミリも触らないため、
+                            // 地図が勝手にググッと中央に移動するお節介な挙動は、100%物理的にピタッと停止します。
+                            setRedMarkerPos({ lat: newLat, lng: newLng });
+                        }
+                    }}
+
+                    onClick={(ev: any) => {
+                        const latLng = ev.detail?.latLng || ev.latLng;
+                        const domEvent = ev.detail?.domEvent || ev.domEvent;
+                        handleRedMarkerClick(null, latLng, domEvent);
+                    }}>
+                    <Pin scale={0.9} />
                 </AdvancedMarker>
 
                 {/* 過去の足跡も AdvancedMarker に揃える */}
                 {visitedLocations ? (visitedLocations.map((item: any) => {
-                    const isCurrent = openedModalLocations.find(
+                    const isFootMarkClicked = openedModalLocations.find(
                         (loc: any) => loc.id === item.id && loc.data?.isCurrentMarker
+                    );
+                    const isYellowMarkerClicked = visitedLocations.find(
+                        (loc: any) => loc.id === item.id && (loc.data?.isYellowClicked)
                     );
                     return (
                         <AdvancedMarker
@@ -317,7 +381,29 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                                 handleMarkerClick(item, latLng, domEvent)
                             }}
                         >
-                            {isCurrent ? (
+                             {/* 🎯 解決の核心：あなたのIF文を三項演算子の入れ子で100%完全再現！ */}
+            {isFootMarkClicked ? (
+                // 🟣 最優先：今まさに操作中の時は「紫色の足跡ピン（👣）」 [INDEX]
+                <Pin
+                    background={'#610fef'}
+                    glyphColor={'#dfd0d0'}
+                    glyphText={'👣'}
+                />
+            ) : isYellowMarkerClicked ? (
+                // 🔵 mark on：モーダルを閉じても、金庫が覚えている間は「青色マーカー」 [INDEX]
+                <Pin
+                    background={'#610fef'} 
+                    glyphColor={'#dfd0d0'}
+                />
+            ) : (
+                // 🟡 mark off：どちらでもない初期状態、またはトグルで戻した時は「黄色マーカー」 [INDEX]
+                <Pin
+                    background={'#FBBC04'}
+                    glyphColor={'#ffffff'}
+                />
+            )}
+                            {/*{isFootMarkClicked  ? (*/}
+                            {/*{(isFootMarkClicked || isYellowMarkerClicked) ? (
                                 <Pin
                                     background={'#610fef'}
                                     glyphColor={'#dfd0d0'}
@@ -331,7 +417,7 @@ function MapContainer({ setModalPos, updateModalElements, openedModalLocations, 
                                     glyphText={'👣'}
                                 />
                             )
-                            }
+                            }*/}
                         </AdvancedMarker>
                     )
                 })) : (null)}

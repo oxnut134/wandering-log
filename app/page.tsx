@@ -21,7 +21,8 @@ export default function WanderingLog() {
 
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
     const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
-    const [visitedLocations, setvisitedLocations] = useState([]);
+    const [redMarkerPos, setRedMarkerPos] = useState<any>(null);
+    const [visitedLocations, setVisitedLocations] = useState([]);
     const [homeTrigger, setHomeTrigger] = useState(0);
     const [modalPos, setModalPos] = useState({})
     const [openedModalLocations, setOpenedModalLocations] = useState<any[]>([]);
@@ -44,7 +45,11 @@ export default function WanderingLog() {
     const { currentPage, setCurrentPage } = useAppContext();
     const { currentUserId, setCurrentUserId } = useAppContext();
     const [authChecking, setAuthChecking] = useState(true);
-
+    const [initialLocationId, setInitialLocationId] = useState()
+    // const [redMarkerPos, setRedMarkerPos] = useState({
+    //     lat: null,
+    //     lng: null
+    // });
     //   useEffect(() => {
     //       setCurrentPage("map");
     //   }, []);
@@ -78,11 +83,11 @@ export default function WanderingLog() {
         setDummy(prev => !prev);
     };
     const refreshHistory = useCallback(async () => {
-   
+
         const res = await fetch("/api/get_locations_and_places");//default:GET
         const data = await res.json();
         //console.log("data:>>>>>>>>>>>>>>", data);
-        setvisitedLocations(data);
+        setVisitedLocations(data);
 
 
         setTimeout(() => {
@@ -113,6 +118,7 @@ export default function WanderingLog() {
             //console.log("coords:", coords);
             setCurrentPosOfCamera(coords);
             setCurrentPosOfMe(coords);
+            setRedMarkerPos(coords);
         });
         refreshHistory();
     }, [refreshHistory]);
@@ -131,6 +137,9 @@ export default function WanderingLog() {
     };
 
 
+
+
+    //original
     const handleCurrentLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -143,6 +152,7 @@ export default function WanderingLog() {
                     };
                     // 地図のカメラだけを今の場所に移動させる
                     setCurrentPosOfCamera(nowPos);
+                    setRedMarkerPos(nowPos);
                     setHomeTrigger(prev => prev + 1); // カメラ移動を発火
                     //console.log("📍 ナウの場所へ移動:", nowPos);
                 },
@@ -159,9 +169,53 @@ export default function WanderingLog() {
                 lat: currentPosOfMe.lat,
                 lng: currentPosOfMe.lng
             });
+             setRedMarkerPos({
+                lat: currentPosOfMe.lat,
+                lng: currentPosOfMe.lng
+            });
             setHomeTrigger(Date.now());
         }
     };
+
+    /*const handleCurrentLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const nowPos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    
+                    // 🎯 解決の核心①：地図のカメラを現在地に移動
+                    setCurrentPosOfCamera(nowPos);
+                    
+                    // 🎯 解決の核心②：切り離した「赤マーカー専用の箱」も、同時に現在地へワープさせる！
+                    setRedMarkerPos(nowPos);
+                    
+                    setHomeTrigger(prev => prev + 1); // カメラ移動を発火
+                },
+                () => { console.log("位置情報の取得に失敗しました"); },
+                { enableHighAccuracy: true }
+            );
+        }
+    };
+
+    const handleHome = () => {
+        if (currentPosOfMe) {
+            const homePos = {
+                lat: currentPosOfMe.lat,
+                lng: currentPosOfMe.lng
+            };
+            
+            // 🎯 解決の核心③：地図のカメラをマイホームに移動
+            setCurrentPosOfCamera(homePos);
+            
+            // 🎯 解決の核心④：切り離した「赤マーカー専用の箱」も、同時にマイホームへ引き戻す！
+            setRedMarkerPos(homePos);
+            
+            setHomeTrigger(Date.now());
+        }
+    };*/
 
     if (!currentPosOfCamera) {
         return (
@@ -175,18 +229,29 @@ export default function WanderingLog() {
         );
     }
     const onFetchLogs = async (id: number | string) => {
-        // 💡 文字列 ID（new-123など）の場合は履歴がないのでスキップ
-        if (typeof id === 'string' && id.startsWith('new-')) return;
 
+        console.log("<<<<<<<<<<<<<<<< onFech id:", id, " >>>>>>>>>>>>>>>>>")
+        // 💡 文字列 ID（new-123など）の場合は履歴がないのでスキップ
+        //if (typeof id === 'string' && id.startsWith('new-')) return;
+        if (id === initialLocationId) return; //newToNull
 
         try {
             const res = await fetch(`/api/get_visited_logs?location_id=${id}`);
             if (res.ok) {
                 const data = await res.json();
-                // ✅ 特定の ID のモーダルだけ、logs プロパティを更新
-                setOpenedModalLocations(prev => prev.map(m =>
-                    m.id === id ? { ...m, logs: data } : m
-                ));
+
+                await new Promise<void>((resolve) => {
+                    setOpenedModalLocations(prev => {
+                        const next = prev.map(m => m.id === id ? { ...m, logs: data } : m);
+                        resolve(); // 🏆 書き換え完了の合図！ここで初めて関門のロックが外れます
+                        return next;
+                    });
+                });
+                // console.log("data>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",data)
+                // // ✅ 特定の ID のモーダルだけ、logs プロパティを更新
+                // setOpenedModalLocations(prev => prev.map(m =>
+                //     m.id === id ? { ...m, logs: data } : m
+                // ));
             }
         } catch (error) {
             console.error("❌ 履歴取得失敗:", error);
@@ -217,6 +282,9 @@ export default function WanderingLog() {
                     currentPosOfCamera={currentPosOfCamera}
                     setCurrentPosOfCamera={setCurrentPosOfCamera}
                     visitedLocations={visitedLocations}
+                    setVisitedLocations={setVisitedLocations}
+                    initialLocationId={initialLocationId}
+                    setInitialLocationId={setInitialLocationId}
                     //onRedMarkerClick={handleRedMarkerClick}
                     //onMarkerClick={handleMarkerClick}
                     homeTrigger={homeTrigger}
@@ -225,6 +293,8 @@ export default function WanderingLog() {
                     currentZoom={currentZoom}
                     setCurrentZoom={setCurrentZoom}
                     setModalPos={setModalPos}
+                    redMarkerPos={redMarkerPos}
+                    setRedMarkerPos={setRedMarkerPos}
                 />
                 <button
                     onClick={handleCurrentLocation}
@@ -287,6 +357,8 @@ export default function WanderingLog() {
                                 key={`location-${modal.id}`}
                                 //key={index}
                                 modal={modal}
+                                initialLocationId={initialLocationId}
+                                setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={isFocused}
                                 //handleFocused={handleFocused}
@@ -297,7 +369,8 @@ export default function WanderingLog() {
                                 setClickedModalId={setClickedModalId}
                                 //maxZ={maxZ}
                                 //groupZ={groupZ}
-                                initialModalPos={modal.pos}
+                                initialModalPos={modal.currentPos}
+                                //initialModalPos={modal.pos}
                                 openedModalLocations={openedModalLocations}
                                 setOpenedModalLocations={setOpenedModalLocations}
                                 openedModalGoogle={modal.data}
@@ -307,7 +380,8 @@ export default function WanderingLog() {
                                 setIsGoogleView={setIsGoogleView}
                                 logs={modal.logs || []}
                                 onSaveSuccess={refreshHistory}
-                                isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
+                                //isExisting={typeof modal.id === 'number' || !modal.id.startsWith('new-')}
+                                isExisting={modal.id !== initialLocationId}  //newToNull
                                 onFetchLogs={() => onFetchLogs(modal.id)}
                                 moveDist={moveDist}
                                 setMoveDist={setMoveDist}
@@ -351,6 +425,8 @@ export default function WanderingLog() {
                                 key={`google-${modal.id}`}
                                 modal={modal}
                                 //groupZ={groupZ}
+                                initialLocationId={initialLocationId}
+                                setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={activeGroupId === modal.id}
                                 onFocus={() => setActiveGroupId(modal.id)}
@@ -388,7 +464,7 @@ export default function WanderingLog() {
                                                 ? {
                                                     ...m,
                                                     googleData: {
-                                                        ...m,
+                                                        ...m.googleData, // addmark1
                                                         isShowingGoogle: false
                                                     }
                                                 }
@@ -404,6 +480,8 @@ export default function WanderingLog() {
                                 modal={modal}
                                 //groupZ={groupZ}
                                 updateModalElements={updateModalElements}
+                                initialLocationId={initialLocationId}
+                                setInitialLocationId={setInitialLocationId}
                                 isFocused={activeGroupId === modal.id}
                                 onFocus={() => setActiveGroupId(modal.id)}
                                 clickedModalId={clickedModalId}
@@ -423,7 +501,7 @@ export default function WanderingLog() {
                                         : null
                                 }
                                 //resetMoveFlag={() => resetMoveFlag(modal.id)}
-                                openedModalGoogle={modal.data} moda
+                                openedModalGoogle={modal.data}
                                 //isGoogleView={isGoogleView}
                                 isGoogleView={modal.data.isShowingGoogle}
 
@@ -459,6 +537,8 @@ export default function WanderingLog() {
                                     <ModalComments
                                         key={`comment-${c.logId}`}
                                         updateModalElements={updateModalElements}
+                                        initialLocationId={initialLocationId}
+                                        setInitialLocationId={setInitialLocationId}
                                         logs={modal.logs || []}// dummy just for test 
                                         comment={c}
                                         logId={c.logId}

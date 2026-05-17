@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from "@vis.gl/react-google-maps";
 
-export default function ModalLogs({ modal, updateModalElements, isFocused, onFocus, renderMe, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef, setIsCommentRecordExist, setActiveGroupId, }: any) {
+export default function ModalLogs({ modal, initialLocationId, setInitialLocationId, updateModalElements, isFocused, onFocus, renderMe, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosLogs, onFetchLogs, logs, isDraggingRef, setIsCommentRecordExist, setActiveGroupId, }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -212,7 +212,7 @@ export default function ModalLogs({ modal, updateModalElements, isFocused, onFoc
                 return {
                     ...m,
                     comments: [
-                        ...currentComments,
+                        ...(m.comments || []), // addmark1
                         {
                             id: commentId,
                             logId: logId,

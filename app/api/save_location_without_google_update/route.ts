@@ -14,7 +14,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
         const currentUserId = parseInt(session.user.id, 10);
-
         const { id, latitude, longitude, name, comment, googleData } = body;
         console.log("body>>>>>>>>>>>>>>>>>>>>>>>>>>>>", body)
         const [recordCount] = await db.select({ value: count() }).from(visitedLocations);
@@ -73,14 +72,14 @@ export async function POST(request: Request) {
 
                 }
             }
-            
+            /*
             await tx.insert(visitedLogs).values({
-                location_id:locationId,
+                location_id: locationId,
                 place_id: placeId,
                 user_id: currentUserId,
                 visited_at: new Date()
             });
-            
+            */
             return { id: locationId };
         });
         return NextResponse.json(result);

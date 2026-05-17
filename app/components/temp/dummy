@@ -1,0 +1,16 @@
+if (isYellowClicked)
+    mark on
+    if ( is footClicked){
+        mark on
+    }else{
+        mark off
+     }
+}else{
+    modal off
+    if ( is footClicked){
+        mark nop
+    }else{
+        mark nop
+     }
+
+}

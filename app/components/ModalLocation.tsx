@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId }: any) {
+export default function ModalLocation({ modal, initialLocationId, setInitialLocationId, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId }: any) {
     const map = useMap();
     //const [localPos, setLocalPos] = useState(initialModalPos);
     const [localPos, setLocalPos] = useState(initialModalPos);
@@ -15,20 +15,9 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
     const [isConfirming, setIsConfirming] = useState(false);
 
 
-    //-----！！！ このコンポーネントこのopenedModalGoogleはopenedModalGoogle=modal.dataのことなので注意！！！----------
+    //--このコメントは不要だが正常動作確認のためしばらく残す
+    //--！！！ このコンポーネントこのmodal.dataはmodal.data=modal.dataのことなので注意！！！------
 
-    //let zIndexValue: any;
-    // useEffect(() => {
-    //     //isFocused ? modal.zIndexValue=2000: modal.zIndexValue=2000
-    //     if (isFocused) {
-    //          console.log("maxZ:", maxZ)
-    //         zIndexValue = maxZ + 1
-    //     }
-    // }, [isFocused]);
-
-    // ModalComments.tsx の中に追加
-    //useEffect(() => {console.log("clickedModalId: ",clickedModalId)},[clickedModalId])
-    //console.log("clickedModalId: ",clickedModalId)
     if (clickedModalId) { console.log("<<<<<<<<<<<< Layer System start >>>>>>>>>>>>>>"); }
     useEffect(() => {
         // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
@@ -46,11 +35,11 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
 
         setOnSaving(true)
         const payload = {
-            id: openedModalGoogle.id, // 既存ならID、新規ならnull
-            latitude: openedModalGoogle.latitude,
-            longitude: openedModalGoogle.longitude,
-            name: openedModalGoogle.name,
-            comment: openedModalGoogle.comment
+            id: modal.data.id, // 既存ならID、新規ならnull
+            latitude: modal.data.latitude,
+            longitude: modal.data.longitude,
+            name: modal.data.name,
+            comment: modal.data.comment
         };
 
         const res = await fetch("/api/save_location", {
@@ -59,44 +48,43 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            if (modal.data.isNew) {
-                const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
-                console.log("savedData: ", savedData)
-                setOpenedModalLocations((prev: any) =>
-                    prev.map((m: any) =>
-                        m.id === modal.id
-                            ? {
-                                ...m,           // ★ これで現在の currentPos (ドラッグ位置) を保持！
+            console.log("<<<<<<<<<<<< res is ok >>>>>>>>>>>>>>>>")
+            //if (modal.data.isNew) {
+            const savedData = await res.json(); // サーバーから正式なID（数字）をもらう
+            console.log("savedData: ", savedData)
+            setOpenedModalLocations((prev: any) =>
+                prev.map((m: any) =>
+                    m.id === modal.id
+                        ? {
+                            ...m,           // ★ これで現在の currentPos (ドラッグ位置) を保持！
+                            id: savedData.id,
+                            data: {
+                                ...m.data,  // 既存のデータを保持
+                                pos: m.pos,
                                 id: savedData.id,
-                                data: {
-                                    ...m.data,  // 既存のデータを保持
-                                    pos: m.pos,
-                                    id: savedData.id,
-                                    //name:savedData.name,
-                                    //comment:savedData.commnent,
-                                    isNew: false,
-                                }
+                                //name:savedData.name,
+                                //comment:savedData.commnent,
+                                isNew: false,
                             }
-                            : m
-                    )
-                );
-                setTimeout(() => {
-                    if (onSaveSuccess) onSaveSuccess();
-                }, 100);
-                if (onSaveSuccess) onSaveSuccess(); // ここでrefreshHistoryが走る
+                        }
+                        : m
+                )
+            );
+            setTimeout(() => {
+                if (onSaveSuccess) onSaveSuccess();
+            }, 100);
 
-            } else {
-                onFetchLogs();
-                //     setOpenedModalLocations((prev: any) => [...prev, savedData])
-            }
+            onFetchLogs();
+
         }
         setOnSaving(false);
+ 
         if (res.ok) return;
     }
 
     const handleDelete = async () => {
         //if (!confirm("削除しますか？")) return;
-        const res = await fetch("/api/delete_locations_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: openedModalGoogle.id }) });
+        const res = await fetch("/api/delete_locations_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: modal.data.id }) });
         if (res.ok) { onSaveSuccess(); onCloseModalLocation(); }
     };
 
@@ -112,8 +100,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
 
         service.nearbySearch({
             location: {
-                lat: Number(openedModalGoogle.latitude),
-                lng: Number(openedModalGoogle.longitude)
+                lat: Number(modal.data.latitude),
+                lng: Number(modal.data.longitude)
             },
             rankBy: google.maps.places.RankBy.DISTANCE,
             type: 'establishment'
@@ -131,8 +119,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                         const ignore = p.types.includes("political") || p.types.includes("locality");
                         //💡 クリックした位置と、見つかった場所の位置
                         const clickPos = new google.maps.LatLng(
-                            Number(openedModalGoogle.latitude),
-                            Number(openedModalGoogle.longitude)
+                            Number(modal.data.latitude),
+                            Number(modal.data.longitude)
                         );
                         const placePos = p.geometry.location;
 
@@ -152,6 +140,15 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                                 m.id === modal.id
                                     ? {
                                         ...m,
+                                        data: {
+                                            ...m.data,  // 既存のデータを保持 addmark1
+                                            pos: m.pos,
+                                            latitude: modal.data.latitude,
+                                            longitude: modal.data.longitude,
+                                            //name:savedData.name,
+                                            //comment:savedData.commnent,
+                                            isNew: true, //isnewTrue
+                                        },
                                         googleData: {
                                             name: place.name,
                                             place_id: place.place_id,
@@ -192,58 +189,6 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
         });
     };
 
-    /*const handleUpdateZIndex = () => {
-        // 1. 全体の最大値を計算（これからセットする「新しい一番上」の数値を作る）
-        setOpenedModalLocations((prev: any[]) => {
-            const allValues = prev.flatMap((m: any) => [
-                Number(m.zIndexValue) || 1000,
-                Number(m.data?.zIndexValue) || 1000,
-                ...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
-            ]);
-            const maxZ = Math.max(1000, ...allValues);
-            const nextZ = maxZ + 1;
-            console.log("maxZ:", maxZ, "nextZ:", nextZ)
-            return prev.map((item: any) =>
-                item.id === modal.id
-                    ? {
-                        ...item,
-                        zIndexValue: nextZ,
-                        data: { ...item.data, zIndexValue: nextZ }
-                    }
-                    : item
-            );
-        })
-    }
-    /*const handleUpdateZIndex = () => {
-        // 1. 全体の最大値を計算 (計算には今の最新の状態 openedModalLocations を使う)
-        const allValues = openedModalLocations.flatMap((m: any) => [
-            Number(m.zIndexValue) || 1000,
-            Number(m.data?.zIndexValue) || 1000,
-            ...(m.activeComment || []).map((c: any) => Number(c.zIndexValue) || 1000)
-        ]);
-        const nextZ = Math.max(1000, ...allValues) + 1;
-
-        console.log("✈️ 共通関数で更新:", { nextZ });
-
-        // 2. 共通の「魔法の杖」を振る
-        updateModalElements(modal.id, (dummy:any) => ({
-            ...dummy,
-            zIndexValue: nextZ,
-            data: {
-                ...dummy.data,
-                zIndexValue: nextZ
-            }
-        }));
-    };
-    // 2. 配列（State）を更新して、自分の zIndexValue だけを nextZ に上書きする
-    /*setOpenedModalLocations((prev: any) =>
-        prev.map((m: any) =>
-            m.id === modal.id
-                ? { ...m, zIndexValue: nextZ } // 自分のIDなら新しいzIndexをセット
-                : m                           // それ以外はそのままA
-        )
-    );*/
-    //};
     const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
@@ -381,10 +326,6 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                 updateCurrentPos({ x: xRef.current, y: yRef.current! });
             }
 
-            // if (updateCurrentPos && modal.id && String(modal.id).includes('new-')) {
-            //     //updateCurrentPos({ x: localPos.x, y: localPos.y });// 新規（赤マーカー由来）の時の処理
-            //     updateCurrentPos({ x: xRef.current, y: yRef.current! });// 新規（赤マーカー由来）の時の処理
-            // }
             if (updatePos && modal.id && String(modal.id).includes('new-')) {
                 updatePos({ x: xRef.current, y: yRef.current! });// 新規（赤マーカー由来）の時の処理
             }
@@ -427,40 +368,6 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
 
     };
 
-    /*const syncMapPositionWithModal = () => {
-        if (!map) return;
-
-        const projection = map.getProjection();
-        if (!projection) return;
-
-        // 1. 現在のモーダルの表示位置 (localPos)
-        const point = new google.maps.Point(localPos.x, localPos.y);
-
-        // 2. 【核心】ピクセル座標を緯度経度 (LatLng) に変換
-        // 💡 Projection を使ってブラウザの枠内の位置を地球上の座標へ翻訳
-        const latLng = projection.fromPointToLatLng(point);
-
-        if (latLng) {
-            // 3. 親のステート (openedModalGoogle) を更新
-            // これにより、地図をドラッグしてもこの新しい地点にモーダルが固定されます
-            //setOpenedModalGoogle((prev: any) => ({
-            setOpenedModalGoogle((prev: any) => ({
-                ...prev,
-                latitude: latLng.lat(),
-                longitude: latLng.lng()
-            }));
-            //console.log("📍 地図上の位置を同期しました:", latLng.lat(), latLng.lng());
-        }
-    };
-
-    const close = (e: React.MouseEvent) => {
-        //e.stopPropagation(); // 💡 イベントの連鎖を断ち切る
-        onCloseModalLocation();
-    };
-    const closeGoogleView = () => {
-        //e.stopPropagation(); // 💡 イベントの連鎖を断ち切る
-        setIsGoogleView(false); // 💡 ただのフラグオフ
-    };*/
     useEffect(() => { console.log("openedModalLocations:", openedModalLocations); }, [openedModalLocations])
     //console.log("openedModalLocations:", openedModalLocations);
     return (
@@ -545,32 +452,6 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                             //zIndexValue: nextZ,
                         }));
 
-                        //if (modal.zIndex !== maxZ) return;
-                        /*const allValues = openedModalLocations.flatMap((m: any) => [
-                            Number(m.zIndexValue) || 1000,
-                            Number(m.zIndexValueRight) || 1000,
-                            Number(m.data?.zIndexValue) || 1000,
-                            Number(m.google?.zIndexValueRight) || 1000,
-                            Number(m.log?.zIndexValueRight) || 1000,
-                            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
-                        ]);
-                        const maxZ = Math.max(1000, ...allValues);
-                        const nextZ = maxZ + 1;
-
-
-                        console.log("maxZ:", maxZ)
-
-                        // グループ全体の zIndex を最新の最大値 + 1 に更新
-                        updateModalElements(modal.id, (dummy: any) => ({
-                            ...dummy,
-                            zIndexValueRight: maxZ + 1,
-                            data: {
-                                ...dummy.data,
-                                zIndexValueRight: maxZ + 1,
-                                rightClick: true,
-                            }
-                            //rightClick: true,       // 右クリックフラグオン
-                        }));*/
 
                         // フォーカスもこのグループに合わせる
                         setActiveGroupId(modal.id);
@@ -579,12 +460,6 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
 
                     }}
                 >
-                    {/*<div style={{
-                        width: '30px',
-                        height: '4px',
-                        backgroundColor: '#ccc',
-                        borderRadius: '2px'
-                    }} />*/}
                     {/*{modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)*/}
                 </div>
 
@@ -616,8 +491,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                     </button>
                 </div>
                 <p style={{ fontSize: '11px', color: '#777', marginBottom: '5px' }}>
-                    緯度: {Number(openedModalGoogle.latitude || 0).toFixed(4)} /
-                    経度: {Number(openedModalGoogle.longitude || 0).toFixed(4)}
+                    緯度: {Number(modal.data.latitude || 0).toFixed(4)} /
+                    経度: {Number(modal.data.longitude || 0).toFixed(4)}
                     {/*緯度: {localPos.x} /
                     経度: {localPos.y}*/}
                     {/*緯度: {localPos.xCheck} /
@@ -633,8 +508,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                         fontSize: '12px',
                         outline: 'none'
                     }}
-                    value={openedModalGoogle.name || ""}
-                    onChange={e => setOpenedModalGoogle({ ...openedModalGoogle, name: e.target.value })}
+                    value={modal.data.name || ""}
+                    onChange={e => setOpenedModalGoogle({ ...modal.data, name: e.target.value })}
                     placeholder="名称を入力"
                 />
 
@@ -649,8 +524,8 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                         fontSize: '10px',
                         resize: 'none'
                     }}
-                    value={openedModalGoogle.comment || ""}
-                    onChange={e => setOpenedModalGoogle({ ...openedModalGoogle, comment: e.target.value })}
+                    value={modal.data.comment || ""}
+                    onChange={e => setOpenedModalGoogle({ ...modal.data, comment: e.target.value })}
                     placeholder="メモを残す"
                 />
 
@@ -681,7 +556,7 @@ export default function ModalLocation({ modal, clickedModalId, setClickedModalId
                             </div>
                         </>
                     ) : (
-                        "保存する"
+                        "訪問する"
                     )}
                 </button>
 
