@@ -4,7 +4,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalLocation({ modal, initialLocationId, setInitialLocationId, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId }: any) {
+export default function ModalLocation({ modal, initialLocationId, setInitialLocationId, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId, onSavingLocation, setOnSavingLocation }: any) {
     const map = useMap();
     //const [localPos, setLocalPos] = useState(initialModalPos);
     const [localPos, setLocalPos] = useState(initialModalPos);
@@ -20,6 +20,13 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     if (clickedModalId) { console.log("<<<<<<<<<<<< Layer System start >>>>>>>>>>>>>>"); }
     useEffect(() => {
+        console.log("openedModalLocations:", openedModalLocations)
+    }, [openedModalLocations]);
+    useEffect(() => {
+        console.log("localPos:", localPos)
+    }, [openedModalLocations]);
+
+    useEffect(() => {
         // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
         return () => {
             // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
@@ -34,6 +41,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     const handleSave = async () => {
 
         setOnSaving(true)
+        setOnSavingLocation(true)
         const payload = {
             id: modal.data.id, // 既存ならID、新規ならnull
             latitude: modal.data.latitude,
@@ -58,13 +66,16 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                         ? {
                             ...m,           // ★ これで現在の currentPos (ドラッグ位置) を保持！
                             id: savedData.id,
+                            currentPos: m.data?.isNew
+                                ? { x: localPos.x, y: localPos.y }
+                                : { x: m.currentPos.y, y: m.currentPos.y },  //currentPos: { x: localPos.x, y: localPos.y },
                             data: {
                                 ...m.data,  // 既存のデータを保持
                                 pos: m.pos,
                                 id: savedData.id,
                                 //name:savedData.name,
                                 //comment:savedData.commnent,
-                                isNew: false,
+                                //isNew: false,
                             }
                         }
                         : m
@@ -78,7 +89,8 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
         }
         setOnSaving(false);
- 
+        setOnSavingLocation(false);
+
         if (res.ok) return;
     }
 
@@ -147,7 +159,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                                             longitude: modal.data.longitude,
                                             //name:savedData.name,
                                             //comment:savedData.commnent,
-                                            isNew: true, //isnewTrue
+                                            //isNew: true, //isnewTrue
                                         },
                                         googleData: {
                                             name: place.name,
@@ -172,16 +184,17 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     };
     //****************************************************
     const handleShowLogs = () => {
+        if (modal.data.isNew) return;
         setOpenedModalLocations((prev: any[]) => {
             return prev.map((m: any) =>
                 m.id === modal.id  // 👈 modalId（または id）で自分を探す
                     ? {
                         ...m,
+                        currentPos: { x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 },
                         data: {
                             ...m.data,
                             isShowingLogs: true, // 👈 ここでフラグをONにする
-                            //hasMovedEnough: false,
-                            localPosLogs: { x: localPos.x + 80, y: localPos.y + 80 }
+
                         }
                     }
                     : m
@@ -305,6 +318,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             // 監査ログ（これで数値が出るようになります）
             //console.log("✈️ 移動中監査:", { newX, newY });
 
+            xRef.current = newX;
+            yRef.current = newY;
+
             setLocalPos({ x: newX, y: newY });
 
             if (moveEvent.touches) {
@@ -322,15 +338,16 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             if ((document as any).releaseCapture) {
                 (document as any).releaseCapture();
             }
-            if (updateCurrentPos && xRef.current !== undefined) {
+            /*if (updateCurrentPos && xRef.current !== undefined) {
                 updateCurrentPos({ x: xRef.current, y: yRef.current! });
             }
 
             if (updatePos && modal.id && String(modal.id).includes('new-')) {
                 updatePos({ x: xRef.current, y: yRef.current! });// 新規（赤マーカー由来）の時の処理
-            }
+            }*/
 
-            const finalPos = { x: xRef.current, y: yRef.current };
+            //const currentPosfinalPos = { x: xRef.current, y: yRef.current };
+            //setLocalPos({ x: xRef.current, y: yRef.current });
 
 
             //---------------- 子モーダル追従ロジック　------------------------------
@@ -345,11 +362,18 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                 x: Math.abs(upX - clientX),
                 y: Math.abs(upY - clientY)
             });
+
+            console.log("xRef>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",xRef.current,yRef.current)
             setOpenedModalLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === modal.id  // 👈 modalId（または id）で自分を探す
                         ? {
                             ...m,
+
+                            currentPos: xRef.current ? { x: xRef.current, y: yRef.current! }
+                            //currentPos: localPos ? { x: localPos.x, y: localPos.y }
+                                : m.currentPos,
+
                             data: {
                                 ...m.data,
                                 //hasMovedEnough: currentDiffX > 50 || currentDiffY > 50,
@@ -368,7 +392,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     };
 
-    useEffect(() => { console.log("openedModalLocations:", openedModalLocations); }, [openedModalLocations])
+    useEffect(() => { console.log("isnew>>>>>>>>>>>>>>>>>>>>>>>>>", modal.data.isNew); }, [modal.data.isNew])
     //console.log("openedModalLocations:", openedModalLocations);
     return (
         <>
@@ -473,22 +497,67 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     {/*<h4 style={{ margin: '0 0 0 0', fontSize: '10px', fontWeight: 'bold' }}>
                         {isExisting ? "③ 既存訪問先" : "② 初めての訪問先"}
                     </h4>*/}
-                    <button
-                        onClick={setCurrentMarker}
-                        style={{
-                            background: '#fff',
-                            color: '#374151',
-                            borderRadius: '6px',
-                            padding: '0',       // 💡 中央寄せのために一度リセット
-                            fontSize: '12px',   // 💡 絵文字が綺麗に見えるサイズ
-                            display: 'flex',    // 💡 中身を真ん中に
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        👣  {/* 💡 ここに絵文字を入れました */}
-                    </button>
+                    {modal.data?.isRedFootMark ? (
+                        <button
+                            onClick={setCurrentMarker}
+                            style={{
+                                //background: '#fff',
+                                background: '#f80707c0',
+                                color: '#f80707c0',
+                                border: '2px solid #000',
+                                borderRadius: '6px',
+                                padding: '0',       // 💡 中央寄せのために一度リセット
+                                fontSize: '12px',   // 💡 絵文字が綺麗に見えるサイズ
+                                display: 'flex',    // 💡 中身を真ん中に
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            👣  {/* 💡 ここに絵文字を入れました */}
+                        </button>
+                    ) : (
+                        !modal.data?.isRedFootMark && modal.data?.isCurrentMarker ? (
+                            <button
+                                onClick={setCurrentMarker}
+                                style={{
+                                    //background: '#fff',
+                                    background: '#07f813c0',
+                                    color: '#07f813c0',
+                                    border: '2px solid #000',
+                                    borderRadius: '6px',
+                                    padding: '0',       // 💡 中央寄せのために一度リセット
+                                    fontSize: '12px',   // 💡 絵文字が綺麗に見えるサイズ
+                                    display: 'flex',    // 💡 中身を真ん中に
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                👣  {/* 💡 ここに絵文字を入れました */}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={setCurrentMarker}
+                                style={{
+                                    background: '#FBBC04',
+                                    color: '#374151',
+                                    border: '2px solid #000',
+                                    borderRadius: '6px',
+                                    padding: '0',       // 💡 中央寄せのために一度リセット
+                                    fontSize: '12px',   // 💡 絵文字が綺麗に見えるサイズ
+                                    display: 'flex',    // 💡 中身を真ん中に
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                👣  {/* 💡 ここに絵文字を入れました */}
+                            </button>
+                        )
+
+                    )}
+
                 </div>
                 <p style={{ fontSize: '11px', color: '#777', marginBottom: '5px' }}>
                     緯度: {Number(modal.data.latitude || 0).toFixed(4)} /
@@ -604,7 +673,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                         {/*DEBUG: {isMobile ? "📱MOBILE" : "💻PC"} /
                         W:{window.innerWidth} /
                         Pad:{rightEdgePadding}*/}
-                        訪問記録
+                        {modal.data.isNew ? null : "訪問記録"}
                     </button>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '10px' }}>

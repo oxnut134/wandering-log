@@ -46,6 +46,8 @@ export default function WanderingLog() {
     const { currentUserId, setCurrentUserId } = useAppContext();
     const [authChecking, setAuthChecking] = useState(true);
     const [initialLocationId, setInitialLocationId] = useState()
+    const [onSavingLocation, setOnSavingLocation] = useState(false);
+
     // const [redMarkerPos, setRedMarkerPos] = useState({
     //     lat: null,
     //     lng: null
@@ -108,7 +110,7 @@ export default function WanderingLog() {
     }, [visitedLocations]);
 
     useEffect(() => {
-        console.log("openedModalLocations:", openedModalLocations)
+        console.log("openedModalLocations in page.tsx:", openedModalLocations)
     }, [openedModalLocations]);
 
     useEffect(() => {
@@ -124,7 +126,7 @@ export default function WanderingLog() {
     }, [refreshHistory]);
 
 
-    const updatedCurrentPos = (id: any, newPos: any) => {
+    const updateCurrentPos = (id: any, newPos: any) => {
         setOpenedModalLocations(prev => prev.map(m =>
             m.id === id ? { ...m, currentPos: newPos } : m // 👈 スプレッド構文で currentPos だけ上書き
         ));
@@ -169,7 +171,7 @@ export default function WanderingLog() {
                 lat: currentPosOfMe.lat,
                 lng: currentPosOfMe.lng
             });
-             setRedMarkerPos({
+            setRedMarkerPos({
                 lat: currentPosOfMe.lat,
                 lng: currentPosOfMe.lng
             });
@@ -322,34 +324,6 @@ export default function WanderingLog() {
 
                 {openedModalLocations.map((modal, index: number) => {
                     const isFocused = activeGroupId === modal.id
-                    /*console.log("openedModalLocations.comments:",openedModalLocations)
-                    const allValues = openedModalLocations.flatMap((m: any) => [
-                        Number(m.zIndexValue) || 1000,
-                        Number(m.zIndexValueRight) || 1000,
-                        Number(m.data?.zIndexValue) || 1000,
-                        Number(m.google?.zIndexValueRight) || 1000,
-                        Number(m.log?.zIndexValueRight) || 1000,
-                        //...(Array.isArray(m.comments) ? m.comments.map((c: any) => Number(c.zIndexValueRight) || 1000) : [])
-                        ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
-                    ]);
-    
-                    const maxZ = Math.max(1000, ...allValues);
-    
-                    //const groupZ = isFocused ? maxZ + 10 : (Number(modal.zIndexValue) || 1000);
-                    let groupZ: any
-                    if (isFocused && modal.data.hasMovedEnough) {
-                        groupZ = maxZ + 10;
-                    } else {
-                        groupZ = (Number(modal.zIndexValue) || 1000)
-                    }
-                    const maxZ = Math.max(
-                        1000, // 最小値のベース
-                        ...openedModalLocations.flatMap((m: any) => [
-                            m.zIndexValue || 1000, // モーダル自体の値
-                            m.data.zIndexValue || 1000, // モーダル自体の値
-                            ...(m.comments || []).map((c: any) => c.zIndexValue || 1000), // コメントそれぞれの値
-                        ])
-                    );*/
                     return (
                         //<React.Fragment key={`group-${modal.id}`}>
                         <React.Fragment key={`group-${modal.tempId || modal.id}`}>
@@ -374,7 +348,7 @@ export default function WanderingLog() {
                                 openedModalLocations={openedModalLocations}
                                 setOpenedModalLocations={setOpenedModalLocations}
                                 openedModalGoogle={modal.data}
-                                updateCurrentPos={(newPos: any) => updatedCurrentPos(modal.id, newPos)}
+                                updateCurrentPos={(newPos: any) => updateCurrentPos(modal.id, newPos)}
                                 updatePos={(newPos: any) => updatedPos(modal.id, newPos)}
                                 isGoogleView={modal.data.isShowingGoogle}
                                 setIsGoogleView={setIsGoogleView}
@@ -386,6 +360,8 @@ export default function WanderingLog() {
                                 moveDist={moveDist}
                                 setMoveDist={setMoveDist}
                                 setActiveGroupId={setActiveGroupId}
+                                onSavingLocation={onSavingLocation}
+                                setOnSavingLocation={setOnSavingLocation}
                                 onCloseModalLocation={() => {
                                     setOpenedModalLocations(prev =>
                                         prev.filter(record => record.id !== modal.id)
@@ -403,6 +379,7 @@ export default function WanderingLog() {
                                     ));
                                 }}
                                 setCurrentMarker={() => {
+                                    if (modal.data.isRedFootMark) return;
                                     //console.log("in setCurrentMaker");
                                     setOpenedModalLocations((prev: any[]) => {
                                         return prev.map((m: any) =>
@@ -435,10 +412,13 @@ export default function WanderingLog() {
                                 setActiveGroupId={setActiveGroupId}
                                 setOpenedModalLocations={setOpenedModalLocations}
                                 openedModalLocations={openedModalLocations}
+                                onSavingLocation={onSavingLocation}
+                                setOnSavingLocation={setOnSavingLocation}
+
                                 initialModalPosGoogle={
                                     modal.data.hasMovedEnough ?
                                         {
-                                            x: modal.currentPos.x - 40,
+                                            x: modal.currentPos.x - 80,
                                             y: modal.currentPos.y + 40,
                                         }
                                         : null
@@ -491,6 +471,9 @@ export default function WanderingLog() {
                                 openedModalLocations={openedModalLocations}
                                 setOpenedModalLocations={setOpenedModalLocations}
                                 setIsCommentRecordExist={setIsCommentRecordExist}
+                                onSavingLocation={onSavingLocation}
+                                setOnSavingLocation={setOnSavingLocation}
+
                                 //isDraggingRef={isDraggingRef}
                                 initialModalPosLogs={
                                     modal.data.hasMovedEnough ?
@@ -532,49 +515,59 @@ export default function WanderingLog() {
 
                                 }}
                             />
-                            {modal.comments?.map((c: any, index: number) => (
-                                c.isShowingComment && (
-                                    <ModalComments
-                                        key={`comment-${c.logId}`}
-                                        updateModalElements={updateModalElements}
-                                        initialLocationId={initialLocationId}
-                                        setInitialLocationId={setInitialLocationId}
-                                        logs={modal.logs || []}// dummy just for test 
-                                        comment={c}
-                                        logId={c.logId}
-                                        commentId={c.id}
-                                        modal={modal}// これで親(Location)の座標に追従できる
-                                        //groupZ={groupZ}
-                                        isFocused={activeGroupId === modal.id}
-                                        onFocus={() => setActiveGroupId(modal.id)}
-                                        clickedModalId={clickedModalId}
-                                        setClickedModalId={setClickedModalId}
-                                        setActiveGroupId={setActiveGroupId}
-                                        initialPos={c.pos}
-                                        onFetchLogs={() => onFetchLogs(modal.id)}
-                                        openedModalLocations={openedModalLocations}
-                                        setOpenedModalLocations={setOpenedModalLocations}
-                                        onSaveSuccess={refreshHistory}
-                                        isCommentRecordExist={isCommentRecordExist}
+                            {modal.comments
+                                ?.filter((c: any) => c.isShowingComment)
+                                ?.map((c: any, index: number) => (
+                                    c.isShowingComment && (
+                                        <ModalComments
+                                            key={`comment-${c.logId}`}
+                                            updateModalElements={updateModalElements}
+                                            initialLocationId={initialLocationId}
+                                            setInitialLocationId={setInitialLocationId}
+                                            logs={modal.logs || []}// dummy just for test 
+                                            comment={c}
+                                            logId={c.logId}
+                                            commentId={c.id}
+                                            modal={modal}// これで親(Location)の座標に追従できる
+                                            //groupZ={groupZ}
+                                            isFocused={activeGroupId === modal.id}
+                                            onFocus={() => setActiveGroupId(modal.id)}
+                                            clickedModalId={clickedModalId}
+                                            setClickedModalId={setClickedModalId}
+                                            setActiveGroupId={setActiveGroupId}
+                                            initialPos={c.pos}
+                                            onFetchLogs={() => onFetchLogs(modal.id)}
+                                            openedModalLocations={openedModalLocations}
+                                            setOpenedModalLocations={setOpenedModalLocations}
+                                            onSaveSuccess={refreshHistory}
+                                            isCommentRecordExist={isCommentRecordExist}
 
-                                        onClose={() => {
-                                            setOpenedModalLocations(prev => prev.map(loc =>
-                                                loc.id === modal.id
-                                                    ? { ...loc, comments: loc.comments.filter((item: any) => item.logId !== c.logId) }
-                                                    : loc
-                                            ));
-                                        }}
-                                        initialModalPosComments={
-                                            modal.data.hasMovedEnough ?
-                                                {
-                                                    x: modal.currentPos.x + 80 + 40 * index,
-                                                    y: modal.currentPos.y + 80 + 40 * index
-                                                }
-                                                : null
-                                        }
-                                    />
-                                )
-                            ))}
+                                            onClose={() => {
+                                                setOpenedModalLocations(prev =>
+                                                    prev.map(loc =>
+                                                        loc.id === modal.id
+                                                            ? {
+                                                                ...loc,
+                                                                comments: loc.comments.filter((item: any) =>
+                                                                    item.logId !== c.logId)
+                                                            }
+                                                            : loc
+                                                    )
+                                                );
+                                            }}
+                                            initialModalPosComments={
+                                                modal.data.hasMovedEnough ?
+                                                    {
+                                                        //x: modal.currentPos.x + 80 + 40 * (index),
+                                                        //y: modal.currentPos.y + 80 + 40 * (index)
+                                                        x: modal.currentPos.x + 40 * (2+index),
+                                                        y: modal.currentPos.y + 40 * (2+index)
+                                                    }
+                                                    : null
+                                            }
+                                        />
+                                    )
+                                ))}
                         </React.Fragment>
                     )
                 })

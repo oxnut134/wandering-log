@@ -4,13 +4,21 @@ import { useMap } from "@vis.gl/react-google-maps";
 //import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
-export default function ModalGoogle({ modal, initialLocationId, setInitialLocationId, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId }: any) {
+export default function ModalGoogle({ modal, initialLocationId, setInitialLocationId, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId,onSavingLocation, setOnSavingLocation }: any) {
     const map = useMap();
 
     //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const service = new google.maps.places.PlacesService(map);
+    
+    useEffect(() => {
+        console.log("openedModalLocations:", openedModalLocations)
+    }, [openedModalLocations]);
+    useEffect(() => {
+        console.log("localPos:", localPos)
+    }, [openedModalLocations]);
+
 
     // ModalComments.tsx の中に追加
     useEffect(() => {
@@ -111,7 +119,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             let newY = moveY - startY;
 
             xRef.current = newX;
-            yRef.current = newX;
+            yRef.current = newY;
             //console.log("✈️ 代入成功 (Ref):", xRef.current);
 
             const ax = window.innerWidth;

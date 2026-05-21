@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 
 declare const google: any;
 
-function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations,setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     //const [redMarkerPos, setRedMarkerPos] = useState(currentPosOfCamera);
@@ -106,8 +106,9 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 const newModal = {
                     //id: place?.id || `new-${Date.now()}`, // 複数識別用のID
                     id: place?.id || initialLocationId, // 複数識別用のID newToNull
+                    tempId: initialLocationId,
                     pos: { x: x, y: y },
-                    currentPos: { x: x + 40, y: y + 40 },
+                    currentPos: { x: x , y: y  },
                     data: place || {
                         name: p.name,
                         comment: "",
@@ -117,9 +118,36 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     },
                 };
                 setOpenedModalLocations((prev: any[]) => {
-                    if (prev.find(m => m.id === newModal.id)) return prev;
+                    if (prev.find(m =>
+                        m.id === newModal.id
+                        || (m.data.latitude === newModal.data.latitude
+                            && m.data.longitude === newModal.data.longitude)
+                    )) {
+                        return prev;
+                    }
                     return [...prev, newModal];
                 });
+
+                /*setOpenedModalLocations((prev: any[]) => {
+                    if (prev.find(m => m.id === newModal.id)) return prev;
+                    return [...prev, newModal];
+                });*/
+                setOpenedModalLocations((prev: any[]) => {
+                    return prev.map((m: any) =>
+                        m.id === newModal.id
+                            ? {
+                                ...m,
+                                data: {
+                                    ...m.data,
+                                    isCurrentMarker: m.data.isCurrentMarker ? false : true,
+                                    isRedFootMark: true,
+                                }
+                            }
+                            : m
+                    );
+                });
+
+
             } else {
                 console.log("x;", x, " y:", y)
                 const newModal = {
@@ -131,8 +159,29 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     data: place || { name: "取得できませんでした", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
                 };
                 setOpenedModalLocations((prev: any[]) => {
-                    if (prev.find(m => m.id === newModal.id)) return prev;
+                    if (prev.find(m =>
+                        m.id === newModal.id
+                        || (m.data.latitude === newModal.data.latitude
+                            && m.data.longitude === newModal.data.longitude)
+                    )) {
+                        return prev;
+                    }
                     return [...prev, newModal];
+                });
+                //location marker on/off by foot mark toggle
+                setOpenedModalLocations((prev: any[]) => {
+                    return prev.map((m: any) =>
+                        m.id === newModal.id
+                            ? {
+                                ...m,
+                                data: {
+                                    ...m.data,
+                                    isCurrentMarker: m.data.isCurrentMarker ? false : true,
+                                    isRedFootMark: true
+                                }
+                            }
+                            : m
+                    );
                 });
             }
         });
@@ -248,7 +297,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     comment: target?.comment,
                     latitude: latLng.lat(),
                     longitude: latLng.lng(),
-                    isNew: true  //isNewTrue
+                    isNew: false  //isNewTrue
                 },
             };
 
@@ -258,7 +307,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 return [...prev, newModal];
             });
 
-            //Foot mark on/off
+            //location marker on/off by foot mark toggle
             setOpenedModalLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === newModal.id
@@ -267,6 +316,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                             data: {
                                 ...m.data,
                                 isCurrentMarker: m.data.isCurrentMarker ? false : true,
+                                isRedFootMark: false
                             }
                         }
                         : m
@@ -353,7 +403,11 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                         const domEvent = ev.detail?.domEvent || ev.domEvent;
                         handleRedMarkerClick(null, latLng, domEvent);
                     }}>
-                    <Pin scale={0.9} />
+                    <Pin
+                        scale={0.9}
+                        borderColor={'black'}
+
+                    />
                 </AdvancedMarker>
 
                 {/* 過去の足跡も AdvancedMarker に揃える */}
@@ -379,8 +433,10 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                         >
                             {isCurrent ? (
                                 <Pin
-                                    background={'#610fef'}
-                                    glyphColor={'#dfd0d0'}
+                                    background={'#07f813c0'}
+                                    //background={'pink'}
+                                    glyphColor={'#d4d0df'}
+                                    borderColor={'black'}
                                     glyphText={'👣'}
                                 />
 
@@ -388,6 +444,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                 <Pin
                                     background={'#FBBC04'}
                                     glyphColor={'#000000'}
+                                    borderColor={'black'}
                                     glyphText={'👣'}
                                 />
                             )

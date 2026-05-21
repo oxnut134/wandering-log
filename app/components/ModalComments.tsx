@@ -9,6 +9,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     const [gNewX, setGNewX] = useState<number | undefined>();
     //const [isDragging, setIsDragging] = useState(false);
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
+    //const [localPos, setLocalPos] = useState({ x: modal.currentPos.x+40, y: modal.currentPos.y+40});
     const [onSaving, setOnSaving] = useState(false);
     //const [text, setText] = useState("");
     const LIMIT = 500;
@@ -67,8 +68,8 @@ export default function ModalComments({ modal, comment, updateModalElements, act
         if (initialModalPosComments) {
             //setLocalPos(initialModalPosComments);
             setLocalPos({
-                x: initialModalPosComments.x + 20,
-                y: initialModalPosComments.y + 20
+                x: initialModalPosComments.x,
+                y: initialModalPosComments.y
             });
 
             if (modal.data.hasMovedEnough) {
@@ -81,56 +82,40 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 }));
             }
 
-        } else if (!localPos) {
+        } /*else if (!localPos) {
             // ③ 初回マウント時などで座標がない場合のみ初期位置をセット
-            setLocalPos({ x: modal.currentPos.x + 20, y: modal.currentPos.y + 10 });
-            modal.currentPos.x += 20; modal.currentPos.y += 20;
-        }
+            setLocalPos({ x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 });
+            setOpenedModalLocations((prev: any[]) => {
+                return prev.map((m: any) =>
+                    m.id === modal.id  // 👈 modalId（または id）で自分を探す
+                        ? {
+                            ...m,
+                            currentPos: { x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 }
+                        }
+                        : m
+                );
+            });
+            //modal.currentPos.x += 20; modal.currentPos.y += 20;
+        }*/
     }, [initialModalPosComments]); // 💡  initialModalPosComments の変化（親の大きな移動）を監視
 
     useEffect(() => {
         // 1. 履歴データの取得（既存の関数）
         onFetchLogs();
 
-        // 2. コメントデータの取得（非同期処理）
-
-
-
+        setLocalPos({ x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 });
+        setOpenedModalLocations((prev: any[]) => {
+            return prev.map((m: any) =>
+                m.id === modal.id  // 👈 modalId（または id）で自分を探す
+                    ? {
+                        ...m,
+                        currentPos: { x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 }
+                    }
+                    : m
+            );
+        });
 
     }, []); // 💡 初回マウント時のみ実行
-
-    /*const handleUpdateZIndex = () => {
-        const allValues = openedModalLocations.flatMap((m: any) => [
-            Number(m.zIndexValue) || 1000,
-            Number(m.zIndexValueRight) || 1000,
-            Number(m.data?.zIndexValue) || 1000,
-            Number(m.google?.zIndexValueRight) || 1000,
-            Number(m.log?.zIndexValueRight) || 1000,
-            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
-        ]);
-        const nextZ = Math.max(1000, ...allValues) + 1;
-
-
-        console.log("✈️ 共通関数で更新:", { nextZ });
-
-        // 2. 共通の「魔法の杖」を振る
-        updateModalElements(modal.id, (dummy: any) => ({
-            ...dummy,
-            zIndexValue: nextZ,
-            comments: (dummy.comments || []).map((c: any) => ({
-                ...c,
-                zIndexValueRight: nextZ,
-                rightClick: false
-            })),
-            // comments: {
-            //     ...dummy.activecomments,
-            //     zIndexValue: nextZ
-            // },
-            hasMovedEnough: false,
-            rightClick: false,
-        }));
-    };*/
-
 
 
     const xRef = useRef<number | undefined>(undefined);
@@ -414,53 +399,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                             //zIndexValue: nextZ,
                         }));
 
-                        //if (modal.zIndex !== maxZ) return;
-                        /*const allValues = openedModalLocations.flatMap((m: any) => [
-                            Number(m.zIndexValue) || 1000,
-                            Number(m.zIndexValueRight) || 1000,
-                            Number(m.data?.zIndexValue) || 1000,
-                            Number(m.google?.zIndexValueRight) || 1000,
-                            Number(m.log?.zIndexValueRight) || 1000,
-                            //...(m.activeComment || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
-                            ...(m.comments || []).map((c: any) => Number(c.zIndexValueRight) || 1000)
-                        ]);
-                        const maxZ = Math.max(1000, ...allValues);
-                        //if (modal.zIndex !== maxZ) return;
-
-
-                        console.log("maxZ:", maxZ)
-
-                        // グループ全体の zIndex を最新の最大値 + 1 に更新
-                        updateModalElements(modal.id, (dummy: any) => ({
-                    ...dummy,
-                    // 💡 activeComment 配列を map で回して、対象のものを更新する
-                    comments: (dummy.comments || []).map((c: any) =>
-                // もし特定のコメントID(commentId)があるならそれで判定
-                // 全てを最前面にするならそのまま map で回す
-                {
-                                if (c.logId === logId) {
-                    console.log("*** c.log.Id = logId")
-                                    return ({
-                    ...c,
-                    zIndexValueRight: maxZ + 1,
-                rightClick: true,
-                                    })
-                                }
-                return c;
-                            })
-                        }));
-                console.log("activeComment :", activeComment, "commentId:", commentId, "logtId:", logId)
-                        updateModalElements(modal.id, (dummy: any) => ({
-                    ...dummy,
-                    //zIndexValueRight: maxZ + 1,
-                    //rightClick: true,       // 右クリックフラグオン
-                    activeComment: {
-                    ...dummy.activecomment,
-                    zIndexValueRight: maxZ + 1,
-                rightClick: true,
-                            }
-                        }));*/
-
                         // フォーカスもこのグループに合わせる
                         setActiveGroupId(modal.id);
                         //console.log("maxZGoogle:", maxZ)
@@ -510,7 +448,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                                         })()}
                                     </span>
 
-                                    <span style={{ color: '#aaa' }}>#{memoNo}</span>
+                                    <span style={{ color: '#aaa' }}>#{comment.memoNo}</span>
                                     {/*<span style={{ color: '#aaa' }}>#{logs.length - index}</span>*/}
                                 </div>
                             ))}
