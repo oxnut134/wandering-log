@@ -343,6 +343,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     setCurrentZoom(ev.detail.zoom);
                 }}
 
+                controlSize={24}
+
                 onCameraChanged={(ev) => setCurrentPosOfCamera(ev.detail.center)}
 
                 // 💡 指でのズームを「禁止」したいなら、ここを false にします

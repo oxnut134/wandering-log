@@ -27,36 +27,34 @@ export default function Header() {
         <>
             {/* 🎯 修正1: flex flex-col justify-center を追加し、45pxの「ど真ん中」にコンテンツを配置 */}
             {/*<div className="w-1/4 h-[45px] flex flex-col justify-center bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">*/}
-            <div 
-   
-        className={`${
-            isMapPage ? "w-1/4 h-[45px]" : "w-full h-fit py-3"
-        } flex flex-col justify-center bg-white border-b border-gray-200 px-3 shadow-sm mb-0 transition-all duration-200`}
-    >
+            <div
+
+                className={`${isMapPage ? "w-[40%] h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
+                    } flex flex-col items-center justify-center bg-white border-b border-gray-200 px-3 shadow-sm mb-0 transition-all duration-200`}
+            >
 
                 {userName && (
                     <div className="text-[9px] text-zinc-400 leading-none mb-0.5 pl-0.5">
-                        Logged in as: {userName}
+                        Logged in as: <span className="text-orange-600 font-bold">{userName}</span>
                     </div>
                 )}
 
                 {/* 🎯 修正2: 無駄な h-4/5 を排除し、画像と文字を上下中央に整列させる */}
-                <div className="flex justify-between items-center w-full leading-none">
 
-                    {/* 🗺️ 左側：画像を残したまま、テキストだけを「Wandering Log」に刷新 */}
-                    <div className="flex items-center gap-0">
-                        <img
-                            src="/shopping-cart.webp" // 💡 後からここをお好きな画像パスに差し替えてください！
-                            alt="買い物かご"
-                            className="w-8 h-8 object-contain" // 💡 45pxの高さに収まるよう、画像サイズを少しだけコンパクト(w-8 h-8)に調整
-                        />
-                        <span className="text-[18px] italic text-orange-600 font-black tracking-wider pl-3">
-                            Wandering Log
-                        </span>
-                    </div>
+                {/* 🗺️ 左側：画像を残したまま、テキストだけを「Wandering Log」に刷新 */}
+                <div className="w-[90%] flex items-center justify-between gap-0 mb-1 py-0">
+                    <img
+                        src="/sdesign_00053.png" // 💡 後からここをお好きな画像パスに差し替えてください！
+                        alt="買い物かご"
+                        className="w-[8%] aspect-square rounded-full " // 💡 45pxの高さに収まるよう、画像サイズを少しだけコンパクト(w-8 h-8)に調整
+                    />
+                    <span className="w-[70%] text-[25px] italic text-[#2c07fa] font-black tracking-wider text-center">
+                        Wandering Log
+                    </span>
+
 
                     {/* 🎯 右側：ボタンエリア */}
-                    <div className="flex gap-2 text-[11px] font-bold text-gray-500">
+                    <div className="w-[20%]  text-[11px] font-bold text-gray-500 text-right">
                         {currentPage === "login" && (
                             <button onClick={() => window.location.href = "/register"}>新規登録</button>
                         )}
@@ -69,7 +67,6 @@ export default function Header() {
                             </button>
                         )}
                     </div>
-
                 </div>
             </div>
 
@@ -102,6 +99,6 @@ export default function Header() {
                     </div>
                 </div>
             </div>*/}
-            {/*</div>*/}</>
+        </>
     );
 }
