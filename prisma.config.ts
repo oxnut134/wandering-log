@@ -7,9 +7,7 @@ dotenv.config();
 // 🎯 2. 型チェックを通過させるため、文字列であることを厳格に保証する
 const dbUrl = process.env.DATABASE_URL;
 
-if (!dbUrl) {
-  throw new Error("❌ .env ファイルに DATABASE_URL が設定されていません。");
-}
+
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
