@@ -64,13 +64,39 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
         let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
         let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>x;", x, " y:", y)
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
+        let xCheck
+        let yCheck
+        if (x === undefined) {
+            //console.error("x is undefined or null in Yellow Marker")
+            const projection = map.getProjection();
+            const bounds = map.getBounds();
 
-        if (x === undefined || x === null) {
+            if (projection && bounds) {
+                // 地図の左上の緯度経度を取得
+                const nw = new google.maps.LatLng(
+                    bounds.getNorthEast().lat(),
+                    bounds.getSouthWest().lng()
+                );
+                const nwPoint = projection.fromLatLngToPoint(nw)!;
+                const clickPoint = projection.fromLatLngToPoint(latLng)!;
+                const scale = Math.pow(2, map.getZoom()!);
+
+                // 💡 これでマーカーの正確なピクセル座標が計算されます
+                x = (clickPoint.x - nwPoint.x) * scale;
+                y = (clickPoint.y - nwPoint.y) * scale;
+                xCheck = x;
+                yCheck = y;
+            }
+        }
+
+        /*if (x === undefined || x === null) {
+            //console.error("x is undefined or null in Red Marker")
             x = window.innerWidth / 2 - 130; // モーダル幅260の半分
             y = window.innerHeight / 2 - 160; // モーダル高さの半分
-        }
+        }*/
 
         // 💡 2. ブラウザとモーダルのサイズ定義（ax, ay, bx, by）
         const ax = window.innerWidth;
@@ -116,7 +142,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 // 💡 距離（メートル）を計算
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
                 if (!include || ignore || distance > 10) { p.name = "取得できませんでした。" }
-                console.log("x;", x, " y:", y)
                 // const dateNow=Date.now();
                 // setInitialLocationId(dateNow)
                 const d = new Date(); // 🎯 これだけで「今（なう）」のデータが確定！
@@ -218,11 +243,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
         let yCheck
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-        if (x === undefined || x === initialLocationId) {
-            //x = window.innerWidth / 2 - 130; // モーダル幅260の半分
-            //y = window.innerHeight / 2 -160; // モーダル高さの半分
-            //x = 10; // モーダル幅260の半分
-            //y = 20; // モーダル高さの半分
+        if (x === undefined) {
+            //console.error("x is undefined or null in Yellow Marker")
             const projection = map.getProjection();
             const bounds = map.getBounds();
 
@@ -239,8 +261,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 // 💡 これでマーカーの正確なピクセル座標が計算されます
                 x = (clickPoint.x - nwPoint.x) * scale;
                 y = (clickPoint.y - nwPoint.y) * scale;
-                //xCheck = (clickPoint.x - nwPoint.x) * scale;
-                //yCheck = (clickPoint.y - nwPoint.y) * scale;
                 xCheck = x;
                 yCheck = y;
             }

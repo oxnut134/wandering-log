@@ -275,7 +275,7 @@ export default function WanderingLog() {
                 language={'jp'}
                 region={'jp'}
             >
-                <div className="fixed top-2.5 left-50 w-full bg-transparent z-50 pointer-events-none">
+                <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">
                     <div className="pointer-events-auto">
                         <Header />
                     </div>

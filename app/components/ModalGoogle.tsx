@@ -184,7 +184,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
         };
 
         let savedData: any;
-        let res = await fetch("/api/save_location_without_google_update", {
+        let res = await fetch("/api/save_location_without_log_update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payloadLocation)

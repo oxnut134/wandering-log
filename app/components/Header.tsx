@@ -29,7 +29,7 @@ export default function Header() {
             {/*<div className="w-1/4 h-[45px] flex flex-col justify-center bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">*/}
             <div
 
-                className={`${isMapPage ? "w-[40%] h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
+                className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
                     } flex flex-col items-center justify-center bg-white border-b border-gray-200 px-3 shadow-sm mb-0 transition-all duration-200 ml-5`}
             >
 

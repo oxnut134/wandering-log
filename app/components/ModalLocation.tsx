@@ -10,10 +10,11 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [onSaving, setOnSaving] = useState(false);
+    const [onSavingLocationLocal, setOnSavingLocationLocal] = useState(false);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     //const [deffPos, setDiffpos] = useState({ x: null, y: null });
     const [isConfirming, setIsConfirming] = useState(false);
-
+    let isSavingWithLog: any = true
 
     //--このコメントは不要だが正常動作確認のためしばらく残す
     //--！！！ このコンポーネントこのmodal.dataはmodal.data=modal.dataのことなので注意！！！------
@@ -38,10 +39,20 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
+    const handleSaveLocationWithLog = async () => {
+        setOnSaving(true)
+        isSavingWithLog = true;
+        handleSave();
+    }
+    const handleSaveLocation = async () => {
+        setOnSavingLocationLocal(true);
+        isSavingWithLog = false;
+        handleSave();
+    }
     const handleSave = async () => {
 
-        setOnSaving(true)
         setOnSavingLocation(true)
+  
         const payload = {
             id: modal.data.id, // 既存ならID、新規ならnull
             latitude: modal.data.latitude,
@@ -49,12 +60,20 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             name: modal.data.name,
             comment: modal.data.comment
         };
-
-        const res = await fetch("/api/save_location", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        let res: any
+        if (isSavingWithLog) {
+            res = await fetch("/api/save_location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            res = await fetch("/api/save_location_without_log_update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
         if (res.ok) {
             console.log("<<<<<<<<<<<< res is ok >>>>>>>>>>>>>>>>")
             //if (modal.data.isNew) {
@@ -90,6 +109,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         }
         setOnSaving(false);
         setOnSavingLocation(false);
+        setOnSavingLocationLocal(false)
 
         if (res.ok) return;
     }
@@ -363,7 +383,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                 y: Math.abs(upY - clientY)
             });
 
-            console.log("xRef>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",xRef.current,yRef.current)
+            console.log("xRef>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", xRef.current, yRef.current)
             setOpenedModalLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === modal.id  // 👈 modalId（または id）で自分を探す
@@ -371,7 +391,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             ...m,
 
                             currentPos: xRef.current ? { x: xRef.current, y: yRef.current! }
-                            //currentPos: localPos ? { x: localPos.x, y: localPos.y }
+                                //currentPos: localPos ? { x: localPos.x, y: localPos.y }
                                 : m.currentPos,
 
                             data: {
@@ -422,6 +442,13 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     userSelect: 'none',//文字選択なし/PC.android,etc.
                 }}
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => {
+                    e.stopPropagation(); // 💡 マップ側のドラッグ起動を完全に突っぱねる
+                }}
+                // 🎯 スマホでのタッチ・ドラッグ時も同様にマップのスクロール暴走を完全ブロック！
+                onTouchStart={(e) => {
+                    e.stopPropagation();
+                }}
             >
                 <div style={{
                     width: '100%',
@@ -599,7 +626,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                 />
 
                 <button
-                    onClick={handleSave}
+                    onClick={handleSaveLocationWithLog}
                     style={{
                         width: '100%',
                         height: '4vh',
@@ -629,6 +656,36 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     )}
                 </button>
 
+                <button
+                    onClick={handleSaveLocation}
+                    style={{
+                        width: '100%',
+                        height: '4vh',
+                        background: '#2563eb',
+                        color: 'white',
+                        marginBottom: '6px',
+                        borderRadius: '6px',
+                        padding: '10px', // 押しやすいボタンサイズ
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',    // 💡 中身を真ん中に
+                        alignItems: 'center',
+                        justifyContent: 'center',
+
+                    }}
+                >
+                    {onSavingLocationLocal ? (
+                        <>
+                            <div>
+                                <span>処理中...</span>
+                            </div>
+                        </>
+                    ) : (
+                        "保存する"
+                    )}
+                </button>
 
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '5px' }}>
                     <button
