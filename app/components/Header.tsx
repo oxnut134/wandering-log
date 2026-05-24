@@ -6,7 +6,7 @@ import { useAppContext } from "@/app/context/AppContext";
 //mport { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
-export default function Header() {
+export default function Header({ isDeskTop, setIsDeskTop }: any) {
     // 🎯 NextAuthから現在のログインセッション（ユーザー情報）をリアルタイム取得
     const { data: session } = useSession();
     const { currentPage, setCurrentPage } = useAppContext();
@@ -27,15 +27,15 @@ export default function Header() {
         <>
             {/* 🎯 修正1: flex flex-col justify-center を追加し、45pxの「ど真ん中」にコンテンツを配置 */}
             {/*<div className="w-1/4 h-[45px] flex flex-col justify-center bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">*/}
-            <div
+        {isDeskTop ? (<div
 
                 className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
-                    } flex flex-col items-center justify-center bg-white border-b border-gray-200 px-3 shadow-sm mb-0 transition-all duration-200 ml-5`}
+                    } flex flex-col items-center justify-center bg-white border border-3 border-[#388778] px-3 shadow-sm mb-0 transition-all duration-200 ml-5`}
             >
 
                 {userName && (
                     <div className="text-[9px] text-zinc-400 leading-none mb-0.5 pl-0.5">
-                        Logged in as: <span className="text-orange-600 font-bold">{userName}</span>
+                        Logged in as: <span className="text-[12px] text-orange-600 font-bold">{userName}</span>
                     </div>
                 )}
 
@@ -48,13 +48,13 @@ export default function Header() {
                         alt="買い物かご"
                         className="w-[8%] aspect-square rounded-full " // 💡 45pxの高さに収まるよう、画像サイズを少しだけコンパクト(w-8 h-8)に調整
                     />
-                    <span className="w-[70%] text-[25px] italic text-[#2c07fa] font-black tracking-wider text-center">
+                    <span className="w-[70%] text-[25px] italic text-[#388778] font-black tracking-wider text-center">
                         Wandering Log
                     </span>
 
 
                     {/* 🎯 右側：ボタンエリア */}
-                    <div className="w-[20%]  text-[11px] font-bold text-gray-500 text-right">
+                    <div className="w-[20%]  text-[15px] font-bold text-gray-500 text-right">
                         {currentPage === "login" && (
                             <button onClick={() => window.location.href = "/register"}>新規登録</button>
                         )}
@@ -69,6 +69,24 @@ export default function Header() {
                     </div>
                 </div>
             </div>
+            ):(
+            <div className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"} flex flex-col items-center justify-center bg-white border border-3 border-[#388778] px-1.5 shadow-sm mb-0 transition-all duration-200 ml-0`}>
+                {userName && (
+                    <div className="text-[9px] text-zinc-400 leading-none mb-0.5 pl-0.5 w-full text-left">
+                        Logged in as: <span className="text-[12px] text-orange-600 font-bold">{userName}</span>
+                    </div>
+                )}
+                <div className="w-full flex items-center justify-between gap-1 mb-1 py-0">
+                    <img src="/sdesign_00053.png" alt="買い物かご" className="w-6 aspect-square rounded-full object-contain" />
+                    <span className="flex-1 text-[18px] italic text-[#388778] font-black tracking-wider text-center whitespace-nowrap">Wandering Log</span>
+                    <div className="text-[12px] font-bold text-gray-500 text-right whitespace-nowrap">
+                        {currentPage === "login" && <button onClick={() => window.location.href = "/register"}>新規登録</button>}
+                        {currentPage === "register" && <button onClick={() => window.location.href = "/login"}>ログイン</button>}
+                        {pathname === "/" && <button onClick={handleLogout} className="hover:text-red-500 font-black transition-colors">ログアウト</button>}
+                    </div>
+                </div>
+            </div>
+            )}
 
             {/*<div className=" w-full bg-transparent">*/}
             {/*<div className="w-1/4 h-[45px] bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">

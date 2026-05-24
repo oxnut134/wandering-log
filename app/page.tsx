@@ -47,6 +47,8 @@ export default function WanderingLog() {
     const [authChecking, setAuthChecking] = useState(true);
     const [initialLocationId, setInitialLocationId] = useState()
     const [onSavingLocation, setOnSavingLocation] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(true);
+
 
     // const [redMarkerPos, setRedMarkerPos] = useState({
     //     lat: null,
@@ -277,10 +279,16 @@ export default function WanderingLog() {
             >
                 <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">
                     <div className="pointer-events-auto">
-                        <Header />
+                        <Header
+                            isDesktop={isDesktop}
+                            setIsDesktop={setIsDesktop}
+                        />
                     </div>
                 </div>
                 <MapContainer
+                    isDesktop={isDesktop}
+                    setIsDesktop={setIsDesktop}
+
                     currentPosOfCamera={currentPosOfCamera}
                     setCurrentPosOfCamera={setCurrentPosOfCamera}
                     visitedLocations={visitedLocations}
@@ -560,8 +568,8 @@ export default function WanderingLog() {
                                                     {
                                                         //x: modal.currentPos.x + 80 + 40 * (index),
                                                         //y: modal.currentPos.y + 80 + 40 * (index)
-                                                        x: modal.currentPos.x + 40 * (2+index),
-                                                        y: modal.currentPos.y + 40 * (2+index)
+                                                        x: modal.currentPos.x + 40 * (2 + index),
+                                                        y: modal.currentPos.y + 40 * (2 + index)
                                                     }
                                                     : null
                                             }
