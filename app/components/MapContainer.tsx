@@ -400,7 +400,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
                 {!isDesktop && (
                     <MapControl position={ControlPosition.TOP_LEFT}>
-                        <HeaderMobile userName={userName} />
+                        <HeaderMobile  />
                     </MapControl>
                 )}
 

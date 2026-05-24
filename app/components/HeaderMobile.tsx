@@ -6,14 +6,14 @@ import { useAppContext } from "@/app/context/AppContext";
 //mport { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
-export default function HeaderMobile({}: any) {
+export default function HeaderMobile() {
     // 🎯 NextAuthから現在のログインセッション（ユーザー情報）をリアルタイム取得
     const { data: session } = useSession();
     const { currentPage, setCurrentPage } = useAppContext();
     const pathname = usePathname();
 
     // 💡 ログインしているユーザー名を session から自動抽出
-    const userName = session?.user?.name || null;
+    const userName:any = session?.user?.name || null;
 
     // 💡 ログアウト処理（NextAuth純正の関数を一撃で呼び出すだけ）
     const handleLogout = async () => {

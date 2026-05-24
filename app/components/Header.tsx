@@ -27,7 +27,7 @@ export default function Header(isDesktop:any) {
         <>
             {/* 🎯 修正1: flex flex-col justify-center を追加し、45pxの「ど真ん中」にコンテンツを配置 */}
             {/*<div className="w-1/4 h-[45px] flex flex-col justify-center bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">*/}
-            { isDesktop && (<div
+        <div
 
                 className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
                     } flex flex-col items-center justify-center bg-white border border-3 border-[#388778] px-3 shadow-sm mb-0 transition-all duration-200 ml-5`}
@@ -68,8 +68,7 @@ export default function Header(isDesktop:any) {
                         )}
                     </div>
                 </div>
-            </div>)}
-            
+            </div>
             {/*<div className=" w-full bg-transparent">*/}
             {/*<div className="w-1/4 h-[45px] bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">
                 {userName && (

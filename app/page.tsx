@@ -97,7 +97,7 @@ export default function WanderingLog() {
         // 監視カメラのスタート
         media.addEventListener('change', listener);
 
-   
+
         // メモリリーク防止のクリーンアップ
         //return () => media.removeEventListener('change', listener);
     }, []);
@@ -296,6 +296,7 @@ export default function WanderingLog() {
                 language={'jp'}
                 region={'jp'}
             >
+                {isDesktop && (
                 <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">
                     <div className="pointer-events-auto">
                         <Header
@@ -304,6 +305,7 @@ export default function WanderingLog() {
                         />
                     </div>
                 </div>
+                )}
                 <MapContainer
                     isDesktop={isDesktop}
                     setIsDesktop={setIsDesktop}
