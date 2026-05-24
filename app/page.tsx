@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { APIProvider, ControlPosition } from "@vis.gl/react-google-maps";
+import { APIProvider } from "@vis.gl/react-google-maps";
 import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
 import ModalGoogle from "./components/ModalGoogle";
@@ -47,7 +47,7 @@ export default function WanderingLog() {
     const [authChecking, setAuthChecking] = useState(true);
     const [initialLocationId, setInitialLocationId] = useState()
     const [onSavingLocation, setOnSavingLocation] = useState(false);
-    //const [isDesktop, setIsDesktop] = useState(true);
+    const [isDesktop, setIsDesktop] = useState(true);
 
 
     // const [redMarkerPos, setRedMarkerPos] = useState({
@@ -82,7 +82,7 @@ export default function WanderingLog() {
             });
     }, []);
 
-    /*useEffect(() => {
+    useEffect(() => {
         // 💡 画面幅が 768px 以上（パソコン・タブレット大画面）かどうかを監視
         const media = window.matchMedia('(min-width: 768px)');
 
@@ -95,12 +95,12 @@ export default function WanderingLog() {
         };
 
         // 監視カメラのスタート
-        //media.addEventListener('change', listener);
+        media.addEventListener('change', listener);
 
-
+   
         // メモリリーク防止のクリーンアップ
         //return () => media.removeEventListener('change', listener);
-    }, []);*/
+    }, []);
 
     const renderMe = () => {
         setDummy(prev => !prev);
@@ -299,14 +299,14 @@ export default function WanderingLog() {
                 <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">
                     <div className="pointer-events-auto">
                         <Header
-                            //isDesktop={isDesktop}
-                            //setIsDesktop={setIsDesktop}
+                            isDesktop={isDesktop}
+                            setIsDesktop={setIsDesktop}
                         />
                     </div>
                 </div>
                 <MapContainer
-                    //isDesktop={isDesktop}
-                    //setIsDesktop={setIsDesktop}
+                    isDesktop={isDesktop}
+                    setIsDesktop={setIsDesktop}
 
                     currentPosOfCamera={currentPosOfCamera}
                     setCurrentPosOfCamera={setCurrentPosOfCamera}
