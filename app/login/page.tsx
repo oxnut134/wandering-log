@@ -54,7 +54,7 @@ export default function LoginPage() {
             <div className="p-6 mt-6 w-md mx-auto bg-zinc-50 ">
                 <Header />
                 <div className="p-6 max-w-md mx-auto">
-                    <h1 className="text-3xl font-bold mb-8 text-orange-600 text-center">Login</h1>
+                    <h1 className="text-3xl font-bold mb-8 text-[#388778] text-center">Login</h1>
                     <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col gap-y-12">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1"></label>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={executing}
-                            className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-orange-500 hover:bg-orange-600"
+                            className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-[#388778] hover:bg-orange-600"
                                 }`}
                         >
                             {executing ? "認証中..." : "ログイン"}

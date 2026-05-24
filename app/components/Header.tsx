@@ -34,7 +34,7 @@ export default function Header(isDesktop:any) {
             >
 
                 {userName && (
-                    <div className="text-[9px] text-zinc-400 leading-none mb-0.5 pl-0.5">
+                    <div className="w-full text-left pl-[5%] text-[9px] text-zinc-400 leading-none mb-0.5 pl-0.5">
                         Logged in as: <span className="text-[12px] text-orange-600 font-bold">{userName}</span>
                     </div>
                 )}
@@ -42,19 +42,19 @@ export default function Header(isDesktop:any) {
                 {/* 🎯 修正2: 無駄な h-4/5 を排除し、画像と文字を上下中央に整列させる */}
 
                 {/* 🗺️ 左側：画像を残したまま、テキストだけを「Wandering Log」に刷新 */}
-                <div className="w-[90%] flex items-center justify-between gap-0 mb-1 py-0">
+                <div className="w-[90%] flex items-center justify-between gap-0 mt-1 mb-1 py-0">
                     <img
                         src="/sdesign_00053.png" // 💡 後からここをお好きな画像パスに差し替えてください！
                         alt="買い物かご"
                         className="w-[8%] aspect-square rounded-full " // 💡 45pxの高さに収まるよう、画像サイズを少しだけコンパクト(w-8 h-8)に調整
                     />
-                    <span className="w-[70%] text-[25px] italic text-[#388778] font-black tracking-wider text-center">
+                    <span className="text-full text-left w-[65%] text-[25px] italic text-[#388778] font-black tracking-wider text-center">
                         Wandering Log
                     </span>
 
 
                     {/* 🎯 右側：ボタンエリア */}
-                    <div className="w-[20%]  text-[15px] font-bold text-gray-500 text-right">
+                    <div className="w-[25%]  text-[15px] font-bold text-gray-500 text-right">
                         {currentPage === "login" && (
                             <button onClick={() => window.location.href = "/register"}>新規登録</button>
                         )}

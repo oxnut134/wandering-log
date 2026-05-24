@@ -71,8 +71,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
         console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>x;", x, " y:", y)
 
         // 💡 2. それでも取れなければ（{} の場合）、画面中央の数値を強制代入
-        let xCheck
-        let yCheck
+        let xCheck: any
+        let yCheck: any
         if (x === undefined) {
             //console.error("x is undefined or null in Yellow Marker")
             const projection = map.getProjection();
@@ -156,8 +156,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     //id: place?.id || `new-${Date.now()}`, // 複数識別用のID
                     id: place?.id || initialLocationId, // 複数識別用のID newToNull
                     tempId: initialLocationId,
-                    pos: { x: x, y: y },
-                    currentPos: { x: x, y: y },
+                    pos: { x: x + 40, y: y,xCheck: xCheck, yCheck: yCheck  },
+                    currentPos: { x: x + 40, y: y + 40 , },
                     data: place || {
                         name: p.name,
                         comment: "",
@@ -165,6 +165,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                         longitude: latLng.lng(),
                         isNew: true
                     },
+                    //ocations:{zIndexValue:999}
                 };
                 setOpenedModalLocations((prev: any[]) => {
                     if (prev.find(m =>
@@ -203,7 +204,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     //id: place?.id || `new-${Date.now()}`, // 複数識別用のID newToNull
                     id: place?.id || initialLocationId, // 複数識別用のID newToNull
                     tempId: Date.now,
-                    pos: { x: x, y: y },
+                    pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
                     currentPos: { x: x + 40, y: y + 40 },
                     data: place || { name: "取得できませんでした", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
                 };
@@ -400,7 +401,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
                 {!isDesktop && (
                     <MapControl position={ControlPosition.TOP_LEFT}>
-                        <HeaderMobile  />
+                        <HeaderMobile />
                     </MapControl>
                 )}
 

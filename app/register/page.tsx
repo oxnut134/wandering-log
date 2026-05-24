@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <div className="p-6 mt-6 w-md mx-auto bg-zinc-50 ">
             <Header />
             <div className="p-6 max-w-md mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-orange-600 text-center">New Account</h1>
+                <h1 className="text-3xl font-bold mb-8 text-[#388778] text-center">New Account</h1>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* 名前 */}
@@ -119,7 +119,7 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={executing}
-                        className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-orange-500 hover:bg-orange-600"
+                        className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-[#388778] hover:bg-orange-600"
                             }`}
                     >
                         {executing ? "作成中..." : "アカウント作成"}
