@@ -1,18 +1,22 @@
 "use client";
-import { Map, AdvancedMarker, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
+import { useSession, signOut } from "next-auth/react"; // 🎯 NextAuthの機能をインポート
+import { Map, AdvancedMarker, MapControl, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
 import { useState, useEffect, useCallback, memo } from "react";
+import HeaderMobile from "./HeaderMobile";
 //import { useAppContext,} from "../context/AppContext";
 
 declare const google: any;
 
-function MapContainer({ isDesktop,setIsDesktop,initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     //const [redMarkerPos, setRedMarkerPos] = useState(currentPosOfCamera);
     //const { currentPage, setCurrentPage } = useAppContext();
-    //const [isDesktop, setIsDesktop] = useState(true);
+    const { data: session } = useSession();
+    const [isDesktop, setIsDesktop] = useState(true);
+    const userName = session?.user?.name || null;
 
-    /*useEffect(() => {
+    useEffect(() => {
         // 💡 画面幅が 768px 以上（パソコン・タブレット大画面）かどうかを監視
         const media = window.matchMedia('(min-width: 768px)');
 
@@ -28,8 +32,8 @@ function MapContainer({ isDesktop,setIsDesktop,initialLocationId, redMarkerPos, 
         media.addEventListener('change', listener);
 
         // メモリリーク防止のクリーンアップ
-        return () => media.removeEventListener('change', listener);
-    }, []);*/
+        //return () => media.removeEventListener('change', listener);
+    }, []);
 
 
     useEffect(() => {
@@ -391,7 +395,14 @@ function MapContainer({ isDesktop,setIsDesktop,initialLocationId, redMarkerPos, 
                 disableDefaultUI={false} // 💡 一旦すべて消す
                 zoomControl={true}
                 cameraControl={false}
+
             >
+
+                {!isDesktop && (
+                    <MapControl position={ControlPosition.TOP_LEFT}>
+                        <HeaderMobile userName={userName} />
+                    </MapControl>
+                )}
 
                 <AdvancedMarker
                     position={startPos}
