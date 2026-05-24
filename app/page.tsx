@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { APIProvider } from "@vis.gl/react-google-maps";
+import { APIProvider,ControlPosition  } from "@vis.gl/react-google-maps";
 import MapContainer from "./components/MapContainer";
 import ModalLocation from "./components/ModalLocation";
 import ModalGoogle from "./components/ModalGoogle";
@@ -82,6 +82,25 @@ export default function WanderingLog() {
             });
     }, []);
 
+    useEffect(() => {
+        // 💡 画面幅が 768px 以上（パソコン・タブレット大画面）かどうかを監視
+        const media = window.matchMedia('(min-width: 768px)');
+
+        // 立ち上がった瞬間の本物のブラウザの画面幅を100%正確に同期
+        setIsDesktop(media.matches);
+
+        // 画面サイズが途中で変わった（ブラウザの横幅をグニグニ縮めた）時の検知イベント
+        const listener = (e: MediaQueryListEvent) => {
+            setIsDesktop(e.matches);
+        };
+
+        // 監視カメラのスタート
+        //media.addEventListener('change', listener);
+
+
+        // メモリリーク防止のクリーンアップ
+        //return () => media.removeEventListener('change', listener);
+    }, []);
 
     const renderMe = () => {
         setDummy(prev => !prev);
@@ -286,6 +305,7 @@ export default function WanderingLog() {
                     </div>
                 </div>
                 <MapContainer
+                    osition={ControlPosition.TOP_LEFT}
                     isDesktop={isDesktop}
                     setIsDesktop={setIsDesktop}
 

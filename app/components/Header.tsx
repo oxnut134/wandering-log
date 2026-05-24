@@ -6,7 +6,7 @@ import { useAppContext } from "@/app/context/AppContext";
 //mport { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
-export default function Header({ isDeskTop, setIsDeskTop }: any) {
+export default function Header({ isDesktop, setIsDesktop }: any) {
     // 🎯 NextAuthから現在のログインセッション（ユーザー情報）をリアルタイム取得
     const { data: session } = useSession();
     const { currentPage, setCurrentPage } = useAppContext();
@@ -27,7 +27,7 @@ export default function Header({ isDeskTop, setIsDeskTop }: any) {
         <>
             {/* 🎯 修正1: flex flex-col justify-center を追加し、45pxの「ど真ん中」にコンテンツを配置 */}
             {/*<div className="w-1/4 h-[45px] flex flex-col justify-center bg-white border-b border-gray-200 py-0 px-3 shadow-sm mb-0">*/}
-        {isDeskTop ? (<div
+        {isDesktop ? (<div
 
                 className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm " : "w-full h-auto mt-0 py-1"
                     } flex flex-col items-center justify-center bg-white border border-3 border-[#388778] px-3 shadow-sm mb-0 transition-all duration-200 ml-5`}

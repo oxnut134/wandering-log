@@ -5,14 +5,14 @@ import { useState, useEffect, useCallback, memo } from "react";
 
 declare const google: any;
 
-function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ isDesktop,setIsDesktop,initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     //const [redMarkerPos, setRedMarkerPos] = useState(currentPosOfCamera);
     //const { currentPage, setCurrentPage } = useAppContext();
-    const [isDesktop, setIsDesktop] = useState(true);
+    //const [isDesktop, setIsDesktop] = useState(true);
 
-    useEffect(() => {
+    /*useEffect(() => {
         // 💡 画面幅が 768px 以上（パソコン・タブレット大画面）かどうかを監視
         const media = window.matchMedia('(min-width: 768px)');
 
@@ -29,7 +29,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
         // メモリリーク防止のクリーンアップ
         return () => media.removeEventListener('change', listener);
-    }, []);
+    }, []);*/
 
 
     useEffect(() => {
