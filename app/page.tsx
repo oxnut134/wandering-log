@@ -305,7 +305,7 @@ export default function WanderingLog() {
                     </div>
                 </div>
                 <MapContainer
-                    osition={ControlPosition.TOP_LEFT}
+                    position={ControlPosition.TOP_LEFT}
                     isDesktop={isDesktop}
                     setIsDesktop={setIsDesktop}
 
