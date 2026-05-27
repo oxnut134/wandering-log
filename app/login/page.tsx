@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react"; // 🎯 NextAuthのサインインインポート
+import { signIn } from "next-auth/react"; 
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/context/AppContext";
-import Header from "../components/Header"; // パスは環境に合わせて調整してください
+import Header from "../components/Header"; 
 
 export default function LoginPage() {
     const [executing, setExecuting] = useState(false);
@@ -20,26 +20,22 @@ export default function LoginPage() {
     }, []);
 
 
-    // 🎯 サーバーレス環境用に100%書き直した handleLogin
     const handleLogin = async (data: any) => {
         if (executing) return;
         setExecuting(true);
         setError("");
 
         try {
-            // 🎯 NextAuth.js のサインイン処理を一撃起動！
             const result = await signIn("credentials", {
-                redirect: false, // 自動リダイレクトを止め、結果をjsで受け取る [INDEX]
+                redirect: false, 
                 email: data.email,
                 password: data.password,
             });
 
-            //if (result?.error) {
             if (result?.ok) {
                 setCurrentPage("map");
                 router.push("/");
             } else {
-                // 🔓 ログイン成功！地図画面へ安全に突入
                 setError("メールアドレスまたはパスワードが正しくありません。");
             }
         } catch (err: any) {

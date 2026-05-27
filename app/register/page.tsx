@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react"; // 🎯 登録直後の自動ログイン用
+import { signIn } from "next-auth/react"; 
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/context/AppContext";
 import Header from "../components/Header";
@@ -18,17 +18,13 @@ export default function RegisterPage() {
         setCurrentPage("register");
     }, []);
 
-    // パスワード一致チェック用に値を監視
     const password = watch("password");
-
-    
-    // 🎯 サーバーレス環境用に100%書き直した onSubmit
+  
     const onSubmit = async (data: any) => {
         setExecuting(true);
         setServerError("");
 
         try {
-            // 🎯 1. 自前のAPIルート（Neon接続用）へアカウント作成リクエスト
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -44,7 +40,6 @@ export default function RegisterPage() {
                 throw new Error(errData.message || "登録に失敗しました。");
             }
 
-            // 🎯 2. アカウント作成に成功したら、そのままNextAuthで自動ログインさせる！
             await signIn("credentials", {
                 redirect: false,
                 email: data.email,
@@ -68,7 +63,6 @@ export default function RegisterPage() {
                 <h1 className="text-3xl font-bold mb-8 text-[#388778] text-center">New Account</h1>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* 名前 */}
                     <div>
                         <input
                             {...register("name", { required: "名前は必須です" })}

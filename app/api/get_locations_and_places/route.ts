@@ -4,7 +4,6 @@ import { eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-// 👣 GET: 起動時の全件取得
 export async function GET() {
   try {
     const session = await auth();
@@ -28,14 +27,8 @@ export async function GET() {
       .from(visitedLocations)
       .leftJoin(visitedPlaces, eq(visitedLocations.id, visitedPlaces.location_id))
       .where(eq(visitedLocations.user_id, currentUserId));
-    //console.log("results", results);
     return NextResponse.json(results);
   } catch (e) {
-    //return NextResponse.json({ error: "取得失敗" }, { status: 500 }); 
     return NextResponse.json([]);
   }
 }
-
-// 📍 POST: 保存（②新規・③上書き）
-
-

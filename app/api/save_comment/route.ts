@@ -20,13 +20,11 @@ export async function POST(request: Request) {
         if (!log_id) return NextResponse.json({ error: "log_idが必要です" }, { status: 400 });
 
         const result = await db.transaction(async (tx) => {
-            // 💡 update を使って、特定の log_id のレコードを書き換える
             const [updatedComment] = await tx
                 .update(visitedComments)
                 .set({
                     comment: commentText,
                     user_id: currentUserId
-                    // updated_at: new Date() // もし更新日時カラムがあれば追加
                 })
                 .where(and(
                     eq(visitedComments.log_id, log_id),
@@ -34,7 +32,6 @@ export async function POST(request: Request) {
                 ))
                 .returning();
 
-            // 💡 もしレコードがまだ存在しない（初コメント）場合は insert するロジック
             if (!updatedComment) {
                 const [newComment] = await tx.insert(visitedComments).values({
                     log_id: log_id,

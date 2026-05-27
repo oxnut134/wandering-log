@@ -1,13 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
-//import VisitedLogList from './VisitedLogList';
 declare const google: any;
 
 export default function ModalGoogle({ modal, initialLocationId, setInitialLocationId, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId,onSavingLocation, setOnSavingLocation }: any) {
     const map = useMap();
 
-    //const [localPos, setLocalPos] = useState(initialModalPosGoogle);
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const service = new google.maps.places.PlacesService(map);
@@ -20,40 +18,31 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
     }, [openedModalLocations]);
 
 
-    // ModalComments.tsx の中に追加
     useEffect(() => {
-        // 💡 コンポーネントが消える（閉じられる）瞬間に実行される
         return () => {
-            // 万が一ドラッグ中に閉じられた場合でも、イベントを強制解除する
-            // ※本当は handleMouseMove を関数外に出すのが理想ですが、まずはこれで「幽霊」を消せます
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            //console.log("👻 幽霊退治完了: モーダル消滅に伴いイベントを破棄しました");
         };
     }, []);
     useEffect(() => {
-        console.log("*****************************************")
         if (initialModalPosGoogle) {
-            // 追従後、位置を更新
             setLocalPos(initialModalPosGoogle);
             if (modal.data.hasMovedEnough) {
                 updateModalElements(modal.id, (dummy: any) => ({
                     ...dummy,
                     data: {
                         ...dummy.data,
-                        hasMovedEnough: false // 役割終了のためリセット
+                        hasMovedEnough: false 
                     }
                 }));
             }
 
         } else {
-            //  初回マウント時、初期位置セット
             setLocalPos({ x: modal.currentPos.x - 80, y: modal.currentPos.y + 40 });
         }
-    }, [initialModalPosGoogle]); // 👈 空の配列にすることで「最初の1回だけ」実行される
-
+    }, [initialModalPosGoogle]); 
     const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
@@ -61,7 +50,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             Number(m.log?.zIndexValue) || 1000,
             ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
         ]);
-        //const nextZ = Math.max(1000, ...allValues);
         const nextZ = Math.max(1000, ...allValues) + 1;
 
         console.log("allValues:", allValues);
@@ -84,7 +72,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                 ...c,
                 zIndexValue: nextZ,
             })),
-            //zIndexValue: nextZ,
         }));
 
     };
@@ -106,7 +93,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-        // 💡 2. 掴んだ瞬間に「マウスとモーダルの距離」をこの関数内だけで固定
         const startX = clientX - localPos.x;
         const startY = clientY - localPos.y;
 
@@ -114,21 +100,17 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             const moveX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
             const moveY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
-            // 💡 3. moveEvent (ブラウザの生イベント) を使って計算
             let newX = moveX - startX;
             let newY = moveY - startY;
 
             xRef.current = newX;
             yRef.current = newY;
-            //console.log("✈️ 代入成功 (Ref):", xRef.current);
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
-            const bx = 260; // モーダル幅
-            //const by = 320; // モーダル高
-            const by = 215; // モーダル高
+            const bx = 260; 
+            const by = 260; 
 
-            //gNewX=newX;
             setGNewX(newX);
             gAx = ax;
             gBx = bx;
@@ -141,14 +123,10 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             }
 
             if (newY < by) {
-                //newY = by -115; // 上端固定 (transformの影響を考慮)
-                newY = by - 10; // 上端固定 (transformの影響を考慮)
+                newY = by + 0; // 上端固定
             } else if (newY > ay) {
                 newY = ay + 10//下端固定
             }
-
-            // 監査ログ（これで数値が出るようになります）
-            //console.log("✈️ 移動中監査:", { newX, newY });
 
             setLocalPos({ x: newX, y: newY });
         };
@@ -170,11 +148,9 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
 
     const reflectGoogleData = async () => {
-        //const newName = modal.googleData.name;
         console.log("==========modal:", modal);
         setIsGoogleView(false);
 
-        //openrd_locationsテーブルに保存
         const payloadLocation = {
             id: modal.id,
             name: modal.googleData.name,
@@ -190,16 +166,15 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             body: JSON.stringify(payloadLocation)
         });
         if (res.ok) {
-            //if (modal.data.isNew) {
-            savedData = await res.json(); // サーバーから正式なID（数字）をもらう
+            savedData = await res.json(); 
             setOpenedModalLocations((prev: any) =>
               prev.map((m: any) =>
                   m.id === modal.id
                       ? {
-                          ...m,           // ★ これで現在の currentPos (ドラッグ位置) を保持！
+                          ...m,           
                           id: savedData.id,
                           data: {
-                              ...m.data,  // 既存のデータを保持
+                              ...m.data,  
                               pos: m.pos,
                               id: savedData.id,
                               isNew: false,
@@ -211,13 +186,11 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             setTimeout(() => {
                 if (onSaveSuccess) onSaveSuccess();
             }, 100);
-            //console.log("savedData>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>: ", savedData)
-
+  
             onFetchLogs();
    
         }
 
-        //reflect google data to ModalLocation box
         const payload = {
             location_id: savedData.id,
             google_place_id: modal.googleData.place_id,
@@ -232,14 +205,12 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            //if (modal.data.isNew) {
-            const savedData: any = await res.json(); // サーバーから正式なID（数字）をもらう
+            const savedData: any = await res.json(); 
             console.log("savedData: ", savedData)
             setTimeout(() => {
                 if (onSaveSuccess) onSaveSuccess();
             }, 100);
 
-            //callBack function
             updateModalElements(modal.id, (dummy: any) => ({
                 ...dummy,
                 id: savedData.id,
@@ -250,25 +221,20 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             }));
         } else {
             onFetchLogs();
-            //     setOpenedModalLocations((prev: any) => [...prev, savedData])
         }
 
         return;
-
 
     }
 
 
     const close = (e: React.MouseEvent) => {
-        //e.stopPropagation(); // 💡 イベントの連鎖を断ち切る
         onClose();
     };
     const closeGoogleView = () => {
-        setIsGoogleView(false); // 💡 ただのフラグオフ
+        setIsGoogleView(false); 
     };
-    //console.log("isGoogleView*", isGoogleView);
     console.log("modal:", modal);
-    //console.log("newX:", gNewX,"ax:", gAx,"bx:", gBx);
     if (!localPos) return;
     return (
         <>
@@ -279,20 +245,18 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             width: '15%',
                             minWidth: '180px',
                             position: 'absolute',
-                            top: `${localPos.y - 15}px`, // 少し余裕を持たせる
+                            top: `${localPos.y - 15}px`, 
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
-                            zIndex: modal.google?.zIndexValue,
+                            zIndex: modal.google?.zIndexValue || 1000,
                             border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                             boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
-                            //zIndex: modal.zIndex || 100,
                             backgroundColor: 'white',
-                            padding: '10px', // 12pxから16pxへ。余白に呼吸を持たせる
+                            padding: '10px', 
                             borderRadius: '10px',
-                            //boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
-                            fontSize: '13px', // 小さすぎず読みやすいサイズ
-                            WebkitUserSelect: 'none',//文字選択なし/iPhone
-                            userSelect: 'none',//文字選択なし/PC.android,etc.
+                            fontSize: '13px', 
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none',
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -310,11 +274,10 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                                 justifyContent: 'center'
 
                             }}
-                            //onContextMenu={(e) => {
                             onDoubleClick={(e) => {
                                 if (!isFocused) return;
                                 console.log("===== right click executed =======")
-                                e.preventDefault(); // ブラウザ標準のメニューを出さない
+                                e.preventDefault(); 
                                 const allValues = openedModalLocations.flatMap((m: any) => [
                                     Number(m.locations?.zIndexValue) || 1000,
                                     Number(m.google?.zIndexValue) || 1000,
@@ -328,14 +291,12 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                                 updateModalElements(modal.id, (dummy: any) => ({
                                     ...dummy,
                                     google: {
-                                        ...dummy.google, //addmark
+                                        ...dummy.google, 
                                         zIndexValue: nextZ,
 
                                     }
-                                    //zIndexValue: nextZ,
                                 }));
 
-                                // フォーカスもこのグループに合わせる
                                 setActiveGroupId(modal.id);
                                 console.log("modalGoogle:::", modal)
 
@@ -367,7 +328,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             <button
                                 style={{ width: '100%', height: '4vh', margin: '0 0 2px 0', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 onClick={() => {
-                                    // 💡 ここに飛ばしたいURLを指定します
                                     if (modal?.googleData?.url) {
                                         window.open(modal.googleData.url, '_blank', 'noreferrer');
                                     }
@@ -377,7 +337,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             <button
                                 style={{ width: '100%', height: '4vh', margin: '0 0 2px 0', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 onClick={() => {
-                                    // 💡 ここに飛ばしたいURLを指定します
                                     if (modal?.googleData?.website) {
                                         window.open(modal.googleData.website, '_blank', 'noreferrer');
                                     }

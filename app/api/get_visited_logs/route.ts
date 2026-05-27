@@ -13,7 +13,6 @@ export async function GET(request: Request) {
   }
   const currentUserId = parseInt(session.user.id, 10);
 
-  // 💡 URLから特定の location_id を取得
   const { searchParams } = new URL(request.url);
   const locationId = searchParams.get('location_id');
 
@@ -30,13 +29,11 @@ export async function GET(request: Request) {
 
 
   try {
-    // 💡 Drizzleで取得
     const logs = await db
       .select({
         id: visitedLogs.id,
         visited_at: visitedLogs.visited_at,
         place_id: visitedLogs.place_id,
-        //comment: visitedLogs.comment, // 💡 これでコメントも一緒に取れます
       })
       .from(visitedLogs)
       .where(and(
@@ -47,7 +44,6 @@ export async function GET(request: Request) {
 
     const formattedLogs = logs.map(log => ({
       ...log,
-      // DrizzleがDateオブジェクトとして返してくれるので、そのまま toISOString() が使えます
       visited_at: log.visited_at instanceof Date
         ? log.visited_at.toISOString()
         : log.visited_at

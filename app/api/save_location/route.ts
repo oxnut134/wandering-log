@@ -16,7 +16,6 @@ export async function POST(request: Request) {
         const currentUserId = parseInt(session.user.id, 10);
 
         const { id, latitude, longitude, name, comment, googleData } = body;
-        console.log("body>>>>>>>>>>>>>>>>>>>>>>>>>>>>", body)
         const [recordCount] = await db.select({ value: count() }).from(visitedLocations);
         let locationId = id;
         let placeId = null;
@@ -29,13 +28,11 @@ export async function POST(request: Request) {
                     name,
                     comment,
                     user_id: currentUserId,
-                    updated_at: new Date() // 仕様：最初に登録した日時
+                    updated_at: new Date() 
                 }).returning();
                 locationId = newLoc.id;
             } else {
 
-                //if (locationId) {
-                //該当レコード検索
                 const locationRecord = await tx.select()
                     .from(visitedLocations)
                     .where(
@@ -60,20 +57,20 @@ export async function POST(request: Request) {
                         .where(eq(visitedLocations.id, id));
 
                 } else {
-                    // ② 新規訪問先保存
+                    // 新規訪問先保存
                     const [newLoc] = await tx.insert(visitedLocations).values({
                         latitude: String(latitude),
                         longitude: String(longitude),
                         name,
                         comment,
                         user_id: currentUserId,
-                        updated_at: new Date() // 仕様：最初に登録した日時
+                        updated_at: new Date() 
                     }).returning();
                     locationId = newLoc.id;
 
                 }
             }
-            
+            //訪問日時保存
             await tx.insert(visitedLogs).values({
                 location_id:locationId,
                 place_id: placeId,

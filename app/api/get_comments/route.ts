@@ -13,7 +13,6 @@ export async function GET(request: Request) {
   }
   const currentUserId = parseInt(session.user.id, 10);
 
-  // 💡 URLから特定の location_id を取得
   const { searchParams } = new URL(request.url);
   const logId = searchParams.get('log_id');
 
@@ -30,19 +29,16 @@ export async function GET(request: Request) {
 
 
   try {
-    // 💡 Drizzleで取得gf
     const comments = await db
       .select({
         id: visitedComments.id,
         comment: visitedComments.comment,
-        //comment: visitedComments.comment, // 💡 これでコメントも一緒に取れます
       })
       .from(visitedComments)
       .where(and(
         eq(visitedComments.log_id, Number(logId)),
         eq(visitedComments.user_id, currentUserId)
       ))
-    //. orderBy(desc(visitedComments.visited_at));
 
     return NextResponse.json(comments);
 

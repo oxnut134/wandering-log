@@ -4,7 +4,6 @@ import { and, eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-// 🗑️ DELETE: 削除
 export async function DELETE(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
