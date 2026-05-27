@@ -310,7 +310,13 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     setCurrentZoom(ev.detail.zoom);
                 }}
 
-                onCameraChanged={(ev) => setCurrentPosOfCamera(ev.detail.center)}
+                onCameraChanged={(ev) => {
+                    setCurrentPosOfCamera(ev.detail.center)
+                    if (!isDesktop) {
+                        setRedMarkerPos(ev.detail.center);
+                    }
+                }
+                }
 
                 mapTypeControl={isDesktop}
                 gestureHandling={'greedy'}
@@ -338,7 +344,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     zIndex={1000}
                     collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
                     position={redMarkerPos}
-                    gmpDraggable={true}
+                    gmpDraggable={isDesktop}
                     style={{ outline: 'none' }}
 
                     onDragEnd={(ev: any) => {
@@ -401,7 +407,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     )
                 })) : (null)}
             </Map>
-        </div>
+        </div >
     );
 }
 export default memo(MapContainer);

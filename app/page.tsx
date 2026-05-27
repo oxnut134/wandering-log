@@ -174,7 +174,7 @@ export default function WanderingLog() {
     }
     const onFetchLogs = async (id: number | string) => {
 
-        if (id === initialLocationId) return; 
+        if (id === initialLocationId) return;
 
         try {
             const res = await fetch(`/api/get_visited_logs?location_id=${id}`);
@@ -184,7 +184,7 @@ export default function WanderingLog() {
                 await new Promise<void>((resolve) => {
                     setOpenedModalLocations(prev => {
                         const next = prev.map(m => m.id === id ? { ...m, logs: data } : m);
-                        resolve(); 
+                        resolve();
                         return next;
                     });
                 });
@@ -241,23 +241,60 @@ export default function WanderingLog() {
                 <button
                     onClick={handleCurrentLocation}
                     style={{
-                        position: 'fixed', bottom: '260px', right: '7px', 
+                        position: 'fixed', bottom: '380px', right: '7px',
                         width: '45px', height: '45px', borderRadius: '50%',
                         backgroundColor: 'white', border: 'none', fontSize: '24px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 1000
                     }}
                 >
+                    📍
                 </button>
                 <button
                     onClick={handleHome}
                     style={{
-                        position: 'fixed', bottom: '200px', right: '7px',
+                        position: 'fixed', bottom: '320px', right: '7px',
                         width: '45px', height: '45px', borderRadius: '50%',
                         backgroundColor: 'white', border: 'none', fontSize: '24px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 1000
                     }}
                 >
                     🏠
+                </button>
+
+                <button
+                    onClick={() => {
+                        // 💡 1. 安全ガード：今カメラが見ている中心の座標（currentPosOfCamera）が存在するかチェック
+                        if (!currentPosOfCamera) return;
+
+                        console.log("🎯 赤マーカーを現在見ている画面の中央へ強制移動します！", currentPosOfCamera);
+
+                        // 💡 2. あなたが管理しているカメラの中心座標を、赤ピンのポジション（setRedMarkerPos）へダイレクトに直撃（上書き）！
+                        setRedMarkerPos({
+                            lat: currentPosOfCamera.lat,
+                            lng: currentPosOfCamera.lng
+                        });
+                    }}
+                    style={{
+                        position: 'fixed',
+                        bottom: '260px', // 💡 ホームボタンのさらに少し下（60px下）の特等席に配置します
+                        right: '7px',
+                        width: '45px',
+                        height: '45px',
+                        borderRadius: '50%',
+                        backgroundColor: '#388778', // 💡 モーダルの枠線と同じ緑色にしてデザインに統一感を持たせます！
+                        color: 'white',
+                        border: 'none',
+                        fontSize: '20px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                        cursor: 'pointer',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                    title="ピンを画面中央に呼び出す"
+                >
+                    🎯
                 </button>
 
                 {openedModalLocations.map((modal, index: number) => {
@@ -286,7 +323,7 @@ export default function WanderingLog() {
                                 setIsGoogleView={setIsGoogleView}
                                 logs={modal.logs || []}
                                 onSaveSuccess={refreshHistory}
-                                isExisting={modal.id !== initialLocationId}  
+                                isExisting={modal.id !== initialLocationId}
                                 onFetchLogs={() => onFetchLogs(modal.id)}
                                 moveDist={moveDist}
                                 setMoveDist={setMoveDist}
@@ -367,7 +404,7 @@ export default function WanderingLog() {
                                                 ? {
                                                     ...m,
                                                     googleData: {
-                                                        ...m.googleData, 
+                                                        ...m.googleData,
                                                         isShowingGoogle: false
                                                     }
                                                 }
@@ -439,7 +476,7 @@ export default function WanderingLog() {
                                             updateModalElements={updateModalElements}
                                             initialLocationId={initialLocationId}
                                             setInitialLocationId={setInitialLocationId}
-                                            logs={modal.logs || []} 
+                                            logs={modal.logs || []}
                                             comment={c}
                                             logId={c.logId}
                                             commentId={c.id}
