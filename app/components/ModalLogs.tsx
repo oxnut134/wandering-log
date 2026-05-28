@@ -20,13 +20,32 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
 
     useEffect(() => {
-        //handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
         };
+    }, []);
+
+    useEffect(() => {
+        if (initialModalPosLogs) {
+            setLocalPos(initialModalPosLogs);
+            if (modal.data.hasMovedEnough) {
+                updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    data: {
+                        ...dummy.data,
+                        hasMovedEnough: false
+                    }
+                }));
+            }
+        }
+    }, [initialModalPosLogs]);
+
+    useEffect(() => {
+        setLocalPos({ x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 });
+        onFetchLogs();
     }, []);
 
     const handleUpdateGroupZIndex = () => {
@@ -56,29 +75,8 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
                 zIndexValue: nextZ,
             })),
         }));
-
     };
 
-
-    useEffect(() => {
-        if (initialModalPosLogs) {
-            setLocalPos(initialModalPosLogs);
-            if (modal.data.hasMovedEnough) {
-                updateModalElements(modal.id, (dummy: any) => ({
-                    ...dummy,
-                    data: {
-                        ...dummy.data,
-                        hasMovedEnough: false
-                    }
-                }));
-            }
-        }
-    }, [initialModalPosLogs]);
-
-    useEffect(() => {
-        setLocalPos({ x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 });
-        onFetchLogs();
-    }, []);
 
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);

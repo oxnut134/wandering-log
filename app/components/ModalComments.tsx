@@ -13,7 +13,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     const [isConfirming, setIsConfirming] = useState(false);
 
     useEffect(() => {
-        //handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
@@ -25,40 +24,9 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 Number(m.log?.zIndexValue) || 1000,
                 ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
             ]);
-            
+
         };
     }, []);
-
-    const handleUpdateGroupZIndex = () => {
-        const allValues = openedModalLocations.flatMap((m: any) => [
-            Number(m.locations?.zIndexValue) || 1000,
-            Number(m.google?.zIndexValue) || 1000,
-            Number(m.log?.zIndexValue) || 1000,
-            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
-        ]);
-        const nextZ = Math.max(1000, ...allValues) + 1;
-        updateModalElements(modal.id, (dummy: any) => ({
-            ...dummy,
-            locations: {
-                ...dummy.locations,
-                zIndexValue: nextZ,
-            },
-            google: {
-                ...dummy.google,
-                zIndexValue: nextZ,
-            },
-            log: {
-                ...dummy.log,
-                zIndexValue: nextZ,
-            },
-            comments: (dummy.comments || []).map((c: any) => ({
-                ...c,
-                zIndexValue: nextZ,
-            })),
-        }));
-
-    };
-
 
     useEffect(() => {
         if (initialModalPosComments) {
@@ -97,6 +65,35 @@ export default function ModalComments({ modal, comment, updateModalElements, act
         });
 
     }, []);
+
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.locations,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.google,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.log,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+        }));
+    };
 
 
     const xRef = useRef<number | undefined>(undefined);

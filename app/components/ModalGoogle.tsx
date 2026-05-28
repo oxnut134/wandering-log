@@ -19,7 +19,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
 
     useEffect(() => {
-        //handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
@@ -27,6 +26,25 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             document.removeEventListener('touchend', () => { });
         };
     }, []);
+
+
+    useEffect(() => {
+        if (initialModalPosGoogle) {
+            setLocalPos(initialModalPosGoogle);
+            if (modal.data.hasMovedEnough) {
+                updateModalElements(modal.id, (dummy: any) => ({
+                    ...dummy,
+                    data: {
+                        ...dummy.data,
+                        hasMovedEnough: false
+                    }
+                }));
+            }
+
+        } else {
+            setLocalPos({ x: modal.currentPos.x - 80, y: modal.currentPos.y + 40 });
+        }
+    }, [initialModalPosGoogle]);
 
     const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
@@ -55,27 +73,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                 zIndexValue: nextZ,
             })),
         }));
-
     };
-
-    useEffect(() => {
-        if (initialModalPosGoogle) {
-            setLocalPos(initialModalPosGoogle);
-            if (modal.data.hasMovedEnough) {
-                updateModalElements(modal.id, (dummy: any) => ({
-                    ...dummy,
-                    data: {
-                        ...dummy.data,
-                        hasMovedEnough: false
-                    }
-                }));
-            }
-
-        } else {
-            setLocalPos({ x: modal.currentPos.x - 80, y: modal.currentPos.y + 40 });
-        }
-    }, [initialModalPosGoogle]);
-
 
 
     const xRef = useRef<number | undefined>(undefined);

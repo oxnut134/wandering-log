@@ -23,11 +23,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     }, [openedModalLocations]);
 
     useEffect(() => {
-        //handleUpdateGroupZIndex();
-        /*const timer = setTimeout(() => {
-            console.log("⏱️ タイマー作動！データが届いたか確認します：", openedModalLocations);
-            handleUpdateGroupZIndex();
-        }, 200);*/
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
@@ -36,35 +31,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         };
     }, []);
 
-    const handleUpdateGroupZIndex = () => {
-        const allValues = openedModalLocations.flatMap((m: any) => [
-            Number(m.locations?.zIndexValue) || 1000,
-            Number(m.google?.zIndexValue) || 1000,
-            Number(m.log?.zIndexValue) || 1000,
-            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
-        ]);
-        const nextZ = Math.max(1000, ...allValues) + 1;
-        updateModalElements(modal.id, (dummy: any) => ({
-            ...dummy,
-            locations: {
-                ...dummy.locations,
-                zIndexValue: nextZ,
-            },
-            google: {
-                ...dummy.google,
-                zIndexValue: nextZ,
-            },
-            log: {
-                ...dummy.log,
-                zIndexValue: nextZ,
-            },
-            comments: (dummy.comments || []).map((c: any) => ({
-                ...c,
-                zIndexValue: nextZ,
-            })),
-        }));
-
-    };
 
 
     const handleSaveLocationWithLog = async () => {
@@ -232,7 +198,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     };
     const handleShowLogs = () => {
         if (modal.data.isNew) return;
-        
+
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
             Number(m.google?.zIndexValue) || 1000,
@@ -261,7 +227,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         });
     };
 
-    /*const handleUpdateGroupZIndex = () => {
+    const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
             Number(m.google?.zIndexValue) || 1000,
@@ -272,15 +238,15 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         updateModalElements(modal.id, (dummy: any) => ({
             ...dummy,
             locations: {
-                ...dummy.dummy,
+                ...dummy.locations,
                 zIndexValue: nextZ,
             },
             google: {
-                ...dummy.dummy,
+                ...dummy.google,
                 zIndexValue: nextZ,
             },
             log: {
-                ...dummy.dummy,
+                ...dummy.log,
                 zIndexValue: nextZ,
             },
             comments: (dummy.comments || []).map((c: any) => ({
@@ -288,8 +254,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                 zIndexValue: nextZ,
             })),
         }));
-
-    };*/
+    };
 
 
     const xRef = useRef<number | undefined>(undefined);
