@@ -20,7 +20,7 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
 
     useEffect(() => {
-        handleUpdateGroupZIndex();
+        //handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
@@ -171,6 +171,14 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
             console.error("既存コメントの取得に失敗:", error);
         }
 
+const allValues = openedModalLocations.flatMap((m: any) => [
+        Number(m.locations?.zIndexValue) || 1000,
+        Number(m.google?.zIndexValue) || 1000,
+        Number(m.log?.zIndexValue) || 1000,
+        ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+    ]);
+    const nextZ = Math.max(1000, ...allValues) ;
+
         setOpenedModalLocations((prev: any[]) => {
             return prev.map((m: any) => {
                 if (m.id !== modal.id) return m;
@@ -189,6 +197,7 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
                             comment: existingComment,
                             memoNo: memoNo,
                             isExistingComment: isExist,
+                            zIndexValue:nextZ
                         }
                     ]
                 };

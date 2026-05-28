@@ -19,7 +19,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
 
     useEffect(() => {
-        handleUpdateGroupZIndex();
+        //handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
