@@ -23,7 +23,11 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     }, [openedModalLocations]);
 
     useEffect(() => {
-        handleUpdateGroupZIndex();
+        //handleUpdateGroupZIndex();
+        const timer = setTimeout(() => {
+            console.log("⏱️ タイマー作動！データが届いたか確認します：", openedModalLocations);
+            handleUpdateGroupZIndex();
+        }, 200);
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });

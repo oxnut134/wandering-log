@@ -25,6 +25,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 Number(m.log?.zIndexValue) || 1000,
                 ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
             ]);
+            
         };
     }, []);
 
