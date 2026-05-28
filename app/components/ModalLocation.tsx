@@ -186,6 +186,15 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             place.website = "";
                         }
 
+                        const allValues = openedModalLocations.flatMap((m: any) => [
+                            Number(m.locations?.zIndexValue) || 1000,
+                            Number(m.google?.zIndexValue) || 1000,
+                            Number(m.log?.zIndexValue) || 1000,
+                            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                        ]);
+                        const nextZ = Math.max(1000, ...allValues);
+
+
                         setOpenedModalLocations((prev: any[]) => {
                             return prev.map((m: any) =>
                                 m.id === modal.id
@@ -205,6 +214,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                                             url: place.url,
                                             website: place.website,
                                             isShowingGoogle: true
+                                        },
+                                        google: {
+                                            zIndexValue: nextZ
                                         }
                                     }
                                     : m
@@ -220,6 +232,15 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     };
     const handleShowLogs = () => {
         if (modal.data.isNew) return;
+        
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues);
+
         setOpenedModalLocations((prev: any[]) => {
             return prev.map((m: any) =>
                 m.id === modal.id
@@ -230,6 +251,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             ...m.data,
                             isShowingLogs: true,
 
+                        },
+                        log: {
+                            zIndexValue: nextZ
                         }
                     }
                     : m

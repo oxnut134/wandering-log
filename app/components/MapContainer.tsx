@@ -135,6 +135,15 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     return [...prev, newModal];
                 });
 
+                const allValues = openedModalLocations.flatMap((m: any) => [
+                    Number(m.locations?.zIndexValue) || 1000,
+                    Number(m.google?.zIndexValue) || 1000,
+                    Number(m.log?.zIndexValue) || 1000,
+                    ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                ]);
+                const nextZ = Math.max(1000, ...allValues);
+
+
                 setOpenedModalLocations((prev: any[]) => {
                     return prev.map((m: any) =>
                         m.id === newModal.id
@@ -144,7 +153,11 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                     ...m.data,
                                     isCurrentMarker: m.data.isCurrentMarker ? false : true,
                                     isRedFootMark: true,
+                                },
+                                locations: {
+                                    zIndexvalue: nextZ
                                 }
+
                             }
                             : m
                     );
@@ -169,6 +182,16 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     }
                     return [...prev, newModal];
                 });
+
+                const allValues = openedModalLocations.flatMap((m: any) => [
+                    Number(m.locations?.zIndexValue) || 1000,
+                    Number(m.google?.zIndexValue) || 1000,
+                    Number(m.log?.zIndexValue) || 1000,
+                    ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+                ]);
+                const nextZ = Math.max(1000, ...allValues);
+
+
                 setOpenedModalLocations((prev: any[]) => {
                     return prev.map((m: any) =>
                         m.id === newModal.id
@@ -178,6 +201,9 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                     ...m.data,
                                     isCurrentMarker: m.data.isCurrentMarker ? false : true,
                                     isRedFootMark: true
+                                },
+                                locations: {
+                                    zIndexvalue: nextZ
                                 }
                             }
                             : m
@@ -270,6 +296,15 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 return [...prev, newModal];
             });
 
+            const allValues = openedModalLocations.flatMap((m: any) => [
+                Number(m.locations?.zIndexValue) || 1000,
+                Number(m.google?.zIndexValue) || 1000,
+                Number(m.log?.zIndexValue) || 1000,
+                ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+            ]);
+            const nextZ = Math.max(1000, ...allValues);
+
+
             setOpenedModalLocations((prev: any[]) => {
                 return prev.map((m: any) =>
                     m.id === newModal.id
@@ -279,6 +314,10 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                                 ...m.data,
                                 isCurrentMarker: m.data.isCurrentMarker ? false : true,
                                 isRedFootMark: false
+
+                            },
+                            locations: {
+                                zIndexvalue: nextZ
                             }
                         }
                         : m
