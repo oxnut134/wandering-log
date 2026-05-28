@@ -1,7 +1,7 @@
 // 💡 app/api/register/route.ts
 import { NextResponse } from 'next/server';
-import { users } from '../../../lib/schema'; 
-import { eq, ilike } from 'drizzle-orm'; 
+import { users } from '../../../lib/schema';
+import { eq, ilike } from 'drizzle-orm';
 import { db } from "../../../lib/db";
 import bcrypt from "bcryptjs"
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: '入力項目が足りません。' }, { status: 400 });
         }
 
-        const cleanEmail = email.trim(); 
+        const cleanEmail = email.trim();
 
         const existingUser = await db
             .select()
@@ -25,15 +25,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'このメールアドレスは既に登録されています。' }, { status: 400 });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         await db.insert(users).values({
             name: name,
             email: cleanEmail,
-            password: hashedPassword, 
+            password: hashedPassword,
         });
-
-        console.log(`🎉 ユーザー [${name}] を Drizzle を経由して Neon へ正常に手動保存しました！`);
 
         return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });
 

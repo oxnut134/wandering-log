@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 declare const google: any;
 
-export default function ModalLocation({ modal, initialLocationId, setInitialLocationId, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId, onSavingLocation, setOnSavingLocation }: any) {
+export default function ModalLocation({ modal, initialLocationId, setInitialLocationId, clickedModalId, setClickedModalId, updateModalElements, isFocused, onFocus, maxZ, isFocusedLocation, onFocusLocation, setCurrentMarker, openedModalLocations, setOpenedModalLocations, isGoogleView, setIsGoogleView, isModalLogsView, setIsModalLogsView, openedModalGoogle, setOpenedModalGoogle, onSaveSuccess, onCloseModalLocation, isExisting, initialModalPos, onFetchLogs, updateCurrentPos, updatePos, moveDist, setMoveDist, setActiveGroupId, onSavingLocation, setOnSavingLocation, setCurrentPosOfHome }: any) {
     const map = useMap();
     const [localPos, setLocalPos] = useState(initialModalPos);
     const [gNewX, setGNewX] = useState<number | undefined>();
@@ -15,10 +15,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-    //--このコメントは不要だが正常動作確認のためしばらく残す
-    //--！！！ このコンポーネントこのmodal.dataはmodal.data=modal.dataのことなので注意！！！------
-
-    if (clickedModalId) { console.log("<<<<<<<<<<<< Layer System start >>>>>>>>>>>>>>"); }
     useEffect(() => {
         console.log("openedModalLocations:", openedModalLocations)
     }, [openedModalLocations]);
@@ -34,17 +30,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             document.removeEventListener('touchend', () => { });
         };
     }, []);
-
-    /*useEffect(() => {
-        if (!modalRef.current) return;
-        const currentRealHeight = modalRef.current.offsetHeight;
-        if (modal.log?.modalheight === currentRealHeight) return;
-        updateModalElements(modal.id, (dummy: any) => ({
-            ...dummy,
-            modalheight: currentRealHeight
-        }));
-    }, [modalRef.current, modalRef.current?.offsetHeight, modal.logs]);
-*/
 
     const handleSaveLocationWithLog = async () => {
         setOnSaving(true)
@@ -83,9 +68,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             });
         }
         if (res.ok) {
-            console.log("<<<<<<<<<<<< res is ok >>>>>>>>>>>>>>>>")
             const savedData = await res.json();
-            console.log("savedData: ", savedData)
             setOpenedModalLocations((prev: any) =>
                 prev.map((m: any) =>
                     m.id === modal.id
@@ -226,9 +209,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
         ]);
         const nextZ = Math.max(1000, ...allValues) + 1;
-
-        console.log("allValues:", allValues);
-
         updateModalElements(modal.id, (dummy: any) => ({
             ...dummy,
             locations: {
@@ -374,8 +354,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         document.addEventListener('touchend', handleUp);
 
     };
-
-    useEffect(() => { console.log("isnew>>>>>>>>>>>>>>>>>>>>>>>>>", modal.data.isNew); }, [modal.data.isNew])
     return (
         <>
             <div
@@ -436,9 +414,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     onDoubleClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log(">>>>>>>>>>>>>>>>>>>>>double click ok ")
                         if (!isFocused) return;
-                        console.log("===== right click executed =======")
                         e.preventDefault();
                         setClickedModalId(modal.id)
                         const allValues = openedModalLocations.flatMap((m: any) => [
@@ -448,9 +424,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
                         ]);
                         const nextZ = Math.max(1000, ...allValues) + 1;
-
-                        console.log("✈️ 共通関数で更新:", { nextZ });
-
                         updateModalElements(modal.id, (dummy: any) => ({
                             ...dummy,
                             locations: {
@@ -462,9 +435,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
 
                         setActiveGroupId(modal.id);
-                        console.log("maxZLocatioc:", maxZ)
-                        console.log("modalLocation:::", modal)
-
                     }}
                 >
                 </div>
@@ -653,7 +623,20 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     >
                         Google情報
                     </button>
-                    <button
+                    {modal.data.isNew ? (
+                        <button
+                            onClick={() => setCurrentPosOfHome({ lat: modal.data.latitude, lng: modal.data.longitude })}
+                            style={{
+                                width: '30%', height: '3vh',
+                                background: '#FBBC04', color: '#6b7280',
+                                border: '1px solid #6b7280',
+                                fontSize: '10px', fontWeight: 'bold',
+                                borderRadius: '6px', cursor: 'pointer',
+                            }}
+                        >
+                            🏠登録
+                        </button>
+                    ) : (<button
                         onClick={handleShowLogs}
 
                         style={{
@@ -672,8 +655,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                         }}
                     >
-                        {modal.data.isNew ? null : "訪問記録"}
+                        訪問記録
                     </button>
+                    )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '10px' }}>
                     <button

@@ -48,20 +48,6 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
         onFetchLogs();
     }, []);
 
-    /*useEffect(() => {
-        if (!modalRef.current) return;
-        const currentRealHeight = modalRef.current.offsetHeight;
-        if (modal.log?.modalheight === currentRealHeight) return;
-        updateModalElements(modal.id, (dummy: any) => ({
-            ...dummy,
-            log: {
-                ...dummy.log,
-                modalheight: currentRealHeight 
-            }
-        }));
-    }, [modalRef.current, modalRef.current?.offsetHeight, modal.logs]);
-*/
-
     const xRef = useRef<number | undefined>(undefined);
     const yRef = useRef<number | undefined>(undefined);
 
@@ -147,13 +133,11 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
             } else {
                 isExist = false
             }
-            console.log("comments:", data)
         } catch (error) {
             console.error("既存コメントの取得に失敗:", error);
         }
 
         setOpenedModalLocations((prev: any[]) => {
-            console.log("activeComment generated with comment:", existingComment);
             return prev.map((m: any) => {
                 if (m.id !== modal.id) return m;
 
@@ -217,11 +201,9 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
                         }}
                         onDoubleClick={(e) => {
-                            console.log(">>>>>>>>>>>>>>>>>>Logs DoubleClick executed !!")
-                            e.preventDefault();
+                                    e.preventDefault();
                             e.stopPropagation();
                             if (!isFocused) return;
-                            console.log("===== right click executed =======")
                             e.preventDefault();
                             const allValues = openedModalLocations.flatMap((m: any) => [
                                 Number(m.locations?.zIndexValue) || 1000,

@@ -6,7 +6,7 @@ import HeaderMobile from "./HeaderMobile";
 
 declare const google: any;
 
-function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
+function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, currentPosOfHome, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
     const [startPos] = useState(currentPosOfCamera);
     const { data: session } = useSession();
@@ -48,7 +48,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
         let x = domEvent?.clientX || domEvent?.touches?.[0]?.clientX;
         let y = domEvent?.clientY || domEvent?.touches?.[0]?.clientY;
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>x;", x, " y:", y)
 
         let xCheck: any
         let yCheck: any
@@ -153,7 +152,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
 
             } else {
-                console.log("x;", x, " y:", y)
                 const newModal = {
                     id: place?.id || initialLocationId,
                     tempId: Date.now,
@@ -238,25 +236,19 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 method: "GET",
                 cache: "no-store"
             });
-
             if (!response.ok) {
                 if (response.status === 401) {
                     console.warn("⚠️ セッションが切れているか未ログインです");
                 }
                 throw new Error(`APIエラー: ステータスコード ${response.status}`);
             }
-            console.log("response>>>>>>>>>>>>>>>>>", response)
             const locationArray = await response.json();
 
             let target: any
             if (locationArray && locationArray.length > 0) {
                 target = locationArray[0];
 
-                console.log("🧬 Neonから直撃で取得した最新のピン:", target);
-
             } else { target = null }
-
-
             const newModal = {
                 id: place?.id || initialLocationId,
                 pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
@@ -332,9 +324,8 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                         <HeaderMobile />
                     </MapControl>
                 )}
-
                 <AdvancedMarker
-                    position={startPos}
+                    position={currentPosOfHome}
                     content={null}
                 >
                     <div style={{ fontSize: '30px', transform: 'translateY(-15px)' }}>🚩</div>
@@ -345,8 +336,9 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
                     position={redMarkerPos}
                     gmpDraggable={isDesktop}
+                    //tabIndex={-1}
                     style={{ outline: 'none' }}
-
+                    className="no-outline-marker"
                     onDragEnd={(ev: any) => {
                         const newLat = ev.latLng?.lat?.() || ev.detail?.latLng?.lat;
                         const newLng = ev.latLng?.lng?.() || ev.detail?.latLng?.lng;

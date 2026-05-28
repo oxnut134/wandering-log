@@ -1,6 +1,6 @@
 import { db } from "../../../lib/db";
 import { visitedLocations, visitedPlaces, visitedLogs, visitedComments } from "../../../lib/schema";
-import { and,eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
@@ -13,7 +13,6 @@ export async function POST(request: Request) {
     const currentUserId = parseInt(session.user.id, 10);
 
     try {
-        console.log("************ in save_comments (Update mode) ***************")
         const body = await request.json();
         const { log_id, commentText } = body;
 

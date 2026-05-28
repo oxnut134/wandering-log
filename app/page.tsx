@@ -19,7 +19,7 @@ import { useAppContext, AppProvider } from "./context/AppContext";
 export default function WanderingLog() {
 
     const [currentPosOfCamera, setCurrentPosOfCamera] = useState<any>(null);
-    const [currentPosOfMe, setCurrentPosOfMe] = useState<any>(null);
+    const [currentPosOfHome, setCurrentPosOfHome] = useState<any>(null);
     const [redMarkerPos, setRedMarkerPos] = useState<any>(null);
     const [visitedLocations, setVisitedLocations] = useState([]);
     const [homeTrigger, setHomeTrigger] = useState(0);
@@ -33,7 +33,6 @@ export default function WanderingLog() {
     const [isCommentRecordExist, setIsCommentRecordExist] = useState(false);
     const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
     const [clickedModalId, setClickedModalId] = useState<number | null>(null)
-    const { currentPage, setCurrentPage } = useAppContext();
     const { currentUserId, setCurrentUserId } = useAppContext();
     const [authChecking, setAuthChecking] = useState(true);
     const [initialLocationId, setInitialLocationId] = useState()
@@ -78,7 +77,8 @@ export default function WanderingLog() {
     const renderMe = () => {
         setDummy(prev => !prev);
     };
-    const refreshHistory = useCallback(async () => {
+ 
+    const refreshHistory = async () => {
 
         const res = await fetch("/api/get_locations_and_places");
         const data = await res.json();
@@ -96,7 +96,7 @@ export default function WanderingLog() {
             });
         }, 200);
 
-    }, []);
+    };
 
     useEffect(() => {
         console.log("visitedLocations : ", visitedLocations);
@@ -111,12 +111,11 @@ export default function WanderingLog() {
             //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
             const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
             setCurrentPosOfCamera(coords);
-            setCurrentPosOfMe(coords);
+            setCurrentPosOfHome(coords);
             setRedMarkerPos(coords);
         });
         refreshHistory();
-    }, [refreshHistory]);
-
+    }, []);
 
     const updateCurrentPos = (id: any, newPos: any) => {
         setOpenedModalLocations(prev => prev.map(m =>
@@ -124,7 +123,6 @@ export default function WanderingLog() {
         ));
     };
     const updatedPos = (id: any, newPos: any) => {
-        console.log("id:", id, " pos.x:", newPos.x, "pos.y:", newPos.y)
         setOpenedModalLocations(prev => prev.map(m =>
             m.id === id ? { ...m, pos: newPos } : m
         ));
@@ -149,14 +147,14 @@ export default function WanderingLog() {
     };
 
     const handleHome = () => {
-        if (currentPosOfMe) {
+         if (currentPosOfHome) {
             setCurrentPosOfCamera({
-                lat: currentPosOfMe.lat,
-                lng: currentPosOfMe.lng
+                lat: currentPosOfHome.lat,
+                lng: currentPosOfHome.lng
             });
             setRedMarkerPos({
-                lat: currentPosOfMe.lat,
-                lng: currentPosOfMe.lng
+                lat: currentPosOfHome.lat,
+                lng: currentPosOfHome.lng
             });
             setHomeTrigger(Date.now());
         }
@@ -224,6 +222,7 @@ export default function WanderingLog() {
                     setIsDesktop={setIsDesktop}
 
                     currentPosOfCamera={currentPosOfCamera}
+                    currentPosOfHome={currentPosOfHome}
                     setCurrentPosOfCamera={setCurrentPosOfCamera}
                     visitedLocations={visitedLocations}
                     setVisitedLocations={setVisitedLocations}
@@ -263,12 +262,7 @@ export default function WanderingLog() {
 
                 <button
                     onClick={() => {
-                        // 💡 1. 安全ガード：今カメラが見ている中心の座標（currentPosOfCamera）が存在するかチェック
                         if (!currentPosOfCamera) return;
-
-                        console.log("🎯 赤マーカーを現在見ている画面の中央へ強制移動します！", currentPosOfCamera);
-
-                        // 💡 2. あなたが管理しているカメラの中心座標を、赤ピンのポジション（setRedMarkerPos）へダイレクトに直撃（上書き）！
                         setRedMarkerPos({
                             lat: currentPosOfCamera.lat,
                             lng: currentPosOfCamera.lng
@@ -276,12 +270,12 @@ export default function WanderingLog() {
                     }}
                     style={{
                         position: 'fixed',
-                        bottom: '260px', // 💡 ホームボタンのさらに少し下（60px下）の特等席に配置します
+                        bottom: '260px', 
                         right: '7px',
                         width: '45px',
                         height: '45px',
                         borderRadius: '50%',
-                        backgroundColor: '#388778', // 💡 モーダルの枠線と同じ緑色にしてデザインに統一感を持たせます！
+                        backgroundColor: '#388778', 
                         color: 'white',
                         border: 'none',
                         fontSize: '20px',
@@ -304,7 +298,7 @@ export default function WanderingLog() {
                             <ModalLocation
                                 key={`location-${modal.id}`}
                                 modal={modal}
-                                initialLocationId={initialLocationId}
+                                //initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={isFocused}
@@ -330,6 +324,7 @@ export default function WanderingLog() {
                                 setActiveGroupId={setActiveGroupId}
                                 onSavingLocation={onSavingLocation}
                                 setOnSavingLocation={setOnSavingLocation}
+                                setCurrentPosOfHome={setCurrentPosOfHome}
                                 onCloseModalLocation={() => {
                                     setOpenedModalLocations(prev =>
                                         prev.filter(record => record.id !== modal.id)
@@ -367,7 +362,7 @@ export default function WanderingLog() {
                             <ModalGoogle
                                 key={`google-${modal.id}`}
                                 modal={modal}
-                                initialLocationId={initialLocationId}
+                                //initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={activeGroupId === modal.id}
@@ -419,7 +414,7 @@ export default function WanderingLog() {
                                 key={`log-${modal.id}`}
                                 modal={modal}
                                 updateModalElements={updateModalElements}
-                                initialLocationId={initialLocationId}
+                                //initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 isFocused={activeGroupId === modal.id}
                                 onFocus={() => setActiveGroupId(modal.id)}

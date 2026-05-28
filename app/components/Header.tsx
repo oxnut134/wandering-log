@@ -20,7 +20,7 @@ export default function Header(isDesktop: any) {
     return (
         <>
             <div
-style={{zIndex:1000}}
+                style={{ zIndex: 1000 }}
                 className={`${isMapPage ? "w-full h-auto mt-0 pt-1 rounded-sm ml-5" : "w-full h-auto mt-0 py-0"
                     } flex flex-col items-center justify-center bg-white border border-3 border-[#388778] px-1 shadow-sm mb-0 transition-all duration-200 `}
             >

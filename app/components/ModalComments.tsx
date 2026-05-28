@@ -25,9 +25,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
             ]);
             const nextZ = Math.max(1000, ...allValues) + 1;
-
-            console.log("allValues:", allValues);
-
             updateModalElements(modal.id, (dummy: any) => ({
                 ...dummy,
                 locations: {
@@ -160,8 +157,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
 
     const handleSave = async () => {
         const currentData = modal.comments?.find((c: any) => c.logId === logId);
-        console.log("currentData:", currentData)
-
         if (!currentData) {
             console.error("保存対象のデータが見つかりません");
             return;
@@ -225,11 +220,9 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     }
 
     if (!localPos) {
-        console.log("==================localPos=NULL")
         return;
     }
     const handleDeleteComment = async () => {
-        console.log("commentId:", commentId)
         const res = await fetch("/api/delete_comments_record", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: commentId }) });
         if (res.ok) {
             onClose();
@@ -284,10 +277,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                             ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
                         ]);
                         const nextZ = Math.max(1000, ...allValues) + 1;
-
-                        console.log("✈️ 共通関数で更新:", { nextZ });
-
-
                         updateModalElements(modal.id, (dummy: any) => ({
                             ...dummy,
                             comments: (dummy.comments || []).map((c: any) => {
@@ -331,7 +320,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                                         {(() => {
                                             const dateStr = String(log.visited_at);
                                             const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
-          
+
                                             if (isNaN(date.getTime())) return 'Invalid Date';
 
                                             return date.toLocaleString('ja-JP', {
@@ -392,12 +381,12 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                         color: 'white',
                         marginBottom: '6px',
                         borderRadius: '6px',
-                        padding: '10px', 
+                        padding: '10px',
                         fontSize: '14px',
                         fontWeight: 'bold',
                         border: 'none',
                         cursor: 'pointer',
-                        display: 'flex',    
+                        display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
 
@@ -414,7 +403,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                     )}
                 </button>
                 <div style={{
-                    display: 'flex',    
+                    display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     fontSize: '10px'
@@ -427,14 +416,14 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                     {comment.isExistingComment && (isConfirming ? (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
-                            onClick={handleDeleteComment} 
+                            onClick={handleDeleteComment}
                         >
                             削除確定
                         </button>
                     ) : (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
-                            onClick={() => setIsConfirming(true)} 
+                            onClick={() => setIsConfirming(true)}
                         >
                             削除
                         </button>

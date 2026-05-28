@@ -3,13 +3,13 @@ import { useState, useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
 declare const google: any;
 
-export default function ModalGoogle({ modal, initialLocationId, setInitialLocationId, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId,onSavingLocation, setOnSavingLocation }: any) {
+export default function ModalGoogle({ modal, initialLocationId, setInitialLocationId, isFocused, onFocus, updateModalElements, isFocusedGoogle, onFocusGoogle, setOpenedModalLocations, openedModalLocations, isGoogleView, setIsGoogleView, openedModalGoogle, setOpenedModalGoogle, onClose, onSave, isExisting, initialModalPosGoogle, onFetchLogs, logs, onSaveSuccess, setOnSaving, setActiveGroupId, onSavingLocation, setOnSavingLocation }: any) {
     const map = useMap();
 
     const [gNewX, setGNewX] = useState<number | undefined>();
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const service = new google.maps.places.PlacesService(map);
-    
+
     useEffect(() => {
         console.log("openedModalLocations:", openedModalLocations)
     }, [openedModalLocations]);
@@ -34,7 +34,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                     ...dummy,
                     data: {
                         ...dummy.data,
-                        hasMovedEnough: false 
+                        hasMovedEnough: false
                     }
                 }));
             }
@@ -42,7 +42,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
         } else {
             setLocalPos({ x: modal.currentPos.x - 80, y: modal.currentPos.y + 40 });
         }
-    }, [initialModalPosGoogle]); 
+    }, [initialModalPosGoogle]);
     const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
@@ -51,9 +51,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
         ]);
         const nextZ = Math.max(1000, ...allValues) + 1;
-
-        console.log("allValues:", allValues);
-
         updateModalElements(modal.id, (dummy: any) => ({
             ...dummy,
             locations: {
@@ -108,8 +105,8 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
             const ax = window.innerWidth;
             const ay = window.innerHeight;
-            const bx = 260; 
-            const by = 260; 
+            const bx = 260;
+            const by = 260;
 
             setGNewX(newX);
             gAx = ax;
@@ -148,7 +145,6 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
 
     const reflectGoogleData = async () => {
-        console.log("==========modal:", modal);
         setIsGoogleView(false);
 
         const payloadLocation = {
@@ -166,29 +162,29 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             body: JSON.stringify(payloadLocation)
         });
         if (res.ok) {
-            savedData = await res.json(); 
+            savedData = await res.json();
             setOpenedModalLocations((prev: any) =>
-              prev.map((m: any) =>
-                  m.id === modal.id
-                      ? {
-                          ...m,           
-                          id: savedData.id,
-                          data: {
-                              ...m.data,  
-                              pos: m.pos,
-                              id: savedData.id,
-                              isNew: false,
-                          }
-                      }
-                      : m
-              )
-          );
+                prev.map((m: any) =>
+                    m.id === modal.id
+                        ? {
+                            ...m,
+                            id: savedData.id,
+                            data: {
+                                ...m.data,
+                                pos: m.pos,
+                                id: savedData.id,
+                                isNew: false,
+                            }
+                        }
+                        : m
+                )
+            );
             setTimeout(() => {
                 if (onSaveSuccess) onSaveSuccess();
             }, 100);
-  
+
             onFetchLogs();
-   
+
         }
 
         const payload = {
@@ -205,8 +201,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            const savedData: any = await res.json(); 
-            console.log("savedData: ", savedData)
+            const savedData: any = await res.json();
             setTimeout(() => {
                 if (onSaveSuccess) onSaveSuccess();
             }, 100);
@@ -214,7 +209,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
             updateModalElements(modal.id, (dummy: any) => ({
                 ...dummy,
                 id: savedData.id,
-                data:{
+                data: {
                     ...dummy.data,
                     name: modal.googleData.name,
                 }
@@ -232,9 +227,8 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
         onClose();
     };
     const closeGoogleView = () => {
-        setIsGoogleView(false); 
+        setIsGoogleView(false);
     };
-    console.log("modal:", modal);
     if (!localPos) return;
     return (
         <>
@@ -245,16 +239,16 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             width: '15%',
                             minWidth: '180px',
                             position: 'absolute',
-                            top: `${localPos.y - 15}px`, 
+                            top: `${localPos.y - 15}px`,
                             left: `${localPos.x + 15}px`,
                             transform: 'translate(0, -100%)',
                             zIndex: modal.google?.zIndexValue || 1000,
                             border: isFocused ? '3px solid #ff4444' : '1px solid #ccc',
                             boxShadow: isFocused ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
                             backgroundColor: 'white',
-                            padding: '10px', 
+                            padding: '10px',
                             borderRadius: '10px',
-                            fontSize: '13px', 
+                            fontSize: '13px',
                             WebkitUserSelect: 'none',
                             userSelect: 'none',
                         }}
@@ -276,8 +270,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             }}
                             onDoubleClick={(e) => {
                                 if (!isFocused) return;
-                                console.log("===== right click executed =======")
-                                e.preventDefault(); 
+                                e.preventDefault();
                                 const allValues = openedModalLocations.flatMap((m: any) => [
                                     Number(m.locations?.zIndexValue) || 1000,
                                     Number(m.google?.zIndexValue) || 1000,
@@ -285,20 +278,16 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                                     ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
                                 ]);
                                 const nextZ = Math.max(1000, ...allValues) + 1;
-
-                                console.log("✈️ 共通関数で更新:", { nextZ });
-
                                 updateModalElements(modal.id, (dummy: any) => ({
                                     ...dummy,
                                     google: {
-                                        ...dummy.google, 
+                                        ...dummy.google,
                                         zIndexValue: nextZ,
 
                                     }
                                 }));
 
                                 setActiveGroupId(modal.id);
-                                console.log("modalGoogle:::", modal)
 
                             }}
 
