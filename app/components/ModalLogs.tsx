@@ -20,13 +20,12 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
 
     useEffect(() => {
-
+        handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            handleUpdateGroupZIndex();
         };
     }, []);
 

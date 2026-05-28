@@ -19,12 +19,12 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
 
 
     useEffect(() => {
+        handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            handleUpdateGroupZIndex();//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         };
     }, []);
 

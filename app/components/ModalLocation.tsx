@@ -23,12 +23,12 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     }, [openedModalLocations]);
 
     useEffect(() => {
+        handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
-            handleUpdateGroupZIndex();
         };
     }, []);
 
@@ -62,7 +62,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     };
 
-    
+
     const handleSaveLocationWithLog = async () => {
         setOnSaving(true)
         isSavingWithLog = true;

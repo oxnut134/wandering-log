@@ -13,6 +13,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     const [isConfirming, setIsConfirming] = useState(false);
 
     useEffect(() => {
+        handleUpdateGroupZIndex();
         return () => {
             document.removeEventListener('mousemove', () => { });
             document.removeEventListener('mouseup', () => { });
@@ -24,7 +25,6 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 Number(m.log?.zIndexValue) || 1000,
                 ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
             ]);
-             handleUpdateGroupZIndex();
         };
     }, []);
 
