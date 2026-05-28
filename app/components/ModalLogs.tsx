@@ -26,8 +26,41 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
+            handleUpdateGroupZIndex();
         };
     }, []);
+
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.locations,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.google,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.log,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+        }));
+
+    };
+
+
     useEffect(() => {
         if (initialModalPosLogs) {
             setLocalPos(initialModalPosLogs);
@@ -60,6 +93,8 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
         e.stopPropagation();
 
         onFocus();
+
+        handleUpdateGroupZIndex();
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -201,7 +236,7 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
                         }}
                         onDoubleClick={(e) => {
-                                    e.preventDefault();
+                            e.preventDefault();
                             e.stopPropagation();
                             if (!isFocused) return;
                             e.preventDefault();

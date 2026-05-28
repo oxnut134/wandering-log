@@ -28,9 +28,41 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             document.removeEventListener('mouseup', () => { });
             document.removeEventListener('touchmove', () => { });
             document.removeEventListener('touchend', () => { });
+            handleUpdateGroupZIndex();
         };
     }, []);
 
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.locations,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.google,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.log,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+        }));
+
+    };
+
+    
     const handleSaveLocationWithLog = async () => {
         setOnSaving(true)
         isSavingWithLog = true;
@@ -201,7 +233,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
         });
     };
 
-    const handleUpdateGroupZIndex = () => {
+    /*const handleUpdateGroupZIndex = () => {
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
             Number(m.google?.zIndexValue) || 1000,
@@ -229,7 +261,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             })),
         }));
 
-    };
+    };*/
 
 
     const xRef = useRef<number | undefined>(undefined);

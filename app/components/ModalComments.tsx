@@ -24,28 +24,40 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                 Number(m.log?.zIndexValue) || 1000,
                 ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
             ]);
-            const nextZ = Math.max(1000, ...allValues) + 1;
-            updateModalElements(modal.id, (dummy: any) => ({
-                ...dummy,
-                locations: {
-                    ...dummy.dummy,
-                    zIndexValue: nextZ,
-                },
-                google: {
-                    ...dummy.dummy,
-                    zIndexValue: nextZ,
-                },
-                log: {
-                    ...dummy.dummy,
-                    zIndexValue: nextZ,
-                },
-                comments: (dummy.comments || []).map((c: any) => ({
-                    ...c,
-                    zIndexValue: nextZ,
-                })),
-            }));
+             handleUpdateGroupZIndex();
         };
     }, []);
+
+    const handleUpdateGroupZIndex = () => {
+        const allValues = openedModalLocations.flatMap((m: any) => [
+            Number(m.locations?.zIndexValue) || 1000,
+            Number(m.google?.zIndexValue) || 1000,
+            Number(m.log?.zIndexValue) || 1000,
+            ...(m.comments || []).map((c: any) => Number(c.zIndexValue) || 1000)
+        ]);
+        const nextZ = Math.max(1000, ...allValues) + 1;
+        updateModalElements(modal.id, (dummy: any) => ({
+            ...dummy,
+            locations: {
+                ...dummy.locations,
+                zIndexValue: nextZ,
+            },
+            google: {
+                ...dummy.google,
+                zIndexValue: nextZ,
+            },
+            log: {
+                ...dummy.log,
+                zIndexValue: nextZ,
+            },
+            comments: (dummy.comments || []).map((c: any) => ({
+                ...c,
+                zIndexValue: nextZ,
+            })),
+        }));
+
+    };
+
 
     useEffect(() => {
         if (initialModalPosComments) {
@@ -98,6 +110,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
         e.stopPropagation();
 
         onFocus();
+        handleUpdateGroupZIndex();
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
