@@ -129,7 +129,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
             const ax = window.innerWidth;
             const ay = window.innerHeight;
             const bx = 260;
-            const by = 280;//170;
+            const by = 280;
 
             setGNewX(newX);
             gAx = ax;

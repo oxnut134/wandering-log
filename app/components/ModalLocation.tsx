@@ -151,8 +151,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             place.url = "";
                             place.website = "";
                         }
-
-                        const allValues = openedModalLocations.flatMap((m: any) => [
+ 
+                        //zIndex初期値設定
+                         const allValues = openedModalLocations.flatMap((m: any) => [
                             Number(m.locations?.zIndexValue) || 1000,
                             Number(m.google?.zIndexValue) || 1000,
                             Number(m.log?.zIndexValue) || 1000,
@@ -199,6 +200,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
     const handleShowLogs = () => {
         if (modal.data.isNew) return;
 
+        //zIndex初期値設定
         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
             Number(m.google?.zIndexValue) || 1000,
@@ -288,7 +290,6 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             const ax = window.innerWidth;
             const ay = window.innerHeight;
             const bx = isMobile ? 210 : 250;
-            //const by = 320;
             const by = (modalRef.current?.offsetHeight || 320) + 15;
 
             const rightEdgePadding = isMobile ? 40 : 10;

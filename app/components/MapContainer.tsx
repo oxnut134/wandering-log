@@ -287,7 +287,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     comment: target?.comment,
                     latitude: latLng.lat(),
                     longitude: latLng.lng(),
-                    isNew: false  //isNewTrue
+                    isNew: false  
                 },
             };
 
@@ -375,7 +375,6 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     collisionBehavior="OPTIONAL_AND_HIDES_LOWER_PRIORITY"
                     position={redMarkerPos}
                     gmpDraggable={isDesktop}
-                    //tabIndex={-1}
                     style={{ outline: 'none' }}
                     className="no-outline-marker"
                     onDragEnd={(ev: any) => {

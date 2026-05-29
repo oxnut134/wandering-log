@@ -168,8 +168,9 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
         } catch (error) {
             console.error("既存コメントの取得に失敗:", error);
         }
-
-        const allValues = openedModalLocations.flatMap((m: any) => [
+ 
+        //zIndex初期値設定
+         const allValues = openedModalLocations.flatMap((m: any) => [
             Number(m.locations?.zIndexValue) || 1000,
             Number(m.google?.zIndexValue) || 1000,
             Number(m.log?.zIndexValue) || 1000,

@@ -275,7 +275,7 @@ export default function WanderingLog() {
                         width: '45px',
                         height: '45px',
                         borderRadius: '50%',
-                        backgroundColor: '#388778', 
+                        backgroundColor: 'white', 
                         color: 'white',
                         border: 'none',
                         fontSize: '20px',
@@ -298,7 +298,7 @@ export default function WanderingLog() {
                             <ModalLocation
                                 key={`location-${modal.id}`}
                                 modal={modal}
-                                //initialLocationId={initialLocationId}
+                                initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={isFocused}
@@ -362,7 +362,7 @@ export default function WanderingLog() {
                             <ModalGoogle
                                 key={`google-${modal.id}`}
                                 modal={modal}
-                                //initialLocationId={initialLocationId}
+                                initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 updateModalElements={updateModalElements}
                                 isFocused={activeGroupId === modal.id}
@@ -414,7 +414,7 @@ export default function WanderingLog() {
                                 key={`log-${modal.id}`}
                                 modal={modal}
                                 updateModalElements={updateModalElements}
-                                //initialLocationId={initialLocationId}
+                                initialLocationId={initialLocationId}
                                 setInitialLocationId={setInitialLocationId}
                                 isFocused={activeGroupId === modal.id}
                                 onFocus={() => setActiveGroupId(modal.id)}
