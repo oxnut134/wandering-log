@@ -200,7 +200,7 @@ export default function WanderingLog() {
     })
 
     return (
-        <AppProvider>
+        //<AppProvider>
             <APIProvider
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
                 libraries={['places', 'geometry']}
@@ -517,6 +517,6 @@ export default function WanderingLog() {
                 })
                 }
             </APIProvider>
-        </AppProvider>
+       // </AppProvider>
     );
 }

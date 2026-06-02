@@ -151,9 +151,9 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             place.url = "";
                             place.website = "";
                         }
- 
+
                         //zIndex初期値設定
-                         const allValues = openedModalLocations.flatMap((m: any) => [
+                        const allValues = openedModalLocations.flatMap((m: any) => [
                             Number(m.locations?.zIndexValue) || 1000,
                             Number(m.google?.zIndexValue) || 1000,
                             Number(m.log?.zIndexValue) || 1000,
@@ -310,7 +310,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             gBx = bx;
 
             if (newX < 0) {
-                newX = -10; // 左端固定
+                newX = -10; // 左端固定  left+15の表示オフセット分を考慮
             } else if (newX + bx > ax) {
                 newX = ax - bx + 10; // 右端固定
             }
@@ -361,9 +361,11 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                         ? {
                             ...m,
 
-                            currentPos: xRef.current ? { x: xRef.current, y: yRef.current! }
+                            //currentPos: xRef.current ? { x: xRef.current, y: yRef.current! }
+                            //  : m.currentPos,
+                            currentPos: xRef.current !== undefined  // ← ? ではなく !== undefined
+                                ? { x: xRef.current, y: yRef.current! }
                                 : m.currentPos,
-
                             data: {
                                 ...m.data,
                                 hasMovedEnough: dist > 100,

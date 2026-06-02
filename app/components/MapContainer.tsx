@@ -355,6 +355,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 zoomControl={true}
                 cameraControl={false}
                 disableDoubleClickZoom={true}
+                clickableIcons={false}
 
             >
 

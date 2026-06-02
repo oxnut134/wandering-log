@@ -18,8 +18,8 @@ export const visitedLocations = pgTable("visited_locations", {
   longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
   name: text("name"),
   comment: text("comment"),
-  updated_at: timestamp("updated_at").defaultNow().notNull(), // 最初に登録した日時
-  created_at: timestamp("created_at").defaultNow().notNull(), // 情報を更新した日時
+  updated_at: timestamp("updated_at").defaultNow().notNull(), 
+  created_at: timestamp("created_at").defaultNow().notNull(), 
 });
 
 // 3. visited_places (場所)
