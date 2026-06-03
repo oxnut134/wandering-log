@@ -34,7 +34,7 @@ export default function Header(isDesktop: any) {
                 <div className="w-[95%] flex items-center justify-between gap-0 mt-1 mb-1 py-0">
                     <img
                         src="/sdesign_00053.png"
-                        alt="買い物かご"
+                        alt="IMG"
                         className="w-[8%] aspect-square rounded-full "
                     />
                     <span className="text-full text-left w-[65%] text-[25px] italic text-[#388778] font-black tracking-wider text-center">
@@ -43,14 +43,14 @@ export default function Header(isDesktop: any) {
 
                     <div className="w-[20%]  text-[15px] font-bold text-gray-500 text-right">
                         {currentPage === "login" && (
-                            <button onClick={() => window.location.href = "/register"} className="hover:text-red-500 font-black transition-colors">新規登録</button>
+                            <button onClick={() => window.location.href = "/register"} className="hover:text-red-500 font-black transition-colors">Register</button>
                         )}
                         {currentPage === "register" && (
-                            <button onClick={() => window.location.href = "/login"} className="hover:text-red-500 font-black transition-colors">ログイン</button>
+                            <button onClick={() => window.location.href = "/login"} className="hover:text-red-500 font-black transition-colors">Login</button>
                         )}
                         {pathname === "/" && (
                             <button onClick={handleLogout} className="hover:text-red-500 font-black transition-colors">
-                                ログアウト
+                                Logout
                             </button>
                         )}
                     </div>

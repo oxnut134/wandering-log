@@ -312,12 +312,12 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                     }}
 
                 >
-                    {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                    {modal.data.isNew ? "New" : "Visited"} (Drag)
                 </div>
 
                 <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                     <h5 style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
-                        <strong>🚩 メモ</strong>
+                        <strong>🚩 Memo</strong>
                     </h5>
                     <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                         {logs
@@ -380,10 +380,10 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                                 )
                             );
                         }}
-                        placeholder="メモを残す"
+                        placeholder="Your memo"
                     />
                     <div style={{ textAlign: 'right', margin: '0 0 2px 0', fontSize: '8px', color: '#888' }}>
-                        {(modal.comments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500文字
+                        {(modal.comments?.find((l: any) => l.logId === logId)?.comment || "").length} / 500 Chars
                     </div>
                 </div>
                 <button
@@ -409,11 +409,11 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                     {onSaving ? (
                         <>
                             <div>
-                                <span>処理中...</span>
+                                <span>`Processing...</span>
                             </div>
                         </>
                     ) : (
-                        "保存する"
+                        "Save"
                     )}
                 </button>
                 <div style={{
@@ -425,21 +425,21 @@ export default function ModalComments({ modal, comment, updateModalElements, act
                     <button
                         onClick={onClose}
                         style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
-                        閉じる
+                        Close
                     </button>
                     {comment.isExistingComment && (isConfirming ? (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
                             onClick={handleDeleteComment}
                         >
-                            削除確定
+                            confirm del
                         </button>
                     ) : (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: 'none', fontWeight: 'bold', borderRadius: '6px' }}
                             onClick={() => setIsConfirming(true)}
                         >
-                            削除
+                            Delete
                         </button>
                     ))}
                 </div>

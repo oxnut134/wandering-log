@@ -15,12 +15,12 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-    // useEffect(() => {
-    //     console.log("openedModalLocations:", openedModalLocations)
-    // }, [openedModalLocations]);
-    // useEffect(() => {
-    //     console.log("localPos:", localPos)
-    // }, [openedModalLocations]);
+     useEffect(() => {
+         console.log("openedModalLocations:", openedModalLocations)
+     }, [openedModalLocations]);
+     useEffect(() => {
+         console.log("localPos:", localPos)
+     }, [openedModalLocations]);
 
     useEffect(() => {
         return () => {
@@ -79,7 +79,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             id: savedData.id,
                             currentPos: m.data?.isNew
                                 ? { x: localPos.x, y: localPos.y }
-                                : { x: m.currentPos.y, y: m.currentPos.y },
+                                : { x: m.currentPos.x, y: m.currentPos.y },
                             data: {
                                 ...m.data,
                                 pos: m.pos,
@@ -131,7 +131,8 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                 service.getDetails({
                     placeId: p.place_id,
-                    fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website'] // 💡 欲しい項目を指定
+                    fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website'], // 💡 欲しい項目を指定
+                    language:"en"
                 }, (place: any, detailStatus: any) => {
                     if (detailStatus === google.maps.places.PlacesServiceStatus.OK && place) {
                         const include = p.types.includes("establishment") || p.types.includes("point_of_interest");
@@ -534,8 +535,8 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                 </div>
                 <p style={{ fontSize: '11px', color: '#777', marginBottom: '5px' }}>
-                    緯度: {Number(modal.data.latitude || 0).toFixed(4)} /
-                    経度: {Number(modal.data.longitude || 0).toFixed(4)}
+                    Lat: {Number(modal.data.latitude || 0).toFixed(4)} /
+                    Lng: {Number(modal.data.longitude || 0).toFixed(4)}
                 </p>
                 <input
                     style={{
@@ -549,7 +550,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     }}
                     value={modal.data.name || ""}
                     onChange={e => setOpenedModalGoogle({ ...modal.data, name: e.target.value })}
-                    placeholder="名称を入力"
+                    placeholder="Place Name"
                 />
 
                 <textarea
@@ -565,7 +566,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     }}
                     value={modal.data.comment || ""}
                     onChange={e => setOpenedModalGoogle({ ...modal.data, comment: e.target.value })}
-                    placeholder="メモを残す"
+                    placeholder="Description"
                 />
 
                 <button
@@ -591,11 +592,11 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     {onSaving ? (
                         <>
                             <div>
-                                <span>処理中...</span>
+                                <span>Processing...</span>
                             </div>
                         </>
                     ) : (
-                        "訪問する"
+                        "Visit"
                     )}
                 </button>
 
@@ -622,11 +623,11 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     {onSavingLocationLocal ? (
                         <>
                             <div>
-                                <span>処理中...</span>
+                                <span>Processing...</span>
                             </div>
                         </>
                     ) : (
-                        "保存する"
+                        "Save"
                     )}
                 </button>)}
 
@@ -649,7 +650,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                         }}
                     >
-                        Google情報
+                        Google info
                     </button>
                     {modal.data.isNew ? (
                         <button
@@ -662,7 +663,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                                 borderRadius: '6px', cursor: 'pointer',
                             }}
                         >
-                            🏠登録
+                            move 🏠
                         </button>
                     ) : (<button
                         onClick={handleShowLogs}
@@ -683,7 +684,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                         }}
                     >
-                        訪問記録
+                        Visit Logs
                     </button>
                     )}
                 </div>
@@ -691,21 +692,21 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     <button
                         onClick={onCloseModalLocation}
                         style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
-                        閉じる
+                        Close
                     </button>
                     {isExisting && (isConfirming ? (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', }}
                             onClick={handleDelete}
                         >
-                            削除確定
+                            Confirm del
                         </button>
                     ) : (
                         <button
                             style={{ width: '30%', height: '3vh', background: '#FBBC04', color: '#6b7280', border: '1px solid #6b7280', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', }}
                             onClick={() => setIsConfirming(true)}
                         >
-                            削除
+                            Delete
                         </button>
                     ))
                     }

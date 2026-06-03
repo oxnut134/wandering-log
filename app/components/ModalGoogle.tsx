@@ -295,7 +295,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                             }}
 
                         >
-                            {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                            {modal.data.isNew ? "New" : "Visited"} (drag)
 
                         </div>
 
@@ -324,7 +324,7 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                                         window.open(modal.googleData.url, '_blank', 'noreferrer');
                                     }
                                 }} >
-                                詳細情報
+                                Detail information
                             </button>
                             <button
                                 style={{ width: '100%', height: '4vh', margin: '0 0 2px 0', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -333,21 +333,21 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
                                         window.open(modal.googleData.website, '_blank', 'noreferrer');
                                     }
                                 }} >
-                                ウェブサイト
+                                WEB site
                             </button>
                             <button
                                 style={{ width: '100%', height: '4vh', padding: '10px', borderRadius: '6px', background: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 onClick={reflectGoogleData}
 
                             >
-                                この名称を反映
+                                Reflect this information
                             </button>
                         </div>
                         <div>
                             <button
                                 onClick={onClose}
                                 style={{ margin: '10px 0 0px 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer' }}>
-                                閉じる
+                                Close
                             </button>
                         </div>
                     </div>

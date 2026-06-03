@@ -268,12 +268,12 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
                         }}
 
                     >
-                        {modal.data.isNew ? "新規訪問先" : "既存訪問先"} (ドラッグ)
+                        {modal.data.isNew ? "New" : "Visited"} (Drag)
                     </div>
 
                     <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                         <h5 style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
-                            <strong>🚩 訪問履歴（全 {logs.length} 回）</strong>
+                            <strong>🚩 Visited history（Total {logs.length} times）</strong>
                         </h5>
                         <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                             {logs.map((log: any, index: any) => (
@@ -299,13 +299,13 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
                                             if (isNaN(date.getTime())) return 'Invalid Date';
 
-                                            return date.toLocaleString('ja-JP', {
+                                            return date.toLocaleString('en-US', {
                                                 year: 'numeric',
-                                                month: '2-digit',
+                                                month: 'short',
                                                 day: '2-digit',
                                                 hour: '2-digit',
                                                 minute: '2-digit',
-                                                timeZone: 'Asia/Tokyo'
+                                                timeZone: 'UTC'
                                             });
                                         })()}
                                     </span>
@@ -322,7 +322,7 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
                         <button
                             onClick={onClose}
                             style={{ margin: '5px 0 0 0', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '10px' }}>
-                            閉じる
+                            Close
                         </button>
                     </div>
 

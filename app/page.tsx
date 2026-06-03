@@ -201,8 +201,8 @@ export default function WanderingLog() {
             <APIProvider
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
                 libraries={['places', 'geometry']}
-                language={'jp'}
-                region={'jp'}
+                language={'en'}
+                region={'US'}
             >
                 {isDesktop && (
                     <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">

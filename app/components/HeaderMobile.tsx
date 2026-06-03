@@ -29,12 +29,12 @@ export default function HeaderMobile() {
                     </div>
                 )}
                 <div className="w-full flex items-center justify-between gap-1 mb-0 py-0">
-                    <img src="/sdesign_00053.png" alt="買い物かご" className="w-4.5 aspect-square rounded-full object-cover" />
+                    <img src="/sdesign_00053.png" alt="IMG" className="w-4.5 aspect-square rounded-full object-cover" />
                     <span className="flex-1 text-[18px] italic text-[#388778] font-black tracking-wider text-center whitespace-nowrap">Wandering Log</span>
                     <div className="text-[12px] font-bold text-gray-500 text-right whitespace-nowrap">
-                        {currentPage === "login" && <button onClick={() => window.location.href = "/register"}>新規登録</button>}
-                        {currentPage === "register" && <button onClick={() => window.location.href = "/login"}>ログイン</button>}
-                        {pathname === "/" && <button onClick={handleLogout} className="hover:text-red-500 font-black transition-colors">ログアウト</button>}
+                        {currentPage === "login" && <button onClick={() => window.location.href = "/register"}>Register</button>}
+                        {currentPage === "register" && <button onClick={() => window.location.href = "/login"}>Login</button>}
+                        {pathname === "/" && <button onClick={handleLogout} className="hover:text-red-500 font-black transition-colors">Logout</button>}
                     </div>
                 </div>
             </div>
