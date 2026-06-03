@@ -15,12 +15,12 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        console.log("openedModalLocations:", openedModalLocations)
-    }, [openedModalLocations]);
-    useEffect(() => {
-        console.log("localPos:", localPos)
-    }, [openedModalLocations]);
+    // useEffect(() => {
+    //     console.log("openedModalLocations:", openedModalLocations)
+    // }, [openedModalLocations]);
+    // useEffect(() => {
+    //     console.log("localPos:", localPos)
+    // }, [openedModalLocations]);
 
     useEffect(() => {
         return () => {

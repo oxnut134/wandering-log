@@ -1,17 +1,17 @@
 "use client";
 import { useSession, signOut } from "next-auth/react";
-import { Map, AdvancedMarker, MapControl, Marker, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
-import { useState, useEffect, useCallback, memo } from "react";
+import { Map, AdvancedMarker, MapControl, useMap, Pin, ControlPosition } from "@vis.gl/react-google-maps";
+import { useState, useEffect,  memo } from "react";
 import HeaderMobile from "./HeaderMobile";
 
 declare const google: any;
 
 function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, currentPosOfHome, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
-    const [startPos] = useState(currentPosOfCamera);
-    const { data: session } = useSession();
+    //const [startPos] = useState(currentPosOfCamera);
+    //const { data: session } = useSession();
     const [isDesktop, setIsDesktop] = useState(true);
-    const userName = session?.user?.name || null;
+    //const userName = session?.user?.name || null;
 
     useEffect(() => {
         const media = window.matchMedia('(min-width: 768px)');

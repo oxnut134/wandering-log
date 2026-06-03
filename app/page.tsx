@@ -7,12 +7,9 @@ import ModalGoogle from "./components/ModalGoogle";
 import ModalLogs from "./components/ModalLogs";
 import ModalComments from "./components/ModalComments";
 import Header from "./components/Header";
-import { useMap } from "@vis.gl/react-google-maps";
 
-declare const google: any;
+//declare const google: any;
 
-import { useForm } from "react-hook-form";
-import axios from "../lib/axios";
 import { useAppContext, AppProvider } from "./context/AppContext";
 
 
@@ -98,13 +95,13 @@ export default function WanderingLog() {
 
     };
 
-    useEffect(() => {
-        console.log("visitedLocations : ", visitedLocations);
-    }, [visitedLocations]);
+    // useEffect(() => {
+    //     console.log("visitedLocations : ", visitedLocations);
+    // }, [visitedLocations]);
 
-    useEffect(() => {
-        console.log("openedModalLocations in page.tsx:", openedModalLocations)
-    }, [openedModalLocations]);
+    // useEffect(() => {
+    //     console.log("openedModalLocations in page.tsx:", openedModalLocations)
+    // }, [openedModalLocations]);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
@@ -445,7 +442,7 @@ export default function WanderingLog() {
 
                                 onFetchLogs={() => onFetchLogs(modal.id)}
 
-                                onSavigSuccess="onSavigSuccess"
+                                //onSavingSuccess="onSavingSuccess"
                                 onClose={() => {
                                     setOpenedModalLocations((prev: any[]) => {
                                         return prev.map((m: any) =>

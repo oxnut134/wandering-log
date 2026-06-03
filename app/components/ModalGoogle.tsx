@@ -10,12 +10,12 @@ export default function ModalGoogle({ modal, initialLocationId, setInitialLocati
     const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const service = new google.maps.places.PlacesService(map);
 
-    useEffect(() => {
-        console.log("openedModalLocations:", openedModalLocations)
-    }, [openedModalLocations]);
-    useEffect(() => {
-        console.log("localPos:", localPos)
-    }, [openedModalLocations]);
+    // useEffect(() => {
+    //     console.log("openedModalLocations:", openedModalLocations)
+    // }, [openedModalLocations]);
+    // useEffect(() => {
+    //     console.log("localPos:", localPos)
+    // }, [openedModalLocations]);
 
 
     useEffect(() => {
