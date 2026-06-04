@@ -314,3 +314,9 @@ export const visitedComments = pgTable("visited_comments", {
 });
 
 ```
+
+## ９）Testing
+
+Run tests with:
+`npm run test:run` 
+24 tests passing
