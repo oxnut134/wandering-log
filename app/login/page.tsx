@@ -36,7 +36,7 @@ export default function LoginPage() {
                 setCurrentPage("map");
                 router.push("/");
             } else {
-                setError("Email address or Password is incorrect");
+                setError("Invalid Email or Password ");
             }
         } catch (err: any) {
             console.error("Login failed :", err);
