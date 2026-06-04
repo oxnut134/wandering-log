@@ -1,6 +1,4 @@
-# README wandering-log(English）
-
-# README.md
+# README / English version
 
 ## Wandering-Log
 
@@ -13,6 +11,11 @@ This app was developed to record visited locations regardless of region or categ
 Special attention was given to the behavior of markers and modals on the map to ensure a smooth user experience. The current version covers basic recording and viewing functionality, with plans to add search and list display features in the future.
 
 Deploy URL: [https://wandering-log.vercel.app](https://wandering-log.vercel.app/)
+
+- In this demo version, the default home location is set to Times Square in NY. In the production version, it will automatically use the user's current location.
+- You can try the demo using the following credentials:
+Email: [demo@example.com](mailto:demo@example.com)
+Password: demo1234
 
 【Register a new location on mobile】
 
@@ -255,7 +258,7 @@ bash
 
 `npx drizzle-kit push`
 
-/lib/schema.ts（参考）
+/lib/schema.ts
 
 ```tsx
 import { pgTable, serial, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
