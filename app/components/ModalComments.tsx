@@ -10,7 +10,7 @@ export default function ModalComments({ modal, comment, updateModalElements, act
     //const [localPos, setLocalPos] = useState<{ x: number, y: number } | null>(null);
     const [localPos, setLocalPos] = useState<{ x: number, y: number }>(
         initialModalPosComments ?? { x: modal.currentPos.x + 40, y: modal.currentPos.y + 40 }
-    ); 
+    );
     const [onSaving, setOnSaving] = useState(false);
     const LIMIT = 500;
     const [isConfirming, setIsConfirming] = useState(false);
@@ -337,13 +337,14 @@ export default function ModalComments({ modal, comment, updateModalElements, act
 
                                             if (isNaN(date.getTime())) return 'Invalid Date';
 
-                                            return date.toLocaleString('ja-JP', {
+                                            return date.toLocaleString('en-US', {
                                                 year: 'numeric',
-                                                month: '2-digit',
+                                                month: 'short',
                                                 day: '2-digit',
                                                 hour: '2-digit',
                                                 minute: '2-digit',
-                                                timeZone: 'Asia/Tokyo'
+                                                timeZone: 'UTC',
+                                                hour12: false
                                             });
                                         })()}
                                     </span>

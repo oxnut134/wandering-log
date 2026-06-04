@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react"; 
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/context/AppContext";
-import Header from "../components/Header"; 
+import Header from "../components/Header";
 
 export default function LoginPage() {
     const [executing, setExecuting] = useState(false);
@@ -27,20 +27,20 @@ export default function LoginPage() {
 
         try {
             const result = await signIn("credentials", {
-                redirect: false, 
+                redirect: false,
                 email: data.email,
                 password: data.password,
             });
 
-            if (result?.ok) {
+            if (result?.ok && !result?.error) {
                 setCurrentPage("map");
                 router.push("/");
             } else {
-                setError("メールアドレスまたはパスワードが正しくありません。");
+                setError("Email address or Password is incorrect");
             }
         } catch (err: any) {
-            console.error("ログイン失敗:", err);
-            setError("通信エラーが発生しました。");
+            console.error("Login failed :", err);
+            setError("a network error occured");
         } finally {
             setExecuting(false);
         }
@@ -56,12 +56,12 @@ export default function LoginPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1"></label>
                             <input
                                 {...register("email", {
-                                    required: "メールは必須です",
-                                    pattern: { value: /^\S+@\S+$/i, message: "メールの形式が正しくありません" }
+                                    required: "Email address is required",
+                                    pattern: { value: /^\S+@\S+$/i, message: "Invalid Email format" }
                                 })}
                                 type="email"
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 outline-none"
-                                placeholder="メールアドレス"
+                                placeholder="Email "
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1">{String(errors.email.message)}</p>}
                         </div>
@@ -71,11 +71,11 @@ export default function LoginPage() {
                             <input
                                 type="password"
                                 {...register("password", {
-                                    required: "パスワードは必須です",
-                                    minLength: { value: 8, message: "8文字以上必要です" }
+                                    required: "Password is required",
+                                    minLength: { value: 8, message: "At least 8 characters required" }
                                 })}
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 outline-none"
-                                placeholder="パスワード"
+                                placeholder="Password"
                             />
                             {errors.password && <p className="text-red-500 text-xs mt-1">{String(errors.password.message)}</p>}
                         </div>
@@ -88,12 +88,12 @@ export default function LoginPage() {
                             className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-[#388778] hover:bg-orange-600"
                                 }`}
                         >
-                            {executing ? "認証中..." : "ログイン"}
+                            {executing ? "Authenticating..." : "Login"}
                         </button>
                     </form>
 
                     <p className="mt-12 text-center text-gray-400 text-xs">
-                        © 2026 Your Shopping System
+                        © 2026 My System
                     </p>
                 </div>
             </div>

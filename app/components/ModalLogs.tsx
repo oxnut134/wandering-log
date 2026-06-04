@@ -273,7 +273,7 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
 
                     <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                         <h5 style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
-                            <strong>🚩 Visited history（Total {logs.length} times）</strong>
+                            <strong>🚩 Visit history (Total {logs.length})</strong>
                         </h5>
                         <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                             {logs.map((log: any, index: any) => (
@@ -305,7 +305,8 @@ export default function ModalLogs({ modal, initialLocationId, setInitialLocation
                                                 day: '2-digit',
                                                 hour: '2-digit',
                                                 minute: '2-digit',
-                                                timeZone: 'UTC'
+                                                timeZone: 'UTC',
+                                                hour12: false
                                             });
                                         })()}
                                     </span>

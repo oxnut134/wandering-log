@@ -106,7 +106,8 @@ export default function WanderingLog() {
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
             //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
-            const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
+            //const coords = { lat: 35.67133, lng: 139.76534 };//起動後、銀座ライオン前からスタート
+            const coords = { lat: 40.7580, lng: -73.9855 };//Times Square
             setCurrentPosOfCamera(coords);
             setCurrentPosOfHome(coords);
             setRedMarkerPos(coords);

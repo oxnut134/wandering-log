@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.message || "登録に失敗しました。");
+                throw new Error(errData.message || "Registration failed");
             }
 
             await signIn("credentials", {
@@ -50,8 +50,8 @@ export default function RegisterPage() {
             router.push("/login");
 
         } catch (err: any) {
-            console.error("🚨 登録エラー:", err);
-            setServerError(err.message || "登録に失敗しました。内容を確認してください。");
+            console.error("🚨 Registration error:", err);
+            setServerError(err.message || "registration failed. Confirm the detail.");
         } finally {
             setExecuting(false);
         }
@@ -65,8 +65,8 @@ export default function RegisterPage() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                         <input
-                            {...register("name", { required: "名前は必須です" })}
-                            placeholder="お名前"
+                            {...register("name", { required: "Name is required" })}
+                            placeholder="Name"
                             className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-orange-500"
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{String(errors.name.message)}</p>}
@@ -75,10 +75,10 @@ export default function RegisterPage() {
                     <div>
                         <input
                             {...register("email", {
-                                required: "メールは必須です",
-                                pattern: { value: /^\S+@\S+$/i, message: "メールの形式が正しくありません" }
+                                required: "Email is required",
+                                pattern: { value: /^\S+@\S+$/i, message: "Invalid Email format" }
                             })}
-                            placeholder="メールアドレス"
+                            placeholder="Email"
                             className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-orange-500"
                         />
                         {errors.email && <p className="text-red-500 text-xs mt-1">{String(errors.email.message)}</p>}
@@ -87,10 +87,10 @@ export default function RegisterPage() {
                         <input
                             type="password"
                             {...register("password", {
-                                required: "パスワードは必須です",
-                                minLength: { value: 8, message: "8文字以上必要です" }
+                                required: "Password is required",
+                                minLength: { value: 8, message: "At least 8 characters required" }
                             })}
-                            placeholder="パスワード"
+                            placeholder="Password"
                             className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-orange-500"
                         />
                         {errors.password && <p className="text-red-500 text-xs mt-1">{String(errors.password.message)}</p>}
@@ -99,10 +99,10 @@ export default function RegisterPage() {
                         <input
                             type="password"
                             {...register("password_confirmation", {
-                                required: "確認用パスワードを入力してください",
-                                validate: (value) => value === password || "パスワードが一致しません"
+                                required: "Confirmation password is required",
+                                validate: (value) => value === password || "Passwords do not match"
                             })}
-                            placeholder="パスワード（確認）"
+                            placeholder="Confirmation password"
                             className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-orange-500"
                         />
                         {errors.password_confirmation && <p className="text-red-500 text-xs mt-1">{String(errors.password_confirmation.message)}</p>}
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                         className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${executing ? "bg-gray-400" : "bg-[#388778] hover:bg-orange-600"
                             }`}
                     >
-                        {executing ? "作成中..." : "アカウント作成"}
+                        {executing ? "Registering..." : "Register"}
                     </button>
                 </form>
             </div>

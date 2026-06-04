@@ -124,7 +124,8 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                 lng: Number(modal.data.longitude)
             },
             rankBy: google.maps.places.RankBy.DISTANCE,
-            type: 'establishment'
+            type: 'establishment',
+            langeage:"en"
         }, (results: any, status: any) => {
             if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
                 const p = results[0];
