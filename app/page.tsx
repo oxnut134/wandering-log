@@ -95,14 +95,6 @@ export default function WanderingLog() {
 
     };
 
-    // useEffect(() => {
-    //     console.log("visitedLocations : ", visitedLocations);
-    // }, [visitedLocations]);
-
-    // useEffect(() => {
-    //     console.log("openedModalLocations in page.tsx:", openedModalLocations)
-    // }, [openedModalLocations]);
-
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
             //const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; //起動後現在地からスタート
@@ -198,7 +190,6 @@ export default function WanderingLog() {
     })
 
     return (
-        //<AppProvider>
             <APIProvider
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
                 libraries={['places', 'geometry']}
@@ -443,7 +434,6 @@ export default function WanderingLog() {
 
                                 onFetchLogs={() => onFetchLogs(modal.id)}
 
-                                //onSavingSuccess="onSavingSuccess"
                                 onClose={() => {
                                     setOpenedModalLocations((prev: any[]) => {
                                         return prev.map((m: any) =>
@@ -515,6 +505,5 @@ export default function WanderingLog() {
                 })
                 }
             </APIProvider>
-       // </AppProvider>
     );
 }

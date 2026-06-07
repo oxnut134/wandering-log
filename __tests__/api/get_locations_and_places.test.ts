@@ -21,6 +21,7 @@ describe('GET /api/get_locations_and_places', () => {
 
   it('未認証の場合は 401 を返す', async () => {
     const { auth } = await import('@/auth')
+    // @ts-ignore
     vi.mocked(auth).mockResolvedValueOnce(null)
 
     const res = await GET()
@@ -37,6 +38,7 @@ describe('GET /api/get_locations_and_places', () => {
     const mockLocations = [
       { id: 1, latitude: '35.6812', longitude: '139.7671', name: '東京駅', comment: null, google_place_id: null, address: null, category: null, place_id: null },
     ]
+    // @ts-ignore
     vi.mocked(db.where).mockResolvedValueOnce(mockLocations as any)
 
     const res = await GET()
@@ -51,6 +53,7 @@ describe('GET /api/get_locations_and_places', () => {
     vi.mocked(auth).mockResolvedValueOnce({ user: { id: '1' } } as any)
 
     const { db } = await import('../../lib/db')
+    // @ts-ignore
     vi.mocked(db.where).mockRejectedValueOnce(new Error('DB error'))
 
     const res = await GET()

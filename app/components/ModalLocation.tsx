@@ -15,12 +15,12 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-     useEffect(() => {
-         console.log("openedModalLocations:", openedModalLocations)
-     }, [openedModalLocations]);
-     useEffect(() => {
-         console.log("localPos:", localPos)
-     }, [openedModalLocations]);
+    //  useEffect(() => {
+    //      console.log("openedModalLocations:", openedModalLocations)
+    //  }, [openedModalLocations]);
+    //  useEffect(() => {
+    //      console.log("localPos:", localPos)
+    //  }, [openedModalLocations]);
 
     useEffect(() => {
         return () => {
@@ -125,15 +125,14 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             },
             rankBy: google.maps.places.RankBy.DISTANCE,
             type: 'establishment',
-            langeage:"en"
+            langeage: "en"
         }, (results: any, status: any) => {
             if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
                 const p = results[0];
 
                 service.getDetails({
                     placeId: p.place_id,
-                    fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website'], // 💡 欲しい項目を指定
-                    language:"en"
+                    fields: ['name', 'place_id', 'types', 'formatted_address', 'url', 'website'], language: "en"
                 }, (place: any, detailStatus: any) => {
                     if (detailStatus === google.maps.places.PlacesServiceStatus.OK && place) {
                         const include = p.types.includes("establishment") || p.types.includes("point_of_interest");
@@ -146,7 +145,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
 
                         const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
                         if (!include || ignore || distance > 10) {
-                            place.name = "取得できませんでした。";
+                            place.name = "No Information";
                             place.place_id = "";
                             place.types = [];
                             place.formatted_address = "";
@@ -311,6 +310,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
             gAx = ax;
             gBx = bx;
 
+            // 境界線ガード・ロジック (Mmyu < Bmyu => Mbyu = 0)
             if (newX < 0) {
                 newX = -10; // 左端固定  left+15の表示オフセット分を考慮
             } else if (newX + bx > ax) {
@@ -363,9 +363,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                         ? {
                             ...m,
 
-                            //currentPos: xRef.current ? { x: xRef.current, y: yRef.current! }
-                            //  : m.currentPos,
-                            currentPos: xRef.current !== undefined  // ← ? ではなく !== undefined
+                            currentPos: xRef.current !== undefined
                                 ? { x: xRef.current, y: yRef.current! }
                                 : m.currentPos,
                             data: {

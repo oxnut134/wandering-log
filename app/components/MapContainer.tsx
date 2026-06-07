@@ -8,10 +8,7 @@ declare const google: any;
 
 function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setInitialLocationId, setModalPos, updateModalElements, openedModalLocations, setOpenedModalLocations, currentPosOfCamera, setCurrentPosOfCamera, currentPosOfHome, visitedLocations, setVisitedLocations, homeTrigger, onMarkerClick, currentZoom, setCurrentZoom, onCloseModalLocation }: any) {
     const map = useMap();
-    //const [startPos] = useState(currentPosOfCamera);
-    //const { data: session } = useSession();
     const [isDesktop, setIsDesktop] = useState(true);
-    //const userName = session?.user?.name || null;
 
     useEffect(() => {
         const media = window.matchMedia('(min-width: 768px)');
@@ -107,7 +104,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                 const placePos = p.geometry.location;
 
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPos, placePos);
-                if (!include || ignore || distance > 10) { p.name = "取得できませんでした。" }
+                if (!include || ignore || distance > 10) { p.name = "No Information" }
                 const d = new Date();
 
                 const initialLocationId = (d.getHours() * 10000000) + (d.getMinutes() * 100000) + (d.getSeconds() * 1000) + d.getMilliseconds();
@@ -170,7 +167,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
                     tempId: Date.now,
                     pos: { x: x, y: y, xCheck: xCheck, yCheck: yCheck },
                     currentPos: { x: x + 40, y: y + 40 },
-                    data: place || { name: "取得できませんでした", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
+                    data: place || { name: "No information", comment: "", latitude: latLng.lat(), longitude: latLng.lng() },
                 };
                 setOpenedModalLocations((prev: any[]) => {
                     if (prev.find(m =>
@@ -326,7 +323,7 @@ function MapContainer({ initialLocationId, redMarkerPos, setRedMarkerPos, setIni
 
 
         } catch (error) {
-            console.error("🚨 フロント側でのピン単眼鏡取得フェッチに失敗しました:", error);
+            console.error("Fetch Error! :", error);
             return null;
         }
 
