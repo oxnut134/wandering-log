@@ -7,6 +7,7 @@ import ModalGoogle from "./components/ModalGoogle";
 import ModalLogs from "./components/ModalLogs";
 import ModalComments from "./components/ModalComments";
 import Header from "./components/Header";
+import ChatWidget from "./components/ChatWidget";
 
 //declare const google: any;
 
@@ -35,6 +36,7 @@ export default function WanderingLog() {
     const [initialLocationId, setInitialLocationId] = useState()
     const [onSavingLocation, setOnSavingLocation] = useState(false);
     const [isDesktop, setIsDesktop] = useState(true);
+    const [searchKeyword, setSearchKeyword] = useState("");
 
 
     useEffect(() => {
@@ -197,11 +199,20 @@ export default function WanderingLog() {
                 region={'US'}
             >
                 {isDesktop && (
-                    <div className="fixed top-2.5 left-50 w-[40%] bg-transparent z-50 pointer-events-none">
-                        <div className="pointer-events-auto">
+                    <div className="fixed top-2.5 left-50 right-4 bg-transparent z-50 pointer-events-none flex items-start gap-2">
+                        <div className="pointer-events-auto w-[40%]">
                             <Header
                                 isDesktop={isDesktop}
                                 setIsDesktop={setIsDesktop}
+                            />
+                        </div>
+                        <div className="pointer-events-auto ml-6">
+                            <input
+                                type="text"
+                                value={searchKeyword}
+                                onChange={(e) => setSearchKeyword(e.target.value)}
+                                placeholder="Search by visited place name"
+                                className="h-8 px-2 rounded-sm border border-3 border-[#388778] bg-white text-sm shadow-sm focus:outline-none"
                             />
                         </div>
                     </div>
@@ -225,6 +236,7 @@ export default function WanderingLog() {
                     setModalPos={setModalPos}
                     redMarkerPos={redMarkerPos}
                     setRedMarkerPos={setRedMarkerPos}
+                    searchKeyword={searchKeyword}
                 />
                 <button
                     onClick={handleCurrentLocation}
@@ -279,6 +291,8 @@ export default function WanderingLog() {
                 >
                     🎯
                 </button>
+
+                <ChatWidget />
 
                 {openedModalLocations.map((modal, index: number) => {
                     const isFocused = activeGroupId === modal.id
