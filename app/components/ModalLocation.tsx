@@ -590,7 +590,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                     }}
                     value={modal.data.comment || ""}
                     onChange={e => setOpenedModalGoogle({ ...modal.data, comment: e.target.value })}
-                    placeholder="Description"
+                    placeholder="Info"
                 />
 
                 <div style={{ display: 'flex', marginBottom: '6px' }}>
@@ -609,7 +609,7 @@ export default function ModalLocation({ modal, initialLocationId, setInitialLoca
                             cursor: isGenerating ? 'not-allowed' : 'pointer',
                         }}
                     >
-                        {isGenerating ? 'Generating...' : 'Generate description'}
+                        {isGenerating ? 'Generating...' : 'AI Info'}
                     </button>
 
                     {!modal.data.isNew && (
