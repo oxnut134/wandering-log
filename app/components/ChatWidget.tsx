@@ -1,54 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { isTextUIPart } from "ai";
 import { Bot } from "lucide-react";
-
-type ChatMessage = {
-    role: "user" | "assistant";
-    content: string;
-};
 
 export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const { messages, status, sendMessage } = useChat();
+
+    const isLoading = status === "submitted" || status === "streaming";
 
     useEffect(() => {
         if (!scrollRef.current) return;
         scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }, [messages, isLoading, isOpen]);
 
-    const handleSend = async () => {
-        const text = input.trim();
-        if (!text || isLoading) return;
-
-        const history = messages;
-        setMessages((prev) => [...prev, { role: "user", content: text }]);
+    const handleSend = () => {
+        if (!input.trim() || isLoading) return;
+        sendMessage({ text: input });
         setInput("");
-        setIsLoading(true);
-
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text, history }),
-            });
-            const data = await res.json();
-            setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: data.reply || "Couldn't get a response." },
-            ]);
-        } catch (e) {
-            console.error("chat send error:", e);
-            setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: "An error occurred. Please try again later." },
-            ]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -111,15 +85,15 @@ export default function ChatWidget() {
                             e.g. &quot;Which areas have I visited recently?&quot;
                         </div>
                     )}
-                    {messages.map((m, i) => (
-                        <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    {messages.map((m) => (
+                        <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                             <div
                                 className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed shadow-sm
                                     ${m.role === "user"
                                         ? "bg-[#8DE055] text-black rounded-br-sm"
                                         : "bg-white text-black rounded-bl-sm"}`}
                             >
-                                {m.content}
+                                {m.parts.filter(isTextUIPart).map((p) => p.text).join("")}
                             </div>
                         </div>
                     ))}
