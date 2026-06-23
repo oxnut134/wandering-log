@@ -13,9 +13,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: "Credentials",
             credentials: {
                 email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
+                password: { label: "Password", type: "password" },
+                trialToken: { label: "Trial Token", type: "text" }
             },
             async authorize(credentials) {
+                // Trial token flow
+                if (credentials?.trialToken) {
+                    if (
+                        credentials.trialToken !== process.env.TRIAL_TOKEN ||
+                        credentials.email !== "demo@example.com"
+                    ) return null;
+                    const result = await db.select().from(users).where(eq(users.email, "demo@example.com")).limit(1);
+                    const user = result[0];
+                    if (!user) return null;
+                    return { id: user.id.toString(), name: user.name, email: user.email };
+                }
+
                 if (!credentials?.email || !credentials?.password) return null;
                 try {
                     const email = credentials.email as string;
