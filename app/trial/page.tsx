@@ -20,6 +20,7 @@ function TrialContent() {
             email: "demo@example.com",
             trialToken: token,
         }).then((result) => {
+            console.log("[trial] signIn result:", result);
             if (result?.ok && !result?.error) {
                 router.replace("/");
             } else {

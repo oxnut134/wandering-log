@@ -19,10 +19,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             async authorize(credentials) {
                 // Trial token flow
                 if (credentials?.trialToken) {
+                    console.log("[auth] TRIAL_TOKEN from env:", process.env.TRIAL_TOKEN ?? "(undefined)");
+                    console.log("[auth] trialToken from client:", credentials.trialToken);
                     if (
                         credentials.trialToken !== process.env.TRIAL_TOKEN ||
                         credentials.email !== "demo@example.com"
-                    ) return null;
+                    ) {
+                        console.log("[auth] Trial token validation failed");
+                        return null;
+                    }
                     const result = await db.select().from(users).where(eq(users.email, "demo@example.com")).limit(1);
                     const user = result[0];
                     if (!user) return null;
@@ -44,6 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
                     return { id: user.id.toString(), name: user.name, email: user.email };
                 } catch (error) {
+                    console.error("[auth] authorize error:", error);
                     return null;
                 }
             }
