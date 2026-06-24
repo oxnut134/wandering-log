@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export default function TrialPage() {
+function TrialContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -35,5 +35,13 @@ export default function TrialPage() {
                 <p className="text-lg font-medium">Loading demo...</p>
             </div>
         </div>
+    );
+}
+
+export default function TrialPage() {
+    return (
+        <Suspense>
+            <TrialContent />
+        </Suspense>
     );
 }
